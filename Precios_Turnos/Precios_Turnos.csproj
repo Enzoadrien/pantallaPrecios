@@ -8,7 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="metin mapa.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Recursos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="metin mapa.jpg" />
   </ItemGroup>
 
 </Project>

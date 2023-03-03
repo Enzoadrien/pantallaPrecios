@@ -18,9 +18,10 @@ namespace Precios_Turnos
     /// <summary>
     /// Lógica de interacción para ConfigDiseno.xaml
     /// </summary>
-    public partial class ConfigDiseno : Window
+    public partial class EditarDiseno : Window
     {
-        public ConfigDiseno()
+
+        public EditarDiseno()
         {
             InitializeComponent();
             double MaxHeightScreen = SystemParameters.PrimaryScreenHeight;
@@ -35,19 +36,11 @@ namespace Precios_Turnos
             DragMove();
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Escape)
-            {
-                Close();
-                Application.Current.MainWindow.WindowState = WindowState.Normal;
-            }
-        }
-
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
             Application.Current.MainWindow.WindowState = WindowState.Normal;
-        } 
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,9 @@ namespace Precios_Turnos
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        private Point _positionInBlock;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -28,20 +32,20 @@ namespace Precios_Turnos
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if(WindowState == WindowState.Maximized)
+            if (WindowState == WindowState.Maximized)
             {
                 WindowStyle = WindowStyle.None;
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
                 Topmost = true;
-                Menu.Visibility= Visibility.Hidden;
+                Menu.Visibility = Visibility.Hidden;
 
                 //// re-show the window after changing style
                 Visibility = Visibility.Visible;
-                MaxHeight = SystemParameters.VirtualScreenHeight; 
+                MaxHeight = SystemParameters.VirtualScreenHeight;
                 MaxWidth = SystemParameters.VirtualScreenWidth;
             }
-                
+
             else
             {
                 Topmost = false;
@@ -49,7 +53,7 @@ namespace Precios_Turnos
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
             }
-               
+
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -66,13 +70,67 @@ namespace Precios_Turnos
             Application.Current.Shutdown();
         }
 
-        private void ConfigurarDiseno_Click(object sender, RoutedEventArgs e)
+        private void EditarDiseno_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Maximized;
-            Topmost = false;
-            ConfigDiseno configDiseno = new ConfigDiseno();
-            configDiseno.ShowDialog();
 
+        }
+
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var item = e.Source as UIElement;
+                if (item.GetType() == typeof(Label) || item.GetType() == typeof(Image))
+                {
+                    _positionInBlock = Mouse.GetPosition(item);
+                    item.CaptureMouse();
+
+                }
+            }
+            catch (Exception) { }
+
+        }
+
+        private void Window_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                var item = e.Source as UIElement;
+
+                if (item.GetType() == typeof(Label) || item.GetType() == typeof(Image))
+                {
+                    // release this control.
+                    item.ReleaseMouseCapture();
+
+                }
+            }
+            catch (Exception) { }
+
+        }
+
+        private void Window_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                var item = e.Source as UIElement;
+
+                if (item.GetType() == typeof(Label) || item.GetType() == typeof(Image))
+                {
+                    if (item.IsMouseCaptured)
+                    {
+                        // get the parent container
+                        var container = VisualTreeHelper.GetParent(item) as UIElement;
+
+                        // get the position within the container
+                        var mousePosition = e.GetPosition(container);
+
+                        // move the usercontrol.
+                        item.RenderTransform = new TranslateTransform(mousePosition.X - _positionInBlock.X, mousePosition.Y - _positionInBlock.Y);
+                    }
+                }
+            }
+            catch (Exception) { }
         }
     }
 }
