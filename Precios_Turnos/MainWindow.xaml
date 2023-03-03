@@ -5,8 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Lista de precios y turnero 3K" Height="800" Width="1024" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50*"/>
+            <RowDefinition Height="750*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Menu x:Name="Menu" Background="White">
+            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8">
+                <MenuItem x:Name="Activar" Header="Activar" />
+                <MenuItem x:Name="ConfigurarConexion" Header="Configurar conexión" />
+                <MenuItem x:Name="ConfigurarDiseno" Header="Configurar diseño" Click="ConfigurarDiseno_Click" />
+                <Separator />
+                <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click"/>
+            </MenuItem>
 
+        </Menu>
+
+        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="24" Grid.Column="0" Grid.ColumnSpan="3"/>
+        <Label x:Name="Titulo2" Content="Lista de precios" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="18" Grid.Column="1" Grid.Row="1" />
+        <Label x:Name="Titulo3" Content="Turno" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="18" Grid.Column="2" Grid.Row="1"/>
+        
     </Grid>
 </Window>
