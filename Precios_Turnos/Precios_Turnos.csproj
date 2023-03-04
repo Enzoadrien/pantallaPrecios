@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="logo dibal.png" />
     <None Remove="metin mapa.jpg" />
   </ItemGroup>
 
@@ -16,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="logo dibal.png" />
     <Resource Include="metin mapa.jpg" />
   </ItemGroup>
 

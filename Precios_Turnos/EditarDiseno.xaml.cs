@@ -20,15 +20,12 @@ namespace Precios_Turnos
     /// </summary>
     public partial class EditarDiseno : Window
     {
+        private MainWindow MainWindow;
 
-        public EditarDiseno()
+        public EditarDiseno(MainWindow mainWindow)
         {
             InitializeComponent();
-            double MaxHeightScreen = SystemParameters.PrimaryScreenHeight;
-            double MaxWidthScreen = SystemParameters.PrimaryScreenWidth;
-            Top = (MaxHeightScreen/2) - (Height/2);
-            Left = MaxWidthScreen - Width;
-
+            MainWindow = mainWindow;
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -39,8 +36,67 @@ namespace Precios_Turnos
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
-            Application.Current.MainWindow.WindowState = WindowState.Normal;
         }
 
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Close();
+            }
+        }
+
+        private void cbxFuente_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var control = MainWindow.FindName(NombreControl.Text) as UIElement;
+            control.SetValue(FontFamilyProperty, new FontFamily(cbxFuente.SelectedItem.ToString()));
+        }
+
+        private void cbxTamano_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var control = MainWindow.FindName(NombreControl.Text) as UIElement;
+            control.SetValue(FontSizeProperty, Double.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()));
+        }
+
+        private void Contenido_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Label control = (Label)MainWindow.FindName(NombreControl.Text);
+            control.Content = Contenido.Text;
+        }
+
+        private void chkNegrita_Checked(object sender, RoutedEventArgs e)
+        {
+            Label control = (Label)MainWindow.FindName(NombreControl.Text);
+            control.SetValue(FontWeightProperty, FontWeights.Bold);
+        }
+
+        private void chkNegrita_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Label control = (Label)MainWindow.FindName(NombreControl.Text);
+            control.SetValue(FontWeightProperty, FontWeights.Normal);
+        }
+
+        private void chkCursiva_Checked(object sender, RoutedEventArgs e)
+        {
+            Label control = (Label)MainWindow.FindName(NombreControl.Text);
+            control.SetValue(FontStyleProperty, FontStyles.Italic);
+            
+        }
+
+        private void chkCursiva_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Label control = (Label)MainWindow.FindName(NombreControl.Text);
+            control.SetValue(FontStyleProperty, FontStyles.Normal);
+        }
+
+        private void btnPickColor_Click(object sender, RoutedEventArgs e)
+        {
+            ColorDialog colorDialog = new ColorDialog();
+            colorDialog.Owner = this;
+            if ((bool)colorDialog.ShowDialog())
+            {
+                btnPickColor.Background = new SolidColorBrush(colorDialog.SelectedColor);
+            }
+        }
     }
 }

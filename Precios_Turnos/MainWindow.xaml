@@ -5,34 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios y turnero 3K" Height="800" Width="1024" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" PreviewMouseDown="Window_PreviewMouseDown" PreviewMouseUp="Window_PreviewMouseUp" PreviewMouseMove="Window_PreviewMouseMove">
-    <Grid x:Name="Principal">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60*"/>
-            <RowDefinition Height="750*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
+        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT">
+    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" >
         <Menu x:Name="Menu" Background="White">
-            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8">
-                <MenuItem x:Name="Activar" Header="Activar" />
-                <MenuItem x:Name="ConfigurarConexion" Header="Configurar conexión" />
+            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT">
+                <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="ConfigurarConexion" Header="Configurar conexión" FontFamily="Arial Rounded MT"/>
                 <Separator />
-                <MenuItem x:Name="Turnero" Header="Turnero"/>
-                <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" />
+                <MenuItem x:Name="Turnero" Header="Turnero" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
-                <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click"/>
+                <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
 
         </Menu>
 
-        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="12" Grid.Column="0" Grid.ColumnSpan="3"/>
-        <Label x:Name="Titulo2" Content="Lista de precios" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="36" Grid.Column="1" Grid.Row="1"/>
-        <Label x:Name="Titulo3" Content="Turno" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Arial Rounded MT Bold" FontSize="36" Grid.Column="2" Grid.Row="1" Visibility="Hidden"/>
-        <Image HorizontalAlignment="Left" Height="218" Margin="79,210,0,0" Grid.Row="1" VerticalAlignment="Top" Width="206" Source="/metin mapa.jpg"/>
-
+        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" FontFamily="Arial Rounded MT" FontSize="36" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic"/>
+        <Image x:Name="Imagen1" HorizontalAlignment="Left" Height="218" Margin="79,210,0,0" Grid.Row="1" VerticalAlignment="Top" Width="206" Source="/metin mapa.jpg"/>
+        <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT"/>
+        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT"/>
     </Grid>
 </Window>
