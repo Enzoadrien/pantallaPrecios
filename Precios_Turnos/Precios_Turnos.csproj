@@ -8,17 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="logo dibal.png" />
-    <None Remove="metin mapa.jpg" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Recursos\" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="logo dibal.png" />
     <Resource Include="metin mapa.jpg" />
+	  <Resource Include="ColorSwatchCircle.png" />
+	  <Resource Include="ColorSwatchSquare1.png" />
+	  <Resource Include="ColorSwatchSquare2.png" />
   </ItemGroup>
 
 </Project>

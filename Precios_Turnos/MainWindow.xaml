@@ -5,8 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT">
-    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" >
+        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp">
+    <Window.Resources>
+        <ContextMenu x:Key="cmdPrincipalContexMenu">
+            <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarCuadrado" Header="Agregar cuadrado"/>
+            <MenuItem x:Name="MenuAgregarElipse" Header="Agregar elipse"/>
+            <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen"/>
+            <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla"/>
+            <Separator />
+            <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
+        </ContextMenu>
+    </Window.Resources>
+    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" PreviewMouseRightButtonUp="Principal_PreviewMouseRightButtonUp">
         <Menu x:Name="Menu" Background="White">
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT"/>
@@ -20,9 +31,8 @@
 
         </Menu>
 
-        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" FontFamily="Arial Rounded MT" FontSize="36" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic"/>
-        <Image x:Name="Imagen1" HorizontalAlignment="Left" Height="218" Margin="79,210,0,0" Grid.Row="1" VerticalAlignment="Top" Width="206" Source="/metin mapa.jpg"/>
+        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" FontFamily="Arial Rounded MT" FontSize="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FFCED459" Background="#FF2AC349" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" Background="#FF112B6B" Foreground="#FFDC0D0D"/>
         <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT"/>
     </Grid>

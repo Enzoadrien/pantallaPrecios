@@ -1,10 +1,10 @@
-﻿<Window x:Class="Precios_Turnos.EditarDiseno"
+﻿<Window x:Class="Precios_Turnos.PropiedadesLabel"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Propiedades" Height="350" Width="250" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" ShowInTaskbar="False" MouseLeftButtonDown="Window_MouseLeftButtonDown" AllowsTransparency="True" KeyDown="Window_KeyDown" >
+        Title="Propiedades" Height="300" Width="250" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" ShowInTaskbar="False" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="45*"/>
@@ -19,12 +19,18 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
-            <RowDefinition Height="180*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal"
+                    Background="#FF989090" Grid.ColumnSpan="2"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+            <Label Content="Propiedades"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+        </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="1" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
-                    <Setter Property="Background" Value="#FFD2CBCB"/>
+                    <Setter Property="Background" Value="#FF989090"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type Button}">
@@ -43,7 +49,6 @@
                 </Style>
             </Button.Style>
         </Button>
-        <Label Content="Propiedades"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         <Label x:Name="lblNombre" Content="Nombre:" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="NombreControl" Grid.Row="1" TextWrapping="Wrap" Text="" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14"/>
         <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" FontFamily="Arial Rounded MT" FontSize="14"/>
@@ -94,10 +99,47 @@
             <ComboBoxItem Content="92 px" Tag="92"/>
             <ComboBoxItem Content="96 px" Tag="96"/>
         </ComboBox>
-        <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Right" Unchecked="chkNegrita_Unchecked"/>
-        <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center"/>
-        <Label x:Name="lblColor" Content="Color:" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Button x:Name="btnPickColor" Grid.Column="1" Content="" Grid.Row="7" Click="btnPickColor_Click"/>
-
+        <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Right" Unchecked="chkNegrita_Unchecked" VerticalAlignment="Center"/>
+        <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="lblColor" Content="Color" Grid.Row="7" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFuente" Grid.Column="1"  Grid.Row="8" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown"/>
+        <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="9" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFondo" Grid.Column="1"  Grid.Row="9" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown"/>
+        <StackPanel Grid.Row="10"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="0,5,5,5" Grid.Column="1" >
+            <Button x:Name="btnBorrar"
+              Content="Eliminar"
+              IsDefault="True"
+              Width="60"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnBorrar_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

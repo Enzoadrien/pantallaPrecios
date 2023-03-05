@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.Metadata;
@@ -17,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Precios_Turnos
@@ -29,8 +31,7 @@ namespace Precios_Turnos
 
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
-        private bool editar = false
-            ;
+        private bool editar = false;
 
         public MainWindow()
         {
@@ -68,15 +69,8 @@ namespace Precios_Turnos
         {
             if (e.Key == Key.Escape)
             {
-                WindowState = WindowState.Normal;
-                Coordenadas.Visibility = Visibility.Hidden;
-                ModoEdicion.Content = "Vista previa";
-                ModoEdicion.FontSize = 18;
-
-                if (editar)
-                    editar = false;
+                SalirEdicion();
             }
-
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -157,7 +151,7 @@ namespace Precios_Turnos
                             //var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
 
 
-                            Coordenadas.Content = "Coordenadas: " + mousePosition.X + "X, " + mousePosition.Y + "Y";
+                            Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + mousePosition.X + "X, " + mousePosition.Y + "Y";
                             // move the usercontrol.
                             item.RenderTransform = new TranslateTransform(offsetX, offsetY);
                         }
@@ -166,7 +160,6 @@ namespace Precios_Turnos
                 catch (Exception) { }
         }
 
-
         private bool SeModificaControl(string name)
         {
             bool seModifica;
@@ -174,6 +167,7 @@ namespace Precios_Turnos
             {
                 case "Coordenadas":
                 case "ModoEdicion":
+                case "":
                     seModifica = false;
                     break;
                 default:
@@ -200,25 +194,35 @@ namespace Precios_Turnos
                             // get the position within the container
                             var mousePosition = e.GetPosition(container);
 
-                            
+
 
                             switch (item.GetType().ToString())
                             {
                                 case "System.Windows.Controls.Label":
-                                    EditarDiseno editarDiseno = new EditarDiseno(this);
-                                    editarDiseno.WindowStartupLocation = WindowStartupLocation.Manual;
-                                    editarDiseno.Top = mousePosition.Y;
-                                    editarDiseno.Left = mousePosition.X;
-                                    editarDiseno.NombreControl.IsEnabled = false;
-                                    editarDiseno.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                                    editarDiseno.cbxTipoControl.IsEnabled = false;
-                                    editarDiseno.cbxTipoControl.SelectedIndex = 0;
-                                    editarDiseno.Contenido.Text = ((Label)item).Content.ToString();
-                                    editarDiseno.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
-                                    editarDiseno.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
-                                    editarDiseno.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true: false;
-                                    editarDiseno.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
-                                    editarDiseno.ShowDialog();
+                                    PropiedadesLabel propiedadesLabel = new PropiedadesLabel(this);
+                                    propiedadesLabel.WindowStartupLocation = WindowStartupLocation.Manual;
+                                    if (mousePosition.Y + 300 >= MaxHeight)
+                                        propiedadesLabel.Top = mousePosition.Y - 300;
+                                    else
+                                        propiedadesLabel.Top = mousePosition.Y;
+
+                                    if (mousePosition.X + 250 >= MaxWidth)
+                                        propiedadesLabel.Left = mousePosition.X - 250;
+                                    else
+                                        propiedadesLabel.Left = mousePosition.X;
+
+                                    propiedadesLabel.NombreControl.IsEnabled = false;
+                                    propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                                    propiedadesLabel.cbxTipoControl.IsEnabled = false;
+                                    propiedadesLabel.cbxTipoControl.SelectedIndex = 0;
+                                    propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
+                                    propiedadesLabel.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                                    propiedadesLabel.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                                    propiedadesLabel.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                                    propiedadesLabel.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                                    propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
+                                    propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
+                                    propiedadesLabel.ShowDialog();
                                     break;
                                 case "System.Windows.Controls.Image":
                                     //editarDiseno.cbxTipoControl.SelectedIndex = 1;
@@ -228,11 +232,96 @@ namespace Precios_Turnos
                                     break;
                             }
 
-                            
+
                         }
                     }
                 }
                 catch (Exception) { }
+        }
+
+        private void Principal_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (editar)
+                try
+                {
+                    var item = e.Source as UIElement;
+
+                    if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    {
+                        ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
+                        cm.PlacementTarget = sender as Button;
+                        cm.IsOpen = true;
+                    }
+
+                }
+                catch (Exception) { }
+        }
+
+        private void MenuSalir_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            SalirEdicion();
+        }
+
+        private void SalirEdicion()
+        {
+            WindowState = WindowState.Normal;
+            Coordenadas.Visibility = Visibility.Hidden;
+            ModoEdicion.Content = "Vista previa";
+            ModoEdicion.FontSize = 18;
+
+            if (editar)
+                editar = false;
+        }
+
+        private void Principal_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (editar)
+                try
+                {
+                    var item = e.Source as UIElement;
+
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    {
+                        ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
+                        cm.PlacementTarget = sender as Button;
+                        cm.IsOpen = true;
+                    }
+
+                }
+                catch (Exception) { }
+        }
+
+        private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var mousePosition = e.GetPosition(Principal);
+            if (mousePosition.Y + 300 >= MaxHeight)
+                dialog.Top = mousePosition.Y - 300;
+            else
+                dialog.Top = mousePosition.Y;
+
+            if (mousePosition.X + 130 >= MaxWidth)
+                dialog.Left = mousePosition.X - 130;
+            else
+                dialog.Left = mousePosition.X;
+
+            dialog.ContenidoTextBox.IsEnabled = true;
+            if (dialog.ShowDialog() == true)
+            {
+                Label lbl = new Label();
+                lbl.Name = dialog.NombreText;
+                lbl.Content = dialog.ContenidoText;
+                lbl.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+                lbl.VerticalContentAlignment = VerticalAlignment.Stretch;
+                lbl.HorizontalAlignment = HorizontalAlignment.Center;
+                lbl.VerticalAlignment = VerticalAlignment.Center;
+                lbl.FontSize = 24;
+                lbl.FontFamily = new FontFamily("Arial Rounded MT");
+                NameScope.GetNameScope(this).RegisterName(lbl.Name, lbl);
+                Principal.Children.Add(lbl);
+                lbl.RenderTransform = new TranslateTransform(mousePosition.X-(300*3), mousePosition.Y-(130*3));
+            }
         }
     }
 }
