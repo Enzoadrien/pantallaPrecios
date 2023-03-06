@@ -62,8 +62,10 @@ namespace Precios_Turnos
             }
             else {
                 Mensajes dialog = new Mensajes();
-                dialog.Title = "Error";
-                dialog.Content = "Ya existe un objeto con ese nombre";
+                dialog.lblNombre.Content = "Error";
+                dialog.lblTexto.Content = "Ya existe un objeto con ese nombre";
+                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();
             }
         }

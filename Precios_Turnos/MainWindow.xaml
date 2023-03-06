@@ -14,10 +14,20 @@
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla"/>
             <Separator />
+            <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
+            <MenuItem x:Name="Propiedades" Header="Propiedades"/>
+            <Separator />
             <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
+        <ContextMenu x:Key="cmdContexMenu">
+            <MenuItem x:Name="MenuTraerFrente" Header="Traer al frente" PreviewMouseLeftButtonDown="MenuTraerFrente_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuEnviarAtras" Header="Enviar atras"/>
+            <Separator />
+            <MenuItem x:Name="MenuPropiedades" Header="Propiedades"/>
+            
+        </ContextMenu>
     </Window.Resources>
-    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" PreviewMouseRightButtonUp="Principal_PreviewMouseRightButtonUp">
+    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown">
         <Menu x:Name="Menu" Background="White">
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT"/>

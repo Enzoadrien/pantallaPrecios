@@ -4,11 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Propiedades" Height="300" Width="250" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" ShowInTaskbar="False" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" >
+        Title="Propiedades" Height="360" Width="250" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" ShowInTaskbar="False" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" >
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="45*"/>
-            <ColumnDefinition Width="80*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
@@ -21,13 +24,15 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="2"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+                    Background="#FF989090" Grid.ColumnSpan="5"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
             <Label Content="Propiedades"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="1" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="5" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="#FF989090"/>
@@ -49,27 +54,27 @@
                 </Style>
             </Button.Style>
         </Button>
-        <Label x:Name="lblNombre" Content="Nombre:" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="NombreControl" Grid.Row="1" TextWrapping="Wrap" Text="" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14"/>
-        <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxTipoControl" Grid.Column="1"  Grid.Row="2" FontSize="14">
+        <Label x:Name="lblNombre" Content="Nombre:" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="NombreControl" Grid.Row="1" Grid.ColumnSpan="3" TextWrapping="Wrap" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14"/>
+        <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxTipoControl" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="2" FontSize="14">
             <ComboBoxItem Content="Texto fijo"/>
             <ComboBoxItem Content="Imagen"/>
             <ComboBoxItem Content="Tabla"/>
         </ComboBox>
-        <Label x:Name="lblContenido" Content="Contenido:" Grid.Row="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Contenido" Grid.Row="3" TextWrapping="Wrap" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="Contenido_TextChanged"/>
-        <Label x:Name="lblFuente" Content="Fuente:" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblContenido" Content="Contenido:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Contenido" Grid.Row="3" Grid.ColumnSpan="3" TextWrapping="Wrap" Text="" Grid.Column="2"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="Contenido_TextChanged"/>
+        <Label x:Name="lblFuente" Content="Fuente:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <ComboBox x:Name="cbxFuente" ItemsSource="{Binding Source={x:Static Fonts.SystemFontFamilies}}"
-                  FontSize="14" Grid.Column="1" Grid.Row="4" SelectionChanged="cbxFuente_SelectionChanged">
+                  FontSize="14" Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="3" SelectionChanged="cbxFuente_SelectionChanged">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock FontFamily="{Binding .}" Text="{Binding Source}" ToolTip="{Binding Source}" />
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <Label x:Name="lblTamano" Content="Tamaño:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxTamano" Grid.Column="1"  Grid.Row="5" SelectionChanged="cbxTamano_SelectionChanged" SelectedValuePath="Tag">
+        <Label x:Name="lblTamano" Content="Tamaño:" Grid.ColumnSpan="2" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxTamano" Grid.Column="2"  Grid.Row="5" Grid.ColumnSpan="3" SelectionChanged="cbxTamano_SelectionChanged" SelectedValuePath="Tag">
             <ComboBoxItem Content="12 px" Tag="12"/>
             <ComboBoxItem Content="14 px" Tag="14"/>
             <ComboBoxItem Content="16 px" Tag="16"/>
@@ -99,17 +104,22 @@
             <ComboBoxItem Content="92 px" Tag="92"/>
             <ComboBoxItem Content="96 px" Tag="96"/>
         </ComboBox>
-        <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Right" Unchecked="chkNegrita_Unchecked" VerticalAlignment="Center"/>
-        <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="lblColor" Content="Color" Grid.Row="7" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFuente" Grid.Column="1"  Grid.Row="8" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown"/>
-        <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="9" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo" Grid.Column="1"  Grid.Row="9" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown"/>
-        <StackPanel Grid.Row="10"
+        <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Center" Unchecked="chkNegrita_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
+        <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic"/>
+        <Label x:Name="lblColor" Content="Color" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFuente" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="8" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown"/>
+        <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="9" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown"/>
+        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="11"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaX" IsReadOnly="True" Grid.Row="11" TextWrapping="Wrap" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus" TextChanged="CoordenadaX_TextChanged"/>
+        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="11" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaY" IsReadOnly="True" Grid.Row="11" TextWrapping="Wrap" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus"/>
+        <StackPanel Grid.Row="12"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
-                Margin="0,5,5,5" Grid.Column="1" >
+                Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2">
             <Button x:Name="btnBorrar"
               Content="Eliminar"
               IsDefault="True"

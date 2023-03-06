@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
@@ -21,6 +21,7 @@ namespace Precios_Turnos
     public partial class PropiedadesLabel : Window
     {
         private MainWindow mainWindow;
+        private bool esInicio = true;
 
         public PropiedadesLabel(MainWindow pmainWindow)
         {
@@ -113,6 +114,7 @@ namespace Precios_Turnos
             if ((bool)colorPicker.ShowDialog()) {
                 btnColorFuente.Fill = new SolidColorBrush(colorPicker.SelectedColor);
                 control.Foreground = new SolidColorBrush(colorPicker.SelectedColor);
+                mainWindow.ultimoColorLetra = colorPicker.SelectedColor;
             }
         }
 
@@ -139,6 +141,7 @@ namespace Precios_Turnos
             {
                 btnColorFondo.Fill = new SolidColorBrush(colorPicker.SelectedColor);
                 control.Background = new SolidColorBrush(colorPicker.SelectedColor);
+                mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
             }
         }
 
@@ -148,6 +151,81 @@ namespace Precios_Turnos
             mainWindow.Principal.Children.Remove(control);
             NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
             Close();
+        }
+
+        private void Coordenada_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if (cajaTexto.Text.Length == 0)
+            {
+                cajaTexto.Text = "0";
+            }
+        }
+
+        private Boolean TextAllowed(String s)
+        {
+            foreach (Char c in s.ToCharArray())
+            {
+                if (Char.IsDigit(c)) continue;
+                else return false;
+            }
+            return true;
+        }
+
+        private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+
+            e.Handled = !TextAllowed(e.Text);
+
+        }
+        private void PastingHandler(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+
+            if (e.Key == Key.Space && cajaTexto.IsFocused == true)
+                e.Handled = true;
+        }
+
+        private void txtAlpha_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if (cajaTexto.Text.Length > 0)
+            {
+                bool moverCursor = false;
+                if (cajaTexto.Text.Substring(0, 1).CompareTo("0") == 0 && cajaTexto.Text.Length > 1)
+                    moverCursor = true;
+                cajaTexto.Text = int.Parse(cajaTexto.Text).ToString();
+                if (moverCursor)
+                    cajaTexto.CaretIndex = cajaTexto.Text.Length;
+               
+                }
+        }
+
+        private void CoordenadaX_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!esInicio) {
+                Label control = (Label)mainWindow.FindName(NombreControl.Text);
+                try {
+                    if(CoordenadaX.Text.Length > 0) {
+
+                        Point oldP = control.TransformToAncestor(mainWindow).Transform(new Point(0, 0));
+
+                        control.RenderTransform = new TranslateTransform(-oldP.X, 0);
+                    }
+                }
+                catch(Exception ex) { }
+            }
+            esInicio = false;
         }
     }
 }

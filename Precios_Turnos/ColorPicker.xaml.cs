@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Precios_Turnos
 {
@@ -28,6 +29,7 @@ namespace Precios_Turnos
         private Color selectedColor = Colors.Transparent;
         private Boolean IsMouseDown = false;
         private MainWindow mainWindow;
+        private int numAnterior=0;
 
         #endregion
 
@@ -40,8 +42,10 @@ namespace Precios_Turnos
         public ColorPicker(MainWindow pMainWindow, Color initialColor)
         {
             InitializeComponent();
-            this.selectedColor = initialColor;
+            SelectedColor = initialColor;
             mainWindow = pMainWindow;
+            ultimoColorLetra.Background = new SolidColorBrush(mainWindow.ultimoColorLetra);
+            ultimoColorFondo.Background = new SolidColorBrush(mainWindow.ultimoColorFondo);
         }
 
         #endregion
@@ -223,6 +227,11 @@ namespace Precios_Turnos
             txtAll.Text = String.Format("#{0}{1}{2}{3}", txtAlphaHex.Text, txtRedHex.Text, txtGreenHex.Text, txtBlueHex.Text);
         }
 
+        private void UpdateColorTextBox() 
+        {
+            SelectedColor = Color.FromArgb(Convert.ToByte(int.Parse(txtAlpha.Text)), Convert.ToByte(int.Parse(txtRed.Text)), Convert.ToByte(int.Parse(txtGreen.Text)), Convert.ToByte(int.Parse(txtBlue.Text)));
+        }
+
         /// <summary>
         /// Updates the Ink strokes based on the Selected Color.
         /// </summary>
@@ -262,6 +271,78 @@ namespace Precios_Turnos
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DragMove();
+        }
+
+        private void ultimoColorLetra_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            SelectedColor = (((Border)item).Background as SolidColorBrush).Color;
+        }
+
+
+        private Boolean TextAllowed(String s)
+        {
+            foreach (Char c in s.ToCharArray())
+            {
+                if (Char.IsDigit(c)) continue;
+                else return false;
+            }
+            return true;
+        }
+
+        private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+
+            e.Handled = !TextAllowed(e.Text);
+        }
+        private void PastingHandler(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if(cajaTexto.Text.Length > 0 && cajaTexto.Text.Length<4)
+                if(int.Parse(cajaTexto.Text) <= 255)
+                    numAnterior = int.Parse(cajaTexto.Text);
+
+            if (e.Key == Key.Space && cajaTexto.IsFocused == true)
+                e.Handled = true;
+        }
+
+        private void txtAlpha_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if (cajaTexto.Text.Length > 0) {
+                bool moverCursor = false;
+                if (cajaTexto.Text.Substring(0, 1).CompareTo("0") == 0 && cajaTexto.Text.Length > 1)
+                    moverCursor = true;
+                cajaTexto.Text = int.Parse(cajaTexto.Text).ToString();
+                if (moverCursor)
+                    cajaTexto.CaretIndex = cajaTexto.Text.Length;
+                if(int.Parse(cajaTexto.Text) > 255) {
+                    cajaTexto.Text = numAnterior.ToString();
+                    cajaTexto.CaretIndex = cajaTexto.Text.Length;
+                }
+                UpdateColorTextBox();
+            }
+            
+        }
+
+        private void txtBlue_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if (cajaTexto.Text.Length == 0)
+            {
+                cajaTexto.Text = "0";
+                UpdateColorTextBox();
+            }
         }
     }
 }

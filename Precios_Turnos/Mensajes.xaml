@@ -5,44 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Tipo" Background="#FFD2CBCB" Height="100" Width="500" Opacity="0.9" KeyDown="Window_KeyDown" ResizeMode="NoResize" WindowStyle="None">
+        Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="100" Width="500" ShowInTaskbar="False" KeyDown="Window_KeyDown" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
             <ColumnDefinition Width="80*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="35*"/>
-            <RowDefinition Height="35*"/>
-            <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
                     Background="#FF989090" Grid.ColumnSpan="2"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
-            <Label Content="Tipo"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+            <Label x:Name="lblNombre" Content="Tipo"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="1" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
-            <Button.Style>
-                <Style TargetType="{x:Type Button}">
-                    <Setter Property="Background" Value="#FF989090"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type Button}">
-                                <Border Background="{TemplateBinding Background}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FFC42B1C"/>
-                            <Setter Property="Foreground" Value="White"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-        <Label x:Name="lblNombre" Content="Texto" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Background="White"/>
+        <Label x:Name="lblTexto" Content="Texto" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Background="White"/>
         <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
@@ -79,5 +57,27 @@
                 </Button.Style>
             </Button>
         </StackPanel>
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="1" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+            <Button.Style>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Background" Value="#FF989090"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FFC42B1C"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
     </Grid>
 </Window>

@@ -32,6 +32,8 @@ namespace Precios_Turnos
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
         private bool editar = false;
+        public Color ultimoColorLetra;
+        public Color ultimoColorFondo;
 
         public MainWindow()
         {
@@ -99,8 +101,8 @@ namespace Precios_Turnos
                     {
                         var container = VisualTreeHelper.GetParent(item) as UIElement;
                         _positionInBlock = e.GetPosition(container);
-                        item.CaptureMouse();
                         _currentTT = item.RenderTransform as TranslateTransform;
+                        item.CaptureMouse();
                     }
                 }
                 catch (Exception) { }
@@ -116,9 +118,9 @@ namespace Precios_Turnos
 
                     if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
+                        _currentTT = item.RenderTransform as TranslateTransform;
                         // release this control.
                         item.ReleaseMouseCapture();
-                        _currentTT = item.RenderTransform as TranslateTransform;
 
                     }
                 }
@@ -142,17 +144,16 @@ namespace Precios_Turnos
 
                             // get the position within the container
                             var mousePosition = e.GetPosition(container);
+                            Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
 
                             var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
                             var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
 
-                            //var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
-                            //var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
 
-
-                            Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + mousePosition.X + "X, " + mousePosition.Y + "Y";
+                            Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
                             // move the usercontrol.
+
                             item.RenderTransform = new TranslateTransform(offsetX, offsetY);
                         }
                     }
@@ -193,6 +194,7 @@ namespace Precios_Turnos
 
                             // get the position within the container
                             var mousePosition = e.GetPosition(container);
+                            Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
 
 
@@ -222,6 +224,8 @@ namespace Precios_Turnos
                                     propiedadesLabel.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
                                     propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
                                     propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
+                                    propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                                    propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                                     propiedadesLabel.ShowDialog();
                                     break;
                                 case "System.Windows.Controls.Image":
@@ -252,6 +256,12 @@ namespace Precios_Turnos
                         cm.PlacementTarget = sender as Button;
                         cm.IsOpen = true;
                     }
+                    else
+                    {
+                        /*ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
+                        cm.PlacementTarget = sender as Button;
+                        cm.IsOpen = true;*/
+                    }
 
                 }
                 catch (Exception) { }
@@ -271,24 +281,6 @@ namespace Precios_Turnos
 
             if (editar)
                 editar = false;
-        }
-
-        private void Principal_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (editar)
-                try
-                {
-                    var item = e.Source as UIElement;
-
-                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
-                    {
-                        ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
-                        cm.PlacementTarget = sender as Button;
-                        cm.IsOpen = true;
-                    }
-
-                }
-                catch (Exception) { }
         }
 
         private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -322,6 +314,13 @@ namespace Precios_Turnos
                 Principal.Children.Add(lbl);
                 lbl.RenderTransform = new TranslateTransform(mousePosition.X-(300*3), mousePosition.Y-(130*3));
             }
+        }
+
+        private void MenuTraerFrente_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = e.Source as UIElement;
+
+            //item.BringToFront();
         }
     }
 }
