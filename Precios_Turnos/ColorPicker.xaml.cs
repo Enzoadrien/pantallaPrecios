@@ -63,6 +63,7 @@ namespace Precios_Turnos
                 if (selectedColor != value)
                 {
                     this.selectedColor = value;
+                    AlphaSlider.Value = value.A;
                     CreateAlphaLinearBrush();
                     UpdateTextBoxes();
                     UpdateInk();

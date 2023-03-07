@@ -8,15 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="ColorSwatchCircle.png" />
+    <None Remove="ColorSwatchSquare1.png" />
+    <None Remove="ColorSwatchSquare2.png" />
+    <None Remove="ICONO.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Recursos\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="logo dibal.png" />
-    <Resource Include="metin mapa.jpg" />
-	  <Resource Include="ColorSwatchCircle.png" />
-	  <Resource Include="ColorSwatchSquare1.png" />
-	  <Resource Include="ColorSwatchSquare2.png" />
+    <Resource Include="ColorSwatchCircle.png" />
+    <Resource Include="ColorSwatchSquare1.png" />
+    <Resource Include="ColorSwatchSquare2.png" />
+    <Resource Include="ICONO.ico" />
   </ItemGroup>
+
 
 </Project>

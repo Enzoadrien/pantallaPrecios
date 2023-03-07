@@ -21,7 +21,7 @@ namespace Precios_Turnos
     public partial class PropiedadesLabel : Window
     {
         private MainWindow mainWindow;
-        private bool esInicio = true;
+        bool esInicio = true;
 
         public PropiedadesLabel(MainWindow pmainWindow)
         {
@@ -179,6 +179,7 @@ namespace Precios_Turnos
             e.Handled = !TextAllowed(e.Text);
 
         }
+       
         private void PastingHandler(object sender, DataObjectPastingEventArgs e)
         {
             // more error handling would be needed here - this is asking for trouble!
@@ -211,20 +212,38 @@ namespace Precios_Turnos
                 }
         }
 
-        private void CoordenadaX_TextChanged(object sender, TextChangedEventArgs e)
+        private void Coordenada_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!esInicio) {
                 Label control = (Label)mainWindow.FindName(NombreControl.Text);
                 try {
-                    if(CoordenadaX.Text.Length > 0) {
+                    if(CoordenadaX.Text.Length > 0 && CoordenadaY.Text.Length > 0) {
 
-                        Point oldP = control.TransformToAncestor(mainWindow).Transform(new Point(0, 0));
-
-                        control.RenderTransform = new TranslateTransform(-oldP.X, 0);
+                        mainWindow.Principal.Children.Remove(control);
+                        NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
+                        control.Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                        NameScope.GetNameScope(mainWindow).RegisterName(control.Name, control);
+                        mainWindow.Principal.Children.Add(control);
                     }
                 }
                 catch(Exception ex) { }
             }
+        }
+
+        private void Opacidad_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Label control = (Label)mainWindow.FindName(NombreControl.Text);
+            control.Opacity = Opacidad.Value;
+        }
+        
+        private void Opacidad_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            int change = e.Delta / Math.Abs(e.Delta);
+            Opacidad.Value = Opacidad.Value + (double)change/10;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             esInicio = false;
         }
     }

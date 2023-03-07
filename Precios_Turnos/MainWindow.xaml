@@ -5,31 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp">
+        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarCuadrado" Header="Agregar cuadrado"/>
+            <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarElipse" Header="Agregar elipse"/>
-            <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen"/>
-            <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla"/>
+            <MenuItem x:Name="MenuAgregarCuadrado" Header="Agregar cuadrado"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
-            <MenuItem x:Name="Propiedades" Header="Propiedades"/>
+            <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
             <Separator />
             <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
         <ContextMenu x:Key="cmdContexMenu">
             <MenuItem x:Name="MenuTraerFrente" Header="Traer al frente" PreviewMouseLeftButtonDown="MenuTraerFrente_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuEnviarAtras" Header="Enviar atras"/>
+            <MenuItem x:Name="MenuPropiedades" Header="Propiedades" PreviewMouseLeftButtonDown="MenuPropiedades_PreviewMouseLeftButtonDown"/>
             <Separator />
-            <MenuItem x:Name="MenuPropiedades" Header="Propiedades"/>
-            
+            <MenuItem x:Name="MenuEliminar" Header="Eliminar" PreviewMouseLeftButtonDown="MenuEliminar_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
     </Window.Resources>
-    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown">
-        <Menu x:Name="Menu" Background="White">
-            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT">
+    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
+        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="100">
+            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT"/>
                 <MenuItem x:Name="ConfigurarConexion" Header="Configurar conexión" FontFamily="Arial Rounded MT"/>
                 <Separator />
@@ -38,12 +38,12 @@
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
-
         </Menu>
+        <Label x:Name="Titulo1" Content="3K Mantenimiento Profesional" FontFamily="Arial Rounded MT" FontSize="48" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="36" Margin="0,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Image x:Name="LogoPrincipal" Height="71" Width="72" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.3" Panel.ZIndex="1000" />
 
-        <Label x:Name="Titulo1" Content="3K Mantenimiento Profecional" FontFamily="Arial Rounded MT" FontSize="36" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="#FFCED459" Background="#FF2AC349" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" Background="#FF112B6B" Foreground="#FFDC0D0D"/>
-        <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT"/>
-        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT"/>
     </Grid>
 </Window>

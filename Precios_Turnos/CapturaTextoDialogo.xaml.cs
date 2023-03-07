@@ -20,6 +20,7 @@ namespace Precios_Turnos
     public partial class CapturaTextoDialogo : Window
     {
         private MainWindow mainWindow;
+        public bool esVideo = false;
         public CapturaTextoDialogo(MainWindow pmainWindow)
         {
             InitializeComponent();
@@ -55,7 +56,25 @@ namespace Precios_Turnos
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-
+            if (Char.IsDigit(NombreText.FirstOrDefault()))
+            {
+                Mensajes dialog = new Mensajes();
+                dialog.lblNombre.Content = "Error";
+                dialog.lblTexto.Content = "El nombre no debe comenzar con números";
+                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.ShowDialog();
+            }
+            else if(NombreText.Length == 0 || ContenidoText.Length == 0)
+            {
+                Mensajes dialog = new Mensajes();
+                dialog.lblNombre.Content = "Error";
+                dialog.lblTexto.Content = "Débes ingresar todos los datos";
+                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.ShowDialog();
+            }
+            else { 
             if (mainWindow.FindName(NombreText) == null)
             {
                 DialogResult = true;
@@ -68,14 +87,43 @@ namespace Precios_Turnos
                 dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();
             }
+            }
+        }
+
+        private void btnAbrir_Click(object sender, RoutedEventArgs e)
+        {
+            // Create OpenFileDialog 
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+            if(esVideo)
+                dlg.Filter = "Todos los archivos de video|*.*;*.mp3;*.mp4;*.asf|MP3 (*.mp3)|*.mp3|MP4 (*.mp4)|*.mp4|ASF (*.wmv;*.wma)|*.wmv;*wma";
+            else
+                dlg.Filter = "Todos los archivos de imagen|*.jpeg;*.jpg;*.png;*.gif|JPEG (*.jpeg;*.jpg)|*.jpeg;*.jpg|PNG (*.png)|*.png|GIF (*.gif)|*.gif";
+
+
+            // Display OpenFileDialog by calling ShowDialog method 
+            Nullable<bool> result = dlg.ShowDialog();
+
+            // Get the selected file name and display in a TextBox 
+            if (result == true)
+            {
+                // Open document 
+                ContenidoTextBox.Text = dlg.FileName;
+            }
+
         }
 
         private Boolean TextAllowed(String s)
         {
+            string strAcentos = "ÄÅÁÂÀÃäáâàãÉÊËÈéêëèÍÎÏÌíîïìÖÓÔÒÕöóôòõÜÚÛüúûùÇçñÑ";
             foreach (Char c in s.ToCharArray())
             {
-                if (Char.IsLetterOrDigit(c) || Char.IsControl(c)) continue;
-                else return false;
+                if (strAcentos.IndexOf(c) > 0)
+                    return false;
+                else if (Char.IsLetterOrDigit(c) || Char.IsControl(c)) 
+                    continue;
+                else 
+                    return false;
             }
             return true;
         }
@@ -94,6 +142,7 @@ namespace Precios_Turnos
 
         private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            
             var item = e.Source as UIElement;
             if (e.Key == Key.Space && item.IsFocused == true)
                 e.Handled = true;
