@@ -121,6 +121,7 @@ namespace Precios_Turnos
         {
             IsMouseDown = true;
             UpdateColor();
+            AlphaSlider.Value = 255;
         }
 
         /// <summary>
@@ -279,7 +280,6 @@ namespace Precios_Turnos
             var item = e.Source as UIElement;
             SelectedColor = (((Border)item).Background as SolidColorBrush).Color;
         }
-
 
         private Boolean TextAllowed(String s)
         {

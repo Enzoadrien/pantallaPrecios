@@ -1,12 +1,20 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Data.Common;
+using System.Linq;
+using System.Reflection;
 using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml.Linq;
+using static Precios_Turnos.MainWindow;
 
 namespace Precios_Turnos
 {
@@ -21,9 +29,8 @@ namespace Precios_Turnos
         private bool editar = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
-        string controlClickName;
-        //public ObservableCollection<Articulo> Collection { get; set; }
-        //public List<Articulo> Articulos { get; set; }
+        private string controlClickName;
+        private ObservableCollection<Articulo> Collection { get; set; }
 
         public MainWindow()
         {
@@ -42,8 +49,9 @@ namespace Precios_Turnos
                     Topmost = false;
                     ModoEdicion.Visibility = Visibility.Visible;
                 }
-                else
+                else { 
                     ModoEdicion.Visibility = Visibility.Hidden;
+                }
 
                 WindowStyle = WindowStyle.None;
                 ResizeMode = ResizeMode.NoResize;
@@ -78,7 +86,7 @@ namespace Precios_Turnos
 
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private void EditarDiseno_Click(object sender, RoutedEventArgs e)
@@ -88,7 +96,6 @@ namespace Precios_Turnos
             Coordenadas.Visibility = Visibility.Visible;
             ModoEdicion.Content = "Modo edición";
             ModoEdicion.FontSize = 24;
-
         }
 
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -170,6 +177,8 @@ namespace Precios_Turnos
                 case "Coordenadas":
                 case "ModoEdicion":
                 case "Principal":
+                case "Menu":
+                case "LogoPrincipal":
                     seModifica = false;
                     break;
                 default:
@@ -208,6 +217,19 @@ namespace Precios_Turnos
                     if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
+                        MenuItem itemCm = (MenuItem)cm.Items[5];
+                        itemCm.Items.Clear();
+                        foreach (var itemObjets in Principal.Children)
+                        {
+                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                            if (SeModificaControl(nombreControl))
+                            {
+                                MenuItem itemControl = new MenuItem();
+                                itemControl.Header = nombreControl;
+                                itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
+                                itemCm.Items.Add(itemControl);
+                            }
+                        }
                         cm.PlacementTarget = sender as Button;
                         cm.IsOpen = true;
                     }
@@ -236,6 +258,7 @@ namespace Precios_Turnos
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
             ModoEdicion.Visibility = Visibility.Visible;
+            Principal.IsHitTestVisible = false;
 
             if (editar)
                 editar = false;
@@ -264,10 +287,11 @@ namespace Precios_Turnos
             {
                 Label obj = new Label();
                 obj.Name = dialog.NombreText;
+                obj.ToolTip = dialog.NombreText;
                 obj.Content = dialog.ContenidoText;
                 obj.HorizontalAlignment = HorizontalAlignment.Left;
                 obj.VerticalAlignment = VerticalAlignment.Top;
-                obj.Margin = new Thickness(mousePosition.X, mousePosition.Y, 0, 0);
+                obj.Margin = new Thickness(dialog.Left, dialog.Top, 0, 0);
                 obj.FontSize = 24;
                 obj.FontFamily = new FontFamily("Arial Rounded MT");
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
@@ -299,8 +323,14 @@ namespace Precios_Turnos
             {
                 Image obj = new Image();
                 obj.Name = dialog.NombreText;
+                obj.ToolTip = dialog.NombreText;
                 obj.Source = new BitmapImage(new Uri(dialog.ContenidoText));
-                obj.Margin = new Thickness(mousePosition.X, mousePosition.Y, 0, 0);
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.Stretch = Stretch.Uniform;
+                obj.Height = 800;
+                obj.MaxHeight = MaxHeight;
+                obj.MaxWidth = MaxHeight;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
             }
@@ -309,7 +339,6 @@ namespace Precios_Turnos
         private void MenuTraerFrente_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var item = FindName(controlClickName) as UIElement;
-
             Principal.Children.Remove(item);
             NameScope.GetNameScope(this).UnregisterName(controlClickName);
             NameScope.GetNameScope(this).RegisterName(controlClickName, item);
@@ -332,25 +361,23 @@ namespace Precios_Turnos
             var item = FindName(controlClickName) as UIElement;
             var container = VisualTreeHelper.GetParent(item) as UIElement;
 
-            // get the position within the container
-            var mousePosition = e.GetPosition(container);
             Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-            switch (item.GetType().ToString())
+            switch (item.GetType().Name.ToString())
             {
-                case "System.Windows.Controls.Label":
+                case "Label":
                     PropiedadesLabel propiedadesLabel = new PropiedadesLabel(this);
                     propiedadesLabel.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (mousePosition.X + propiedadesLabel.Width >= MaxWidth)
-                        propiedadesLabel.Left = mousePosition.X - propiedadesLabel.Width;
+                    if (point.X + propiedadesLabel.Width >= MaxWidth)
+                        propiedadesLabel.Left = point.X - propiedadesLabel.Width;
                     else
-                        propiedadesLabel.Left = mousePosition.X;
+                        propiedadesLabel.Left = point.X;
 
-                    if (mousePosition.Y + propiedadesLabel.Height >= MaxHeight)
-                        propiedadesLabel.Top = mousePosition.Y - propiedadesLabel.Height;
+                    if (point.Y + propiedadesLabel.Height >= MaxHeight)
+                        propiedadesLabel.Top = point.Y - propiedadesLabel.Height;
                     else
-                        propiedadesLabel.Top = mousePosition.Y;
+                        propiedadesLabel.Top = point.Y;
 
                     propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesLabel.TipoControl.Text = "Texto";
@@ -366,57 +393,139 @@ namespace Precios_Turnos
                     propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
-                case "System.Windows.Controls.Image":
+                case "Image":
                     PropiedadesMultimedia propiedadesImagen = new PropiedadesMultimedia(this);
                     propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (mousePosition.X + propiedadesImagen.Width >= MaxWidth)
-                        propiedadesImagen.Left = mousePosition.X - propiedadesImagen.Width;
+                    if (point.X + propiedadesImagen.Width >= MaxWidth)
+                        propiedadesImagen.Left = point.X - propiedadesImagen.Width;
                     else
-                        propiedadesImagen.Left = mousePosition.X;
+                        propiedadesImagen.Left = point.X;
 
-                    if (mousePosition.Y + propiedadesImagen.Height >= MaxHeight)
-                        propiedadesImagen.Top = mousePosition.Y - propiedadesImagen.Height;
+                    if (point.Y + propiedadesImagen.Height >= MaxHeight)
+                        propiedadesImagen.Top = point.Y - propiedadesImagen.Height;
                     else
-                        propiedadesImagen.Top = mousePosition.Y;
+                        propiedadesImagen.Top = point.Y;
 
-                    propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString()+"\"";
+                    propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = "Imagen";
                     propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = ((Image)item).ActualWidth.ToString();
-                    propiedadesImagen.Ancho.Text = ((Image)item).ActualHeight.ToString();
+                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
                     propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesImagen.chkSonido.Visibility = Visibility.Hidden;
+                    propiedadesImagen.esInicio = false;
                     propiedadesImagen.ShowDialog();
                     break;
-                case "System.Windows.Controls.MediaElement":
+                case "MediaElement":
                     PropiedadesMultimedia propiedadesVideo = new PropiedadesMultimedia(this);
                     propiedadesVideo.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (mousePosition.X + propiedadesVideo.Width >= MaxWidth)
-                        propiedadesVideo.Left = mousePosition.X - propiedadesVideo.Width;
+                    if (point.X + propiedadesVideo.Width >= MaxWidth)
+                        propiedadesVideo.Left = point.X - propiedadesVideo.Width;
                     else
-                        propiedadesVideo.Left = mousePosition.X;
+                        propiedadesVideo.Left = point.X;
 
-                    if (mousePosition.Y + propiedadesVideo.Height >= MaxHeight)
-                        propiedadesVideo.Top = mousePosition.Y - propiedadesVideo.Height;
+                    if (point.Y + propiedadesVideo.Height >= MaxHeight)
+                        propiedadesVideo.Top = point.Y - propiedadesVideo.Height;
                     else
-                        propiedadesVideo.Top = mousePosition.Y;
+                        propiedadesVideo.Top = point.Y;
 
-                    propiedadesVideo.esMultimedia = true;
                     propiedadesVideo.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesVideo.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesVideo.TipoControl.Text = "Multimeda";
                     propiedadesVideo.Ruta.Text = ((MediaElement)item).Source.ToString();
-                    propiedadesVideo.Largo.Text = ((MediaElement)item).ActualWidth.ToString();
-                    propiedadesVideo.Ancho.Text = ((MediaElement)item).ActualHeight.ToString();
+                    propiedadesVideo.Largo.Text = Convert.ToInt32(((MediaElement)item).ActualWidth).ToString();
+                    propiedadesVideo.Ancho.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
                     propiedadesVideo.Opacidad.Value = item.Opacity;
                     propiedadesVideo.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesVideo.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesVideo.esInicio = false;
                     propiedadesVideo.ShowDialog();
                     break;
+                case "DataGrid":
+                    PropiedadesTabla propiedadesTabla = new PropiedadesTabla(this);
+                    propiedadesTabla.WindowStartupLocation = WindowStartupLocation.Manual;
+
+                    if (point.X + propiedadesTabla.Width >= MaxWidth)
+                        propiedadesTabla.Left = point.X - propiedadesTabla.Width;
+                    else
+                        propiedadesTabla.Left = point.X;
+
+                    if (point.Y + propiedadesTabla.Height >= MaxHeight)
+                        propiedadesTabla.Top = point.Y - propiedadesTabla.Height;
+                    else
+                        propiedadesTabla.Top = point.Y;
+
+                    propiedadesTabla.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesTabla.TipoControl.Text = "Tabla";
+
+                    propiedadesTabla.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                    propiedadesTabla.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                    propiedadesTabla.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                    propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                    propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count*2;
+
+                    SolidColorBrush brushLetra1 = new SolidColorBrush((((DataGrid)item).Foreground as SolidColorBrush).Color);
+                    SolidColorBrush brushLetra2 = new SolidColorBrush((((DataGrid)item).Foreground as SolidColorBrush).Color);
+                    SolidColorBrush brushFondo1 = new SolidColorBrush((((DataGrid)item).Background as SolidColorBrush).Color);
+                    SolidColorBrush brushFondo2 = new SolidColorBrush((((DataGrid)item).Background as SolidColorBrush).Color);
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        DataGridRow row = (DataGridRow)((DataGrid)item).ItemContainerGenerator.ContainerFromIndex(i);
+
+                        if (row != null)
+                        {
+                            int index = row.GetIndex();
+                            if (index % 2 == 0)
+                            {
+                                brushLetra1 = (SolidColorBrush)row.Foreground;
+                                brushFondo1 = (SolidColorBrush)row.Background;
+                            }
+                            else
+                            {
+                                brushLetra2= (SolidColorBrush)row.Foreground;
+                                brushFondo2 = (SolidColorBrush)row.Background;
+                            }
+                        }
+                    }
+
+                    if(brushLetra1 != brushLetra2)
+                    {
+                        propiedadesTabla.chkDoble.IsChecked = true;
+                        propiedadesTabla.btnColorFuente.Fill = brushLetra1;
+                        propiedadesTabla.btnColorFondo.Fill = brushFondo1;
+                        propiedadesTabla.btnColorFuente2.Fill = brushLetra2;
+                        propiedadesTabla.btnColorFondo2.Fill = brushFondo2;
+                    }
+                    else
+                    {
+                        propiedadesTabla.btnColorFuente.Fill = brushLetra1;
+                        propiedadesTabla.btnColorFondo.Fill = brushFondo1;
+                        propiedadesTabla.btnColorFuente2.Fill = brushLetra2;
+                        propiedadesTabla.btnColorFondo2.Fill = brushFondo2;
+                        propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
+                    }
+
+                    propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
+                    propiedadesTabla.chkCFijo.IsChecked = !((DataGrid)item).IsReadOnly;
+                    propiedadesTabla.Opacidad.Value = item.Opacity;
+                    propiedadesTabla.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                    propiedadesTabla.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesTabla.ShowDialog();
+                    break;
+
                 default:
 
                     break;
@@ -485,7 +594,12 @@ namespace Precios_Turnos
                 obj.Source = new Uri(dialog.ContenidoText);
                 obj.LoadedBehavior = MediaState.Play;
                 obj.MediaEnded += MediaElement_MediaEnded;
-                obj.Margin = new Thickness(mousePosition.X, mousePosition.Y, 0, 0);
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.Stretch = Stretch.Uniform;
+                obj.Height = 800;
+                obj.MaxHeight = MaxHeight;
+                obj.MaxWidth = MaxHeight;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
             }
@@ -521,19 +635,72 @@ namespace Precios_Turnos
             {
                 DataGrid obj = new DataGrid();
                 obj.Name = dialog.NombreText;
-                //obj.ItemsSource = Employee.GetEmployees();
-                obj.Margin = new Thickness(mousePosition.X, mousePosition.Y, 0, 0);
+                obj.ToolTip = dialog.NombreText;
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 28;
+                obj.FontFamily = new FontFamily("Arial Rounded MT");
+                obj.ItemsSource = collectionX2(30, true);
+                obj.CellStyle = new Style(typeof(DataGridCell)) { 
+                    Setters = { 
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right)
+                    } };
+                obj.HeadersVisibility = DataGridHeadersVisibility.None;
+                obj.CanUserAddRows = false;
+                obj.GridLinesVisibility = DataGridGridLinesVisibility.None;
+                obj.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                obj.IsReadOnly = true;
+
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
+               
             }
+        }
+
+        public ObservableCollection<Articulo> collectionX2(int cantFilas, bool demo = false)
+        {
+            Collection = new ObservableCollection<Articulo>();
+
+            for (int x = 1; x <= cantFilas; x += 2)
+            {
+                if (demo)
+                {
+                    Articulo articulo = new Articulo();
+                    articulo.Nombre1 = "Articulo " + x;
+                    articulo.Espacio1 = "        ";
+                    articulo.Precio1 = "$"+Math.Round(new Random().NextDouble() * (300 - 30) + 30 , 2);
+                    articulo.SeparacionDoble = "               ";
+                    articulo.Nombre2 = "Articulo " + (x + 1);
+                    articulo.Espacio2 = "        ";
+                    articulo.Precio2 = "$"+Math.Round(new Random().NextDouble() * (300 - 30) + 30, 2);
+                    Collection.Add(articulo);
+                }
+            }
+            return Collection;
+        }
+
+        private void MenuListaObjetos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem item = (MenuItem)e.Source;
+            controlClickName = item.Header.ToString();
+            mostarPropiedadesObjetos(e);
         }
 
         public class Articulo
         {
-            public string Nombre { get; set; }
+            public string Nombre1 { get; set; }
 
-            public double precio { get; set; }
+            public string Espacio1 { get; set; }
+
+            public string Precio1 { get; set; }
+
+            public string SeparacionDoble { get; set; }
+
+            public string Nombre2 { get; set; }
+
+            public string Espacio2 { get; set; }
+
+            public string Precio2 { get; set; }
         }
-
     }
 }

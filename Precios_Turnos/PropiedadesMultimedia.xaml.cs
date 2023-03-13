@@ -21,14 +21,14 @@ namespace Precios_Turnos
     public partial class PropiedadesMultimedia : Window
     {
         private MainWindow mainWindow;
-        private bool esInicio = true;
+        public bool esInicio = true;
         private bool esCambio = true;
-        public bool esMultimedia = false;
-        public bool esWeb = false;
+
         public PropiedadesMultimedia(MainWindow pmainWindow)
         {
             InitializeComponent();
             mainWindow = pmainWindow;
+
         }
 
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -73,6 +73,22 @@ namespace Precios_Turnos
             }
         }
 
+        private void AnchoLargo_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+            if (cajaTexto.Text.Length == 0)
+            {
+                esCambio = false;
+                Image item2 = (Image)mainWindow.FindName(NombreControl.Text);
+                if (cajaTexto.Name.CompareTo("Ancho") == 0)
+                    cajaTexto.Text = Convert.ToInt32(Math.Round(item2.ActualWidth)).ToString();
+                else
+                    cajaTexto.Text = Convert.ToInt32(Math.Round(item2.ActualHeight)).ToString();
+                esCambio = true;
+            }
+        }
+
         private Boolean TextAllowed(String s)
         {
             foreach (Char c in s.ToCharArray())
@@ -106,27 +122,10 @@ namespace Precios_Turnos
                 e.Handled = true;
         }
 
-        private void txtAlpha_PreviewKeyUp(object sender, KeyEventArgs e)
-        {
-            var item = e.Source as UIElement;
-            TextBox cajaTexto = (TextBox)item;
-            if (cajaTexto.Text.Length > 0)
-            {
-                bool moverCursor = false;
-                if (cajaTexto.Text.Substring(0, 1).CompareTo("0") == 0 && cajaTexto.Text.Length > 1)
-                    moverCursor = true;
-                cajaTexto.Text = int.Parse(cajaTexto.Text).ToString();
-                if (moverCursor)
-                    cajaTexto.CaretIndex = cajaTexto.Text.Length;
-
-            }
-        }
-
         private void Coordenada_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!esInicio)
             {
-                //Image control = (Image)mainWindow.FindName(NombreControl.Text);
                 var item = mainWindow.FindName(NombreControl.Text) as UIElement;
                 try
                 {
@@ -135,18 +134,22 @@ namespace Precios_Turnos
 
                         mainWindow.Principal.Children.Remove(item);
                         NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
-                        if (esMultimedia)
-                            ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
-                        else if (esWeb)
-                            ((WebBrowser)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
-                        else
-                            ((Image)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "Image":
+                                ((Image)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                break;
+                            case "MediaElement":
+                                ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                break;
+                            default: break;
+                        }
 
                         NameScope.GetNameScope(mainWindow).RegisterName(NombreControl.Text, item);
                         mainWindow.Principal.Children.Add(item);
                     }
                 }
-                catch (Exception ex) { }
+                catch (Exception) { }
             }
         }
 
@@ -160,83 +163,152 @@ namespace Precios_Turnos
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            esInicio = false;
-        }
-
-        private void Largo_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!esInicio)
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            switch (item.GetType().Name.ToString())
             {
-                if (esCambio)
-                    try
-                    {
-                        esCambio = false;
-                        if (Largo.Text.Length > 0)
-                        {
-                            if (esMultimedia)
-                            {
-                                MediaElement mediaElement = (MediaElement)mainWindow.FindName(NombreControl.Text);
-                                mediaElement.Width = int.Parse(Largo.Text);
-                                mediaElement = (MediaElement)mainWindow.FindName(NombreControl.Text);
-                                Ancho.Text = mediaElement.ActualHeight.ToString();
-                            }
-                            else if (esWeb)
-                            {
-                                WebBrowser webBrowser = (WebBrowser)mainWindow.FindName(NombreControl.Text);
-                                webBrowser.Width = int.Parse(Largo.Text);
-                                webBrowser = (WebBrowser)mainWindow.FindName(NombreControl.Text);
-                                Ancho.Text = webBrowser.ActualHeight.ToString();
-                            }
-                            else
-                            {
-                                Image image = (Image)mainWindow.FindName(NombreControl.Text);
-                                image.Width = int.Parse(Largo.Text);
-                                Image image2 = (Image)mainWindow.FindName(NombreControl.Text);
-                                Ancho.Text = image2.ActualHeight.ToString();
-                            }
-                        }
-                    }
-                    catch (Exception) { }
-                esCambio = true;
+                case "Image":
+                    ((Image)item).SizeChanged += item_SizeChanged;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).SizeChanged += item_SizeChanged;
+                    break;
+                default: break;
             }
 
         }
-        private void Ancho_TextChanged(object sender, TextChangedEventArgs e)
+
+        private void AnchoLargo_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!esInicio)
             {
                 if (esCambio)
-                    try
-                    {
-                        esCambio = false;
-                        if (Ancho.Text.Length > 0)
-                        {
-                            if (esMultimedia)
-                            {
-                                MediaElement mediaElement = (MediaElement)mainWindow.FindName(NombreControl.Text);
-                                mediaElement.Height = int.Parse(Ancho.Text);
-                                mediaElement = (MediaElement)mainWindow.FindName(NombreControl.Text);
-                                Largo.Text = mediaElement.ActualWidth.ToString();
-                            }
-                            else if (esWeb)
-                            {
-                                WebBrowser webBrowser = (WebBrowser)mainWindow.FindName(NombreControl.Text);
-                                webBrowser.Height = int.Parse(Ancho.Text);
-                                webBrowser = (WebBrowser)mainWindow.FindName(NombreControl.Text);
-                                Largo.Text = webBrowser.ActualWidth.ToString();
-                            }
-                            else
-                            {
-                                Image image = (Image)mainWindow.FindName(NombreControl.Text);
-                                image.Height = int.Parse(Ancho.Text);
-                                image = (Image)mainWindow.FindName(NombreControl.Text);
-                                Largo.Text = image.ActualWidth.ToString();
-                            }
-                        }
+                {
+                    var item = e.Source as UIElement;
+                    var itemP = mainWindow.FindName(NombreControl.Text) as UIElement;
 
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            Image image = (Image)itemP;
+
+                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Height = int.Parse(Largo.Text);
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                                esCambio = true;
+                            }
+                            else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Width = int.Parse(Ancho.Text);
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                            }
+                            break;
+                        case "MediaElement":
+                            MediaElement mediaElement = (MediaElement)itemP;
+
+                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    mediaElement.Stretch = Stretch.Uniform;
+                                    mediaElement.Height = int.Parse(Largo.Text);
+                                }
+                                else
+                                {
+                                    mediaElement.Stretch = Stretch.Fill;
+                                    mediaElement.Width = int.Parse(Largo.Text);
+                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                }
+                                esCambio = true;
+                            }
+                            else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    mediaElement.Stretch = Stretch.Uniform;
+                                    mediaElement.Width = int.Parse(Ancho.Text);
+                                }
+                                else
+                                {
+                                    mediaElement.Stretch = Stretch.Fill;
+                                    mediaElement.Width = int.Parse(Largo.Text);
+                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                }
+                            }
+                            break;
+                        default: break;
                     }
-                    catch (Exception) { }
-                esCambio = true;
+                }
+            }
+        }
+
+        public void item_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!esInicio)
+            {
+                if ((bool)chkRelacion.IsChecked)
+                {
+                    esCambio = false;
+                    var item = e.Source;
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
+                            Largo.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
+                            break;
+                        case "MediaElement":
+                            Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
+                            Largo.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
+                            break;
+                        default: break;
+                    }
+                    esCambio = true;
+                }
+            }
+        }
+
+        private void chkSonido_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!esInicio)
+            {
+                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            switch (item.GetType().Name.ToString())
+            {
+                case "MediaElement":
+                    ((MediaElement)item).Volume = 1;
+                    break;
+                default: break;
+            }
+            }
+        }
+
+        private void chkSonido_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            switch (item.GetType().Name.ToString())
+            {
+                case "MediaElement":
+                    ((MediaElement)item).Volume = 0;
+                    break;
+                default: break;
             }
         }
     }

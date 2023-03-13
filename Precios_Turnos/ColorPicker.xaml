@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Precios_Turnos.ColorPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Height="330" Width="480" WindowStyle="None" ShowInTaskbar="False" KeyDown="Window_KeyDown" ResizeMode="NoResize">
+    Height="330" Width="480" WindowStyle="None" KeyDown="Window_KeyDown" ResizeMode="NoResize">
     <Window.Resources>
         <DrawingBrush x:Key="CheckerboardBrush"
         Stretch="None" TileMode="Tile" AlignmentX="Left" AlignmentY="Top"

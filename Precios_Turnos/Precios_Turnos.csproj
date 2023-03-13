@@ -12,6 +12,7 @@
     <None Remove="ColorSwatchSquare1.png" />
     <None Remove="ColorSwatchSquare2.png" />
     <None Remove="ICONO.ico" />
+    <None Remove="metin mapa.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
     <Resource Include="ColorSwatchSquare1.png" />
     <Resource Include="ColorSwatchSquare2.png" />
     <Resource Include="ICONO.ico" />
+    <Resource Include="metin mapa.jpg" />
   </ItemGroup>
 
 

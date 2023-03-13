@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Propiedades" Height="120" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" ShowInTaskbar="False" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" >
+        Title="Propiedades" Height="120" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>

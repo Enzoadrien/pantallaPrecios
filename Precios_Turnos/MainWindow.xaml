@@ -12,8 +12,6 @@
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarElipse" Header="Agregar elipse"/>
-            <MenuItem x:Name="MenuAgregarCuadrado" Header="Agregar cuadrado"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -39,11 +37,9 @@
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="Titulo1" Content="3K Mantenimiento Profesional" FontFamily="Arial Rounded MT" FontSize="48" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Label x:Name="Titulo2" Content="Lista de precios" FontFamily="Arial Rounded MT" FontSize="36" Margin="0,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="71" Width="72" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.3" Panel.ZIndex="1000" />
+        <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000"/>
 
     </Grid>
 </Window>

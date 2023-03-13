@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="100" Width="500" ShowInTaskbar="False" KeyDown="Window_KeyDown" ResizeMode="NoResize">
+        Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="100" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>

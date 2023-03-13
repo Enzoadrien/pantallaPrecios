@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -96,7 +97,7 @@ namespace Precios_Turnos
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
             if(esVideo)
-                dlg.Filter = "Todos los archivos de video|*.*;*.mp3;*.mp4;*.asf|MP3 (*.mp3)|*.mp3|MP4 (*.mp4)|*.mp4|ASF (*.wmv;*.wma)|*.wmv;*wma";
+                dlg.Filter = "Todos los archivos de video|*.mp3;*.mp4;*.asf;*.mov|MP3 (*.mp3)|*.mp3|MP4 (*.mp4)|*.mp4|ASF (*.wmv;*.wma)|*.wmv;*wma|MOV (*.mov)|*.mov";
             else
                 dlg.Filter = "Todos los archivos de imagen|*.jpeg;*.jpg;*.png;*.gif|JPEG (*.jpeg;*.jpg)|*.jpeg;*.jpg|PNG (*.png)|*.png|GIF (*.gif)|*.gif";
 
