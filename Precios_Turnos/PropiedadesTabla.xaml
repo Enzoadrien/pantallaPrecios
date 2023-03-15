@@ -59,17 +59,16 @@
             </Button.Style>
         </Button>
         <Label x:Name="lblNombre" Content="Nombre:" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="NombreControl" Grid.Row="1" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True"/>
+        <TextBox x:Name="NombreControl" Grid.Row="1" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
         <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="TipoControl" Grid.Row="2" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True"/>
+        <TextBox x:Name="TipoControl" Grid.Row="2" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
         <Label x:Name="lblContenido" Content="Contenido:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Button x:Name="btnContenido"
               Content="Seleccionar contenido"
-             
               IsDefault="True"
               TabIndex="0"
               FontFamily="Arial Rounded MT" 
-              FontSize="14" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3">
+              FontSize="14" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,0,5,0" Click="btnContenido_Click">
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="#FF989090"/>
@@ -93,7 +92,7 @@
         </Button>
         <Label x:Name="lblFuente" Content="Fuente:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <ComboBox x:Name="cbxFuente" ItemsSource="{Binding Source={x:Static Fonts.SystemFontFamilies}}"
-                  FontSize="14" Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="3" SelectionChanged="cbxFuente_SelectionChanged">
+                  FontSize="14" Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="3" SelectionChanged="cbxFuente_SelectionChanged" Margin="0,0,5,0">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock FontFamily="{Binding .}" Text="{Binding Source}" ToolTip="{Binding Source}" />
@@ -101,7 +100,7 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
         <Label x:Name="lblTamano" Content="Tamaño:" Grid.ColumnSpan="2" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxTamano" Grid.Column="2"  Grid.Row="5" Grid.ColumnSpan="3" SelectionChanged="cbxTamano_SelectionChanged" SelectedValuePath="Tag">
+        <ComboBox x:Name="cbxTamano" Grid.Column="2"  Grid.Row="5" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectionChanged="cbxTamano_SelectionChanged" SelectedValuePath="Tag" Margin="0,0,5,0">
             <ComboBoxItem Content="12 px" Tag="12"/>
             <ComboBoxItem Content="14 px" Tag="14"/>
             <ComboBoxItem Content="16 px" Tag="16"/>
@@ -134,7 +133,7 @@
         <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Center" Unchecked="chkNegrita_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
         <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic"/>
         <Label x:Name="lblCFilas" Content="Filas:" Grid.ColumnSpan="2" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxCRegistros" Grid.Column="2"  Grid.Row="7" Grid.ColumnSpan="3" SelectedValuePath="Tag" SelectionChanged="cbxCRegistros_SelectionChanged">
+        <ComboBox x:Name="cbxCRegistros" Grid.Column="2"  Grid.Row="7" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" SelectionChanged="cbxCRegistros_SelectionChanged" Margin="0,0,5,0">
             <ComboBoxItem Content="10 Registros" Tag="10"/>
             <ComboBoxItem Content="20 Registros" Tag="20"/>
             <ComboBoxItem Content="30 Registros" Tag="30"/>
@@ -147,14 +146,14 @@
         <CheckBox x:Name="chkDoble" Content="Doble" Grid.Row="9" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkDoble_Checked" HorizontalAlignment="Center" Unchecked="chkDoble_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
         <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblCFuenteUno" Content="1" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFuente" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown"/>
+        <Rectangle x:Name="btnColorFuente" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown" Margin="0,0,5,0"/>
         <Label x:Name="lblCFuenteDos" Content="2" Grid.Row="10" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFuente2" Grid.Column="4" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente2_MouseLeftButtonDown"/>
+        <Rectangle x:Name="btnColorFuente2" Grid.Column="4" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente2_MouseLeftButtonDown" Margin="0,0,5,0"/>
         <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="11" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblCFondoUno" Content="1" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown"/>
+        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown" Margin="0,0,5,0"/>
         <Label x:Name="lblCFondoDos" Content="2" Grid.Row="11" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo2" Grid.Column="4" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo2_MouseLeftButtonDown"/>
+        <Rectangle x:Name="btnColorFondo2" Grid.Column="4" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo2_MouseLeftButtonDown" Margin="0,0,5,0"/>
         <Label x:Name="lblOpacidad" Content="Opacidad:" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Slider x:Name="Opacidad" Minimum="0" Maximum="1" SmallChange="0.1" LargeChange="0.3" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="12" Width="120" VerticalAlignment="Center" ValueChanged="Opacidad_ValueChanged" MouseWheel="Opacidad_MouseWheel"/>
         <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>

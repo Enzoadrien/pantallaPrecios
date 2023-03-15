@@ -2,13 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -23,7 +26,7 @@ namespace Precios_Turnos
     /// </summary>
     public partial class MainWindow : Window
     {
-
+        internal string nombreApp = "Precios_Turnos";
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
         private bool editar = false;
@@ -36,7 +39,50 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             Coordenadas.Visibility = Visibility.Hidden;
-            //Precios.DataContext = this.Articulos;
+            ValidarActivar();
+        }
+
+        private void ValidarActivar()
+        {
+            Seguridad vSeguridad = new Seguridad();
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string cadena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["Llave"].Value));
+            string[] subs = cadena.Split('|');
+            if (subs.Length >= 3)
+            {
+                if (subs[0].Equals(vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["Correo"].Value)) 
+                    && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
+                    && subs[3].Equals(nombreApp))
+                {
+                    if (subs[4].Equals("0"))
+                        Activar.IsEnabled = false;
+                    else
+                    {
+                        if (vSeguridad.GetNetworkTime() <= Convert.ToDateTime(subs[4]))
+                        {
+                            Activar.IsEnabled = false;
+                        }  
+                        else
+                        {
+                            Conexion.IsEnabled = false;
+                            Turnero.IsEnabled = false;
+                            EditarDiseno.IsEnabled = false;
+                        }
+                    }  
+                }
+                else
+                {
+                    
+                }
+
+            }
+            else
+            {
+                Conexion.IsEnabled = false;
+                Turnero.IsEnabled = false;
+                EditarDiseno.IsEnabled = false;
+            }
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -258,7 +304,6 @@ namespace Precios_Turnos
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
             ModoEdicion.Visibility = Visibility.Visible;
-            Principal.IsHitTestVisible = false;
 
             if (editar)
                 editar = false;
@@ -686,21 +731,54 @@ namespace Precios_Turnos
             mostarPropiedadesObjetos(e);
         }
 
-        public class Articulo
+        private void ConfigurarConexion_Click(object sender, RoutedEventArgs e)
         {
-            public string Nombre1 { get; set; }
+            ConfigurarConexion dialog = new ConfigurarConexion();
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            public string Espacio1 { get; set; }
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
 
-            public string Precio1 { get; set; }
+            dialog.ShowDialog();
+        }
 
-            public string SeparacionDoble { get; set; }
+        private void Activar_Click(object sender, RoutedEventArgs e)
+        {
+            Activar dialog = new Activar(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            public string Nombre2 { get; set; }
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
 
-            public string Espacio2 { get; set; }
-
-            public string Precio2 { get; set; }
+            dialog.ShowDialog();
         }
     }
+
+    public class Articulo
+    {
+        public string Nombre1 { get; set; }
+
+        public string Espacio1 { get; set; }
+
+        public string Precio1 { get; set; }
+
+        public string SeparacionDoble { get; set; }
+
+        public string Nombre2 { get; set; }
+
+        public string Espacio2 { get; set; }
+
+        public string Precio2 { get; set; }
+    }
+
 }

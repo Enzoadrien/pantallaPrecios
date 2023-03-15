@@ -47,17 +47,17 @@
             </Button.Style>
         </Button>
         <Label x:Name="lblColorFondo" Content="Color solido:" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="1" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown"/>
+        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="1" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown" Margin="0,0,5,0"/>
         <StackPanel Grid.Row="13"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2"/>
         <Label x:Name="lblTexto" Content="Abrir imagen:" Grid.Row="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="ContenidoTextBox" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" IsReadOnly="True"/>
+        <TextBox x:Name="ContenidoTextBox" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
         <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
-                Margin="0,5,2,5" Grid.Column="4" >
+                Margin="0,5,7,5" Grid.Column="4" >
             <Button x:Name="btnAbrir"
               Content="..."
               Click="btnAbrir_Click"

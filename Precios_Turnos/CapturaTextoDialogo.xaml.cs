@@ -60,8 +60,8 @@ namespace Precios_Turnos
             if (Char.IsDigit(NombreText.FirstOrDefault()))
             {
                 Mensajes dialog = new Mensajes();
-                dialog.lblNombre.Content = "Error";
-                dialog.lblTexto.Content = "El nombre no debe comenzar con números";
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "El nombre no debe comenzar con números";
                 dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
                 dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();
@@ -69,8 +69,8 @@ namespace Precios_Turnos
             else if(NombreText.Length == 0 || ContenidoText.Length == 0)
             {
                 Mensajes dialog = new Mensajes();
-                dialog.lblNombre.Content = "Error";
-                dialog.lblTexto.Content = "Débes ingresar todos los datos";
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Débes ingresar todos los datos";
                 dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
                 dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();
@@ -82,8 +82,8 @@ namespace Precios_Turnos
             }
             else {
                 Mensajes dialog = new Mensajes();
-                dialog.lblNombre.Content = "Error";
-                dialog.lblTexto.Content = "Ya existe un objeto con ese nombre";
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ya existe un objeto con ese nombre";
                 dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
                 dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();

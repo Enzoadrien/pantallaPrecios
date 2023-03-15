@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="100" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize">
+        Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="140" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -13,15 +13,17 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
+            <RowDefinition Height="60*"/>
             <RowDefinition Height="30*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
                     Background="#FF989090" Grid.ColumnSpan="2"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
             <Label x:Name="lblNombre" Content="Tipo"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <Label x:Name="lblTexto" Content="Texto" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Background="White"/>
-        <StackPanel Grid.Row="2"
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
+        <TextBlock x:Name="lblTexto"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,5,5,0"/>
+        </ScrollViewer>
+            <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="1" >

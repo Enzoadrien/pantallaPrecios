@@ -436,5 +436,21 @@ namespace Precios_Turnos
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
             control.IsReadOnly = true;
         }
+
+        private void btnContenido_Click(object sender, RoutedEventArgs e)
+        {
+            ContenidoTabla dialog = new ContenidoTabla(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
+        }
     }
 }
