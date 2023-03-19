@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-         Title="Propiedades" Height="440" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Loaded="Window_Loaded">
+         Title="Propiedades" Height="480" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -16,6 +16,8 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -132,36 +134,57 @@
         </ComboBox>
         <CheckBox x:Name="chkNegrita" Content="Negrita" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkNegrita_Checked" HorizontalAlignment="Center" Unchecked="chkNegrita_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
         <CheckBox x:Name="chkCursiva" Content="Cursiva" Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkCursiva_Checked" Unchecked="chkCursiva_Unchecked" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic"/>
-        <Label x:Name="lblCFilas" Content="Filas:" Grid.ColumnSpan="2" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxCRegistros" Grid.Column="2"  Grid.Row="7" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" SelectionChanged="cbxCRegistros_SelectionChanged" Margin="0,0,5,0">
-            <ComboBoxItem Content="10 Registros" Tag="10"/>
-            <ComboBoxItem Content="20 Registros" Tag="20"/>
-            <ComboBoxItem Content="30 Registros" Tag="30"/>
-            <ComboBoxItem Content="40 Registros" Tag="40"/>
-            <ComboBoxItem Content="50 Registros" Tag="50"/>
+        <Label x:Name="lblCBloques" Content="Bloques:" Grid.ColumnSpan="2" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxCBloques" Grid.Column="2"  Grid.Row="7" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxCBloques_SelectionChanged">
+            <ComboBoxItem Content="1" Tag="1"/>
+            <ComboBoxItem Content="2" Tag="2"/>
+            <ComboBoxItem Content="3" Tag="3"/>
+            <ComboBoxItem Content="4" Tag="4"/>
+            <ComboBoxItem Content="5" Tag="5"/>
+            <ComboBoxItem Content="6" Tag="6"/>
+            <ComboBoxItem Content="7" Tag="7"/>
+            <ComboBoxItem Content="8" Tag="8"/>
+            <ComboBoxItem Content="9" Tag="9"/>
+            <ComboBoxItem Content="10" Tag="10"/>
         </ComboBox>
-        <CheckBox x:Name="chkLineas" Content="Lineas celdas" Grid.Row="8" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Checked="chkLineas_Checked" Unchecked="chkLineas_Unchecked" Margin="10,0,0,0"/>
-        <CheckBox x:Name="chkCFijo" Content="Contenido fijo" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,10,0" Checked="chkCFijo_Checked" Unchecked="chkCFijo_Unchecked" IsEnabled="False"/>
-        <Label x:Name="lblColor" Content="Color" Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <CheckBox x:Name="chkDoble" Content="Doble" Grid.Row="9" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkDoble_Checked" HorizontalAlignment="Center" Unchecked="chkDoble_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
-        <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblCFuenteUno" Content="1" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFuente" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown" Margin="0,0,5,0"/>
-        <Label x:Name="lblCFuenteDos" Content="2" Grid.Row="10" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFuente2" Grid.Column="4" Grid.Row="10" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente2_MouseLeftButtonDown" Margin="0,0,5,0"/>
-        <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="11" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblCFondoUno" Content="1" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown" Margin="0,0,5,0"/>
-        <Label x:Name="lblCFondoDos" Content="2" Grid.Row="11" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Rectangle x:Name="btnColorFondo2" Grid.Column="4" Grid.Row="11" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo2_MouseLeftButtonDown" Margin="0,0,5,0"/>
-        <Label x:Name="lblOpacidad" Content="Opacidad:" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Slider x:Name="Opacidad" Minimum="0" Maximum="1" SmallChange="0.1" LargeChange="0.3" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="12" Width="120" VerticalAlignment="Center" ValueChanged="Opacidad_ValueChanged" MouseWheel="Opacidad_MouseWheel"/>
-        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="13"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
-        <TextBox x:Name="CoordenadaX" Grid.Row="14" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
-        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="14" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
-        <TextBox x:Name="CoordenadaY" Grid.Row="14" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
-        <StackPanel Grid.Row="15"
+        <Label x:Name="lblCFilas" Content="Filas:" Grid.ColumnSpan="2" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxCRegistros" Grid.Column="2"  Grid.Row="8" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxCRegistros_SelectionChanged">
+            <ComboBoxItem Content="1 Registro" Tag="1"/>
+            <ComboBoxItem Content="2 Registros" Tag="2"/>
+            <ComboBoxItem Content="3 Registros" Tag="3"/>
+            <ComboBoxItem Content="4 Registros" Tag="4"/>
+            <ComboBoxItem Content="5 Registros" Tag="5"/>
+            <ComboBoxItem Content="10 Registros" Tag="10"/>
+            <ComboBoxItem Content="15 Registros" Tag="15"/>
+            <ComboBoxItem Content="20 Registros" Tag="20"/>
+            <ComboBoxItem Content="25 Registros" Tag="25"/>
+        </ComboBox>
+        <Label x:Name="lblOrientacion" Content="Orientación:" Grid.ColumnSpan="2" Grid.Row="9" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxOrientacion" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxOrientacion_SelectionChanged">
+            <ComboBoxItem Content="Horizontal" Tag="H"/>
+            <ComboBoxItem Content="Vertical" Tag="V"/>
+        </ComboBox>
+        <CheckBox x:Name="chkLineas" Content="Lineas celdas" Grid.Column="2" Grid.Row="10" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Checked="chkLineas_Checked" Unchecked="chkLineas_Unchecked"/>
+        <Label x:Name="lblColor" Content="Color" Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <CheckBox x:Name="chkDoble" Content="Doble" Grid.Row="11" Grid.Column="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Checked="chkDoble_Checked" HorizontalAlignment="Center" Unchecked="chkDoble_Unchecked" VerticalAlignment="Center" FontWeight="Bold"/>
+        <Label x:Name="lblColorFuente" Content="Fuente:" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCFuenteUno" Content="1" Grid.Row="12" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFuente" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="12" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente_MouseLeftButtonDown" Margin="0,0,5,0"/>
+        <Label x:Name="lblCFuenteDos" Content="2" Grid.Row="12" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFuente2" Grid.Column="4" Grid.Row="12" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFuente2_MouseLeftButtonDown" Margin="0,0,5,0"/>
+        <Label x:Name="lblColorFondo" Content="Fondo:" Grid.Row="13" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCFondoUno" Content="1" Grid.Row="13" Grid.Column="1" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFondo" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="13" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo_MouseLeftButtonDown" Margin="0,0,5,0"/>
+        <Label x:Name="lblCFondoDos" Content="2" Grid.Row="13" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Rectangle x:Name="btnColorFondo2" Grid.Column="4" Grid.Row="13" Fill="Black" Stroke="#FF707070" MouseLeftButtonDown="btnColorFondo2_MouseLeftButtonDown" Margin="0,0,5,0"/>
+        <Label x:Name="lblOpacidad" Content="Opacidad:" Grid.Row="14" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Slider x:Name="Opacidad" Minimum="0" Maximum="1" SmallChange="0.1" LargeChange="0.3" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="14" Width="120" VerticalAlignment="Center" ValueChanged="Opacidad_ValueChanged" MouseWheel="Opacidad_MouseWheel"/>
+        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="15" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="16"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaX" Grid.Row="16" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
+        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="16" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaY" Grid.Row="16" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" PreviewKeyUp="txtAlpha_PreviewKeyUp" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
+        <StackPanel Grid.Row="17"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2">

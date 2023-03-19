@@ -72,7 +72,7 @@ namespace Precios_Turnos
             if ((bool)colorPicker.ShowDialog())
             {
                 btnColorFondo.Fill = new SolidColorBrush(colorPicker.SelectedColor);
-                mainWindow.Principal.Background = new SolidColorBrush(colorPicker.SelectedColor);
+                mainWindow.Fondo.Background = new SolidColorBrush(colorPicker.SelectedColor);
                 mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
             }
         }
@@ -99,7 +99,7 @@ namespace Precios_Turnos
                 ImageBrush myBrush = new ImageBrush();
                 myBrush.ImageSource =
                     new BitmapImage(new Uri(dlg.FileName));
-                mainWindow.Principal.Background = myBrush;
+                mainWindow.Fondo.Background = myBrush;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;
             }
@@ -112,7 +112,7 @@ namespace Precios_Turnos
             myBrush.ImageSource =
                 new BitmapImage(new Uri(ContenidoTextBox.Text));
             myBrush.Opacity = Opacidad.Value;
-            mainWindow.Principal.Background = myBrush;
+            mainWindow.Fondo.Background = myBrush;
         }
 
         private void Opacidad_MouseWheel(object sender, MouseWheelEventArgs e)

@@ -1,21 +1,30 @@
 ﻿using Microsoft.VisualBasic;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
+using System.Data.Odbc;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Security.Policy;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Xml;
 using System.Xml.Linq;
 using static Precios_Turnos.MainWindow;
 
@@ -33,13 +42,16 @@ namespace Precios_Turnos
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
         private string controlClickName;
-        private ObservableCollection<Articulo> Collection { get; set; }
+        private ObservableCollection<DataTable> Collection { get; set; }
+
+        public List<dynamic> ListTablasDataGridTablas;
 
         public MainWindow()
         {
             InitializeComponent();
             Coordenadas.Visibility = Visibility.Hidden;
             ValidarActivar();
+            CargarControles();
         }
 
         private void ValidarActivar()
@@ -51,7 +63,7 @@ namespace Precios_Turnos
             string[] subs = cadena.Split('|');
             if (subs.Length >= 3)
             {
-                if (subs[0].Equals(vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["Correo"].Value)) 
+                if (subs[0].Equals(vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["Correo"].Value))
                     && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
                     && subs[3].Equals(nombreApp))
                 {
@@ -62,18 +74,18 @@ namespace Precios_Turnos
                         if (vSeguridad.GetNetworkTime() <= Convert.ToDateTime(subs[4]))
                         {
                             Activar.IsEnabled = false;
-                        }  
+                        }
                         else
                         {
                             Conexion.IsEnabled = false;
                             Turnero.IsEnabled = false;
                             EditarDiseno.IsEnabled = false;
                         }
-                    }  
+                    }
                 }
                 else
                 {
-                    
+
                 }
 
             }
@@ -95,7 +107,8 @@ namespace Precios_Turnos
                     Topmost = false;
                     ModoEdicion.Visibility = Visibility.Visible;
                 }
-                else { 
+                else
+                {
                     ModoEdicion.Visibility = Visibility.Hidden;
                 }
 
@@ -225,6 +238,7 @@ namespace Precios_Turnos
                 case "Principal":
                 case "Menu":
                 case "LogoPrincipal":
+                case "Fondo":
                     seModifica = false;
                     break;
                 default:
@@ -307,6 +321,7 @@ namespace Precios_Turnos
 
             if (editar)
                 editar = false;
+            GuardarControles();
         }
 
         private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -512,59 +527,26 @@ namespace Precios_Turnos
                     propiedadesTabla.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
                     propiedadesTabla.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
                     propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
-                    propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count*2;
-
-                    SolidColorBrush brushLetra1 = new SolidColorBrush((((DataGrid)item).Foreground as SolidColorBrush).Color);
-                    SolidColorBrush brushLetra2 = new SolidColorBrush((((DataGrid)item).Foreground as SolidColorBrush).Color);
-                    SolidColorBrush brushFondo1 = new SolidColorBrush((((DataGrid)item).Background as SolidColorBrush).Color);
-                    SolidColorBrush brushFondo2 = new SolidColorBrush((((DataGrid)item).Background as SolidColorBrush).Color);
-
-                    for (int i = 0; i < 2; i++)
-                    {
-                        DataGridRow row = (DataGridRow)((DataGrid)item).ItemContainerGenerator.ContainerFromIndex(i);
-
-                        if (row != null)
-                        {
-                            int index = row.GetIndex();
-                            if (index % 2 == 0)
-                            {
-                                brushLetra1 = (SolidColorBrush)row.Foreground;
-                                brushFondo1 = (SolidColorBrush)row.Background;
-                            }
-                            else
-                            {
-                                brushLetra2= (SolidColorBrush)row.Foreground;
-                                brushFondo2 = (SolidColorBrush)row.Background;
-                            }
-                        }
-                    }
-
-                    if(brushLetra1 != brushLetra2)
+                    propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count * 2;
+                    propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
+                    string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                    propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
+                    propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
+                    propiedadesTabla.cbxOrientacion.SelectedValue = datos[2];
+                    if(datos.Length == 7)
                     {
                         propiedadesTabla.chkDoble.IsChecked = true;
-                        propiedadesTabla.btnColorFuente.Fill = brushLetra1;
-                        propiedadesTabla.btnColorFondo.Fill = brushFondo1;
-                        propiedadesTabla.btnColorFuente2.Fill = brushLetra2;
-                        propiedadesTabla.btnColorFondo2.Fill = brushFondo2;
+                        propiedadesTabla.btnColorFuente.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[3]);
+                        propiedadesTabla.btnColorFondo.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                        propiedadesTabla.btnColorFuente2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                        propiedadesTabla.btnColorFondo2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
                     }
                     else
                     {
-                        propiedadesTabla.btnColorFuente.Fill = brushLetra1;
-                        propiedadesTabla.btnColorFondo.Fill = brushFondo1;
-                        propiedadesTabla.btnColorFuente2.Fill = brushLetra2;
-                        propiedadesTabla.btnColorFondo2.Fill = brushFondo2;
-                        propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
-                        propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
-                        Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
-                        Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
+                        propiedadesTabla.btnColorFuente.Fill = ((DataGrid)item).Foreground;
+                        propiedadesTabla.btnColorFondo.Fill = ((DataGrid)item).Background;
                     }
-
-                    propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
-                    propiedadesTabla.chkCFijo.IsChecked = !((DataGrid)item).IsReadOnly;
+                       
                     propiedadesTabla.Opacidad.Value = item.Opacity;
                     propiedadesTabla.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesTabla.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
@@ -582,6 +564,13 @@ namespace Precios_Turnos
             var item = FindName(controlClickName) as UIElement;
             Principal.Children.Remove(item);
             NameScope.GetNameScope(this).UnregisterName(controlClickName);
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (config.AppSettings.Settings[controlClickName] != null)
+                config.AppSettings.Settings.Remove(controlClickName);
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -685,43 +674,200 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.FontSize = 28;
                 obj.FontFamily = new FontFamily("Arial Rounded MT");
-                obj.ItemsSource = collectionX2(30, true);
-                obj.CellStyle = new Style(typeof(DataGridCell)) { 
-                    Setters = { 
-                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right)
-                    } };
+                obj.CellStyle = new Style(typeof(DataGridCell))
+                {
+                    Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
+                    }
+                };
                 obj.HeadersVisibility = DataGridHeadersVisibility.None;
                 obj.CanUserAddRows = false;
                 obj.GridLinesVisibility = DataGridGridLinesVisibility.None;
                 obj.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                obj.IsReadOnly = true;
-
+                obj.Tag = "2|15|H";
+                obj.ItemsSource = CargarTabla(dialog.NombreText, obj.Tag.ToString()).DefaultView;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
-               
+
             }
         }
 
-        public ObservableCollection<Articulo> collectionX2(int cantFilas, bool demo = false)
+        public void LlenarListaTablas(string nombre, int bloques, int cantFilas, DataTable dt, string orientacion)
         {
-            Collection = new ObservableCollection<Articulo>();
-
-            for (int x = 1; x <= cantFilas; x += 2)
+            List<DataTable> ListTablas = new List<DataTable>();
+            int x = 1;
+            int rowCont = 0;
+            int rowContTotal = 0;
+            DataTable dtFinal = new DataTable();
+            for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
+                dtFinal.Columns.Add();
+            object[] arrayTemp = new object[0];
+            object[] arrayResult;
+            foreach (DataRow row in dt.Rows)
             {
-                if (demo)
+                rowCont++;
+                rowContTotal++;
+                if (x <= cantFilas)
                 {
-                    Articulo articulo = new Articulo();
-                    articulo.Nombre1 = "Articulo " + x;
-                    articulo.Espacio1 = "        ";
-                    articulo.Precio1 = "$"+Math.Round(new Random().NextDouble() * (300 - 30) + 30 , 2);
-                    articulo.SeparacionDoble = "               ";
-                    articulo.Nombre2 = "Articulo " + (x + 1);
-                    articulo.Espacio2 = "        ";
-                    articulo.Precio2 = "$"+Math.Round(new Random().NextDouble() * (300 - 30) + 30, 2);
-                    Collection.Add(articulo);
+                    switch (bloques)
+                    {
+                        case 1:
+                            dtFinal.Rows.Add(row.ItemArray);
+                            x++;
+                            break;
+                        case 2:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 2)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 3:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 3)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 4:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 4)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 5:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 5)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 6:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 6)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 7:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 7)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 8:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 8)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 9:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 9)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 10:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "               " }.ToArray()).ToArray();
+                            if (rowCont == 10)
+                            {
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (x == cantFilas + 1 || rowContTotal == dt.Rows.Count)
+                    {
+                        rowCont = 0;
+                        if (orientacion.Equals("V"))
+                            ListTablas.Add(PivotTable(dtFinal));
+                        else
+                        {
+                            ListTablas.Add(dtFinal);
+                        }
+                        dtFinal = new DataTable();
+                        for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
+                        {
+                            dtFinal.Columns.Add();
+                        }
+                        x = 1;
+                    }
+
                 }
             }
-            return Collection;
+            if (ListTablas.Count == 0)
+            {
+                dtFinal.Columns.Add();
+                dtFinal.Rows.Add(new object[1] { "Agregar datos" }.ToArray());
+            }
+            ListTablasDataGridTablas.Add(new { Name = nombre, Table = dtFinal });
+        }
+
+        private DataTable PivotTable(DataTable origTable)
+        {
+
+            DataTable newTable = new DataTable();
+            DataRow dr = null;
+
+            //Add Columns to new Table
+            for (int i = 0; i < origTable.Rows.Count; i++)
+            {
+                newTable.Columns.Add();
+            }
+
+            //Execute the Pivot Method
+            for (int cols = 0; cols < origTable.Columns.Count; cols++)
+            {
+                dr = newTable.NewRow();
+                for (int rows = 0; rows < origTable.Rows.Count; rows++)
+                {
+                    dr[rows] = origTable.Rows[rows][cols];
+                }
+                newTable.Rows.Add(dr); //add the DataRow to the new Table rows collection
+            }
+            return newTable;
         }
 
         private void MenuListaObjetos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -762,23 +908,166 @@ namespace Precios_Turnos
 
             dialog.ShowDialog();
         }
+
+        private void GuardarControles()
+        {
+            int x = 0;
+            foreach (var itemObjets in Principal.Children)
+            {
+                bool esTabla;
+                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo"))
+                {
+                    switch (itemObjets.GetType().Name.ToString())
+                    {
+                        case "DataGrid":
+                            esTabla = true;
+                            ((DataGrid)itemObjets).ItemsSource = null;
+                            break;
+                        default:
+                            esTabla = false;
+                            break;
+                    }
+
+                    StringBuilder outstr = new StringBuilder();
+
+                    XmlWriterSettings settings = new XmlWriterSettings();
+                    settings.Indent = true;
+                    settings.OmitXmlDeclaration = true;
+                    settings.NewLineOnAttributes = true;
+
+
+                    XamlDesignerSerializationManager dsm = new XamlDesignerSerializationManager(XmlWriter.Create(outstr, settings));
+                    dsm.XamlWriterMode = XamlWriterMode.Expression;
+
+                    XamlWriter.Save(itemObjets, dsm);
+                    string savedControls = outstr.ToString();
+
+                    File.WriteAllText(@"objetos\" + ++x + nombreControl + ".xaml", savedControls);
+                    if (esTabla)
+                    {
+                        ((DataGrid)itemObjets).ItemsSource = CargarTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString()).DefaultView;
+                        ((DataGrid)itemObjets).UpdateLayout();
+                        ColorFuenteFondoTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString());
+                    }
+                }
+            }
+        }
+
+        private void CargarControles()
+        {
+            DirectoryInfo info = new DirectoryInfo(@"objetos\");
+            foreach (var file in info.GetFiles())
+            {
+
+                StreamReader sR = new StreamReader(@file.FullName);
+                string text = sR.ReadToEnd();
+                sR.Close();
+
+                StringReader stringReader = new StringReader(text);
+                XmlReader xmlReader = XmlReader.Create(stringReader);
+
+                var item = XamlReader.Load(xmlReader) as UIElement;
+                if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
+                    Fondo.Background = ((Grid)item).Background;
+                else
+                {
+                    NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                    Principal.Children.Add(item);
+
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "DataGrid":
+                            string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                            DataGrid control = (DataGrid)FindName(item.GetValue(NameProperty).ToString());
+                            if (datos[2].Equals("V"))
+                            {
+                                control.CellStyle = new Style(typeof(DataGridCell))
+                                {
+                                    Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
+                    }
+                                };
+                            }
+                            else
+                            {
+                                control.CellStyle = new Style(typeof(DataGridCell))
+                                {
+                                    Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
+                    }
+                                };
+                            }
+                            control.ItemsSource = CargarTabla(control.Name, control.Tag.ToString()).DefaultView;
+                            control.UpdateLayout();
+                            ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
+                            break;
+                    }
+                }
+
+            }
+        }
+
+        public DataTable CargarTabla(string pNombre, string pTag)
+        {
+            try
+            {
+                string[] datos = pTag.Split('|');
+
+            Seguridad vSeguridad = new Seguridad();
+            //Create the object
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string odbc = config.AppSettings.Settings["odbc"].Value;
+            string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
+            string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
+            string consulta = config.AppSettings.Settings[pNombre].Value;
+
+            OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                connection.Open();
+                OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                if (MyDataReader.HasRows)
+                {
+                    DataGrid control = (DataGrid)FindName(pNombre);
+                    DataTable dt = new DataTable();
+                    dt.Load(MyDataReader);
+                    LlenarListaTablas(pNombre, int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2]);
+
+                }
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+            return ListTablas[0];
+        }
+        
+        private void ColorFuenteFondoTabla(string pNombre, string pTag)
+        {
+            string[] datos = pTag.Split('|');
+            DataGrid control = (DataGrid)FindName(pNombre);
+
+            if (datos.Length == 7)
+            {
+                foreach (var item in control.ItemsSource as IEnumerable)
+                {
+                    DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
+
+                    if (row != null)
+                        if (row.GetIndex() % 2 == 0)
+                        {
+                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[3]);
+                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                        }
+                        else
+                        {
+                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
+                        }
+                }
+            }
+        }
     }
-
-    public class Articulo
-    {
-        public string Nombre1 { get; set; }
-
-        public string Espacio1 { get; set; }
-
-        public string Precio1 { get; set; }
-
-        public string SeparacionDoble { get; set; }
-
-        public string Nombre2 { get; set; }
-
-        public string Espacio2 { get; set; }
-
-        public string Precio2 { get; set; }
-    }
-
 }

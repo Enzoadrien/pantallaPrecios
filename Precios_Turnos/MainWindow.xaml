@@ -40,6 +40,7 @@
         <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000"/>
-
+        <Grid x:Name="Fondo">
+        </Grid>
     </Grid>
 </Window>
