@@ -147,9 +147,7 @@ namespace Precios_Turnos
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
         {
-            Label control = (Label)mainWindow.FindName(NombreControl.Text);
-            mainWindow.Principal.Children.Remove(control);
-            NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
+            mainWindow.BorarObjeto(NombreControl.Text);
             Close();
         }
 

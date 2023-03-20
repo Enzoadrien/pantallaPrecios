@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios y turnero 3K" Height="600" Width="800" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico">
+        Title="Lista de precios y turnero 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico" Loaded="Window_Loaded">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -37,10 +37,10 @@
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="Coordenadas" Grid.Column="2" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" Grid.Row="1" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
-        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" Grid.Row="1" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000"/>
-        <Grid x:Name="Fondo">
+        <Label x:Name="Coordenadas" Grid.Column="1" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
+        <Grid x:Name="Fondo" Grid.ColumnSpan="2">
         </Grid>
     </Grid>
 </Window>

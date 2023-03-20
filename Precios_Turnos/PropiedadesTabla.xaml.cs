@@ -103,9 +103,8 @@ namespace Precios_Turnos
             lblCFondoDos.Visibility = Visibility.Visible;
             Grid.SetColumnSpan(btnColorFuente, 1);
             Grid.SetColumnSpan(btnColorFondo, 1);
-            if (!esInicio) { 
+            if (!esInicio)
                 ColorFuenteFondo();
-            }
 
         }
 
@@ -119,9 +118,8 @@ namespace Precios_Turnos
             lblCFondoDos.Visibility = Visibility.Hidden;
             Grid.SetColumnSpan(btnColorFuente, 3);
             Grid.SetColumnSpan(btnColorFondo, 3);
-            if (!esInicio) { 
+            if (!esInicio)
                 ColorFuenteFondo();
-            }
 
         }
 
@@ -178,6 +176,7 @@ namespace Precios_Turnos
             else
             {
                 control.Foreground = btnColorFuente.Fill;
+                control.Background = btnColorFondo.Fill;
                 control.RowStyle = new Style(typeof(DataGridRow))
                 {
                     Setters = {
@@ -188,7 +187,7 @@ namespace Precios_Turnos
             control.Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
                    ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
-                   (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill+"|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                   (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
         }
 
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -274,16 +273,7 @@ namespace Precios_Turnos
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
         {
-            DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            mainWindow.Principal.Children.Remove(control);
-            NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
-
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            if (config.AppSettings.Settings[NombreControl.Text] != null)
-                config.AppSettings.Settings.Remove(NombreControl.Text);
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            mainWindow.BorarObjeto(NombreControl.Text);
             Close();
         }
 
@@ -386,13 +376,11 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
-                RecargarTablas();
-
-                DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-
-                control.Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
-                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString();
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
+                   (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                RecargarTablas();
             }
         }
 
@@ -412,7 +400,7 @@ namespace Precios_Turnos
 
         private void btnContenido_Click(object sender, RoutedEventArgs e)
         {
-            ContenidoTabla dialog = new ContenidoTabla(mainWindow, NombreControl.Text, int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()), ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString());
+            ContenidoTabla dialog = new ContenidoTabla(mainWindow, NombreControl.Text);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -431,13 +419,11 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
-                RecargarTablas();
-                DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-
-                control.Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
-                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
-                    ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                   int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                RecargarTablas();
             }
         }
 
@@ -445,85 +431,38 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
-                RecargarTablas();
-
-                DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-
-                control.Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
                    ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                RecargarTablas();
             }
         }
 
         private void RecargarTablas()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            if (config.AppSettings.Settings[NombreControl.Text] != null)
+            DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
+            if (((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString().Equals("V"))
             {
-                Seguridad vSeguridad = new Seguridad();
-                //Create the object
-                string odbc = config.AppSettings.Settings["odbc"].Value;
-                string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
-                string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
-                string consulta = config.AppSettings.Settings[NombreControl.Text].Value;
-
-                try
+                control.CellStyle = new Style(typeof(DataGridCell))
                 {
-                    OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-                    connection.Open();
-                    OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
-                    OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                    if (MyDataReader.HasRows)
-                    {
-                        DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-                        DataTable dt = new DataTable();
-                        dt.Load(MyDataReader);
-                        mainWindow.LlenarListaTablas(int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()), dt, ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString());
-                        if (((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString().Equals("V"))
-                        {
-                            control.CellStyle = new Style(typeof(DataGridCell))
-                            {
-                                Setters = {
+                    Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
                     }
-                            };
-                        }
-                        else
-                        {
-                            control.CellStyle = new Style(typeof(DataGridCell))
-                            {
-                                Setters = {
+                };
+            }
+            else
+            {
+                control.CellStyle = new Style(typeof(DataGridCell))
+                {
+                    Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
                     }
-                            };
-                        }
-                        control.ItemsSource = mainWindow.ListTablas[0].DefaultView;
-                        control.UpdateLayout();
-                        ColorFuenteFondo();
-                    }
-                    else
-                    {
-                        Mensajes dialog = new Mensajes();
-                        dialog.lblNombre.Content = "¡Error!";
-                        dialog.lblTexto.Text = "No existen registros para mostrar";
-                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                        dialog.ShowDialog();
-                    }
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    Mensajes dialog = new Mensajes();
-                    dialog.lblNombre.Content = "¡Error!";
-                    dialog.lblTexto.Text = "Error en la consulta: \n" + ex.Message;
-                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                    dialog.ShowDialog();
-                }
+                };
             }
+            control.ItemsSource = mainWindow.CargarTabla(NombreControl.Text, control.Tag.ToString()).DefaultView;
+            control.UpdateLayout();
+            ColorFuenteFondo();
         }
     }
 }

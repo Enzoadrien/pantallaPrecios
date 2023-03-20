@@ -25,18 +25,12 @@ namespace Precios_Turnos
     public partial class ContenidoTabla : Window
     {
         private MainWindow mainWindow;
-        private string NombreTabla;
-        private int CantidadFilas;
-        private int CantidadBloques;
-        private string Orientacion;
-        public ContenidoTabla(MainWindow pMainWindow, string pNombreTabla, int pCantidadBloques, int pCantidadFilas, string pOrientacion)
+        private string NombreControl;
+        public ContenidoTabla(MainWindow pMainWindow, string pNombreControl)
         {
             InitializeComponent();
             mainWindow = pMainWindow;
-            NombreTabla = pNombreTabla;
-            CantidadFilas = pCantidadFilas;
-            CantidadBloques = pCantidadBloques;
-            Orientacion = pOrientacion;
+            NombreControl = pNombreControl;
             CargarInfo();
         }
 
@@ -53,17 +47,18 @@ namespace Precios_Turnos
             {
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-                if (config.AppSettings.Settings[NombreTabla] == null)
+                if (config.AppSettings.Settings[NombreControl] == null)
                 {
-                    config.AppSettings.Settings.Add(NombreTabla, Consulta.Text);
+                    config.AppSettings.Settings.Add(NombreControl, Consulta.Text);
                 }
                 else
                 {
-                    config.AppSettings.Settings[NombreTabla].Value = Consulta.Text;
+                    config.AppSettings.Settings[NombreControl].Value = Consulta.Text;
                 }
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
+            CargarTabla();
             Close();
         }
 
@@ -71,6 +66,7 @@ namespace Precios_Turnos
         {
             if (e.Key == Key.Escape)
             {
+                CargarTabla();
                 Close();
             }
         }
@@ -79,73 +75,54 @@ namespace Precios_Turnos
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-            if (config.AppSettings.Settings[NombreTabla] != null)
+            if (config.AppSettings.Settings[NombreControl] != null)
             {
-                Consulta.Text = config.AppSettings.Settings[NombreTabla].Value;
+                Consulta.Text = config.AppSettings.Settings[NombreControl].Value;
             }
         }
 
         private void btnProbar_Click(object sender, RoutedEventArgs e)
         {
-            Seguridad vSeguridad = new Seguridad();
-            //Create the object
+            CargarTabla();
+        }
+        private void CargarTabla()
+        {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            string odbc = config.AppSettings.Settings["odbc"].Value;
-            string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
-            string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
 
-            OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-            try
+            if (config.AppSettings.Settings[NombreControl] == null)
             {
-                connection.Open();
-                OdbcCommand MyCommand = new OdbcCommand(Consulta.Text, connection);
-                OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                if (MyDataReader.HasRows)
+                config.AppSettings.Settings.Add(NombreControl, Consulta.Text);
+            }
+            else
+            {
+                config.AppSettings.Settings[NombreControl].Value = Consulta.Text;
+            }
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+
+            DataGrid control = (DataGrid)mainWindow.FindName(NombreControl);
+            string[] datos = control.Tag.ToString().Split('|');
+            if (datos[2].Equals("V"))
+            {
+                control.CellStyle = new Style(typeof(DataGridCell))
                 {
-                    DataGrid control = (DataGrid)mainWindow.FindName(NombreTabla);
-                    DataTable dt = new DataTable();
-                    dt.Load(MyDataReader);
-                    mainWindow.LlenarListaTablas(NombreTabla, CantidadBloques, CantidadFilas, dt, Orientacion);
-                    if (Orientacion.Equals("V"))
-                    {
-                        control.CellStyle = new Style(typeof(DataGridCell))
-                        {
-                            Setters = {
+                    Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
                     }
-                        };
-                    }
-                    else
-                    {
-                        control.CellStyle = new Style(typeof(DataGridCell))
-                        {
-                            Setters = {
+                };
+            }
+            else
+            {
+                control.CellStyle = new Style(typeof(DataGridCell))
+                {
+                    Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
                     }
-                        };
-                    }
-                    control.ItemsSource = mainWindow.ListTablas[0].DefaultView;
-                }
-                else
-                {
-                    Mensajes dialog = new Mensajes();
-                    dialog.lblNombre.Content = "¡Error!";
-                    dialog.lblTexto.Text = "No existen registros para mostrar";
-                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                    dialog.ShowDialog();
-                }
-                connection.Close();
+                };
             }
-            catch (Exception ex)
-            {
-                Mensajes dialog = new Mensajes();
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en la consulta: \n" + ex.Message;
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                dialog.ShowDialog();
-            }
+            control.ItemsSource = mainWindow.CargarTabla(NombreControl, control.Tag.ToString()).DefaultView;
+            control.UpdateLayout();
+            mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
         }
     }
 }

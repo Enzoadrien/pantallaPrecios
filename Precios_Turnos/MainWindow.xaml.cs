@@ -44,14 +44,13 @@ namespace Precios_Turnos
         private string controlClickName;
         private ObservableCollection<DataTable> Collection { get; set; }
 
-        public List<dynamic> ListTablasDataGridTablas;
+        public Dictionary<string, List<DataTable>> ListaTablasDataGrids = new Dictionary<string, List<DataTable>>();
 
         public MainWindow()
         {
             InitializeComponent();
             Coordenadas.Visibility = Visibility.Hidden;
             ValidarActivar();
-            CargarControles();
         }
 
         private void ValidarActivar()
@@ -101,6 +100,8 @@ namespace Precios_Turnos
         {
             if (WindowState == WindowState.Maximized)
             {
+
+
                 Topmost = true;
                 if (editar)
                 {
@@ -109,6 +110,8 @@ namespace Precios_Turnos
                 }
                 else
                 {
+                    Image control = (Image)Principal.FindName("VistaPrevia");
+                    control.Visibility = Visibility.Hidden;
                     ModoEdicion.Visibility = Visibility.Hidden;
                 }
 
@@ -127,6 +130,9 @@ namespace Precios_Turnos
 
             else
             {
+                Image control = (Image)Principal.FindName("VistaPrevia");
+                if(control!= null)
+                    control.Visibility = Visibility.Visible;
                 Topmost = false;
                 Menu.Visibility = Visibility.Visible;
                 ResizeMode = ResizeMode.CanResize;
@@ -239,6 +245,7 @@ namespace Precios_Turnos
                 case "Menu":
                 case "LogoPrincipal":
                 case "Fondo":
+                case "VistaPrevia":
                     seModifica = false;
                     break;
                 default:
@@ -313,15 +320,53 @@ namespace Precios_Turnos
 
         private void SalirEdicion()
         {
+            if (editar)
+            {
+                editar = false;
+                Coordenadas.Visibility = Visibility.Hidden;
+                ModoEdicion.Visibility = Visibility.Hidden;
+                LogoPrincipal.Visibility = Visibility.Hidden;
+                try
+                {
+                    Image control = (Image)Principal.FindName("VistaPrevia");
+                    NameScope.GetNameScope(this).UnregisterName(control.Name);
+                    Principal.Children.Remove(control);
+                }
+                catch (Exception) { }
+
+                SaveFrameworkElementToPng(Principal, 900, 557, @".\Principal.png");
+                GuardarControles();
+                CargarVistaPrevia();
+            }
+
             WindowState = WindowState.Normal;
-            Coordenadas.Visibility = Visibility.Hidden;
+            LogoPrincipal.Visibility = Visibility.Visible;
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
             ModoEdicion.Visibility = Visibility.Visible;
 
-            if (editar)
-                editar = false;
-            GuardarControles();
+        }
+
+        private void CargarVistaPrevia()
+        {
+            using (FileStream fs = new FileStream(@".\Principal.png", FileMode.Open))
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = fs;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+
+                Image VistaPrevia = new Image();
+                VistaPrevia.Name = "VistaPrevia";
+                VistaPrevia.Source = bitmap;
+                VistaPrevia.HorizontalAlignment = HorizontalAlignment.Center;
+                VistaPrevia.VerticalAlignment = VerticalAlignment.Center;
+                VistaPrevia.Stretch = Stretch.Fill;
+                NameScope.GetNameScope(this).RegisterName(VistaPrevia.Name, VistaPrevia);
+                Principal.Children.Add(VistaPrevia);
+            }
+
         }
 
         private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -533,7 +578,7 @@ namespace Precios_Turnos
                     propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
                     propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
                     propiedadesTabla.cbxOrientacion.SelectedValue = datos[2];
-                    if(datos.Length == 7)
+                    if (datos.Length == 7)
                     {
                         propiedadesTabla.chkDoble.IsChecked = true;
                         propiedadesTabla.btnColorFuente.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[3]);
@@ -543,10 +588,21 @@ namespace Precios_Turnos
                     }
                     else
                     {
+                        propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
+
                         propiedadesTabla.btnColorFuente.Fill = ((DataGrid)item).Foreground;
                         propiedadesTabla.btnColorFondo.Fill = ((DataGrid)item).Background;
+                        propiedadesTabla.btnColorFuente2.Fill = ((DataGrid)item).Foreground;
+                        propiedadesTabla.btnColorFondo2.Fill = ((DataGrid)item).Background;
                     }
-                       
+
                     propiedadesTabla.Opacidad.Value = item.Opacity;
                     propiedadesTabla.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesTabla.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
@@ -561,16 +617,29 @@ namespace Precios_Turnos
 
         private void MenuEliminar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var item = FindName(controlClickName) as UIElement;
+            BorarObjeto(controlClickName);
+        }
+
+        public void BorarObjeto(string pNombre)
+        {
+            var item = FindName(pNombre) as UIElement;
             Principal.Children.Remove(item);
-            NameScope.GetNameScope(this).UnregisterName(controlClickName);
+            NameScope.GetNameScope(this).UnregisterName(pNombre);
 
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            if (config.AppSettings.Settings[controlClickName] != null)
-                config.AppSettings.Settings.Remove(controlClickName);
+            if (config.AppSettings.Settings[pNombre] != null)
+                config.AppSettings.Settings.Remove(pNombre);
 
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
+
+            DirectoryInfo info = new DirectoryInfo(@"objetos\");
+            foreach (var file in info.GetFiles())
+            {
+                string[] nombre = file.Name.Split('-');
+                if (nombre[1].Equals(pNombre + ".xaml"))
+                    File.Delete(file.FullName);
+            }
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -682,8 +751,6 @@ namespace Precios_Turnos
                 };
                 obj.HeadersVisibility = DataGridHeadersVisibility.None;
                 obj.CanUserAddRows = false;
-                obj.GridLinesVisibility = DataGridGridLinesVisibility.None;
-                obj.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 obj.Tag = "2|15|H";
                 obj.ItemsSource = CargarTabla(dialog.NombreText, obj.Tag.ToString()).DefaultView;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
@@ -841,8 +908,16 @@ namespace Precios_Turnos
             {
                 dtFinal.Columns.Add();
                 dtFinal.Rows.Add(new object[1] { "Agregar datos" }.ToArray());
+                ListTablas.Add(dtFinal);
             }
-            ListTablasDataGridTablas.Add(new { Name = nombre, Table = dtFinal });
+            var myKey = ListaTablasDataGrids.FirstOrDefault(x => x.Key == nombre).Key;
+            if (myKey == null)
+                ListaTablasDataGrids.Add(nombre, ListTablas);
+            else
+            {
+                ListaTablasDataGrids.Remove(nombre);
+                ListaTablasDataGrids.Add(nombre, ListTablas);
+            }
         }
 
         private DataTable PivotTable(DataTable origTable)
@@ -943,7 +1018,7 @@ namespace Precios_Turnos
                     XamlWriter.Save(itemObjets, dsm);
                     string savedControls = outstr.ToString();
 
-                    File.WriteAllText(@"objetos\" + ++x + nombreControl + ".xaml", savedControls);
+                    File.WriteAllText(@"objetos\" + ++x + "-" + nombreControl + ".xaml", savedControls);
                     if (esTabla)
                     {
                         ((DataGrid)itemObjets).ItemsSource = CargarTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString()).DefaultView;
@@ -969,7 +1044,9 @@ namespace Precios_Turnos
 
                 var item = XamlReader.Load(xmlReader) as UIElement;
                 if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
+                {
                     Fondo.Background = ((Grid)item).Background;
+                }
                 else
                 {
                     NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
@@ -1002,6 +1079,10 @@ namespace Precios_Turnos
                             control.UpdateLayout();
                             ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                             break;
+                        case "MediaElement":
+                            MediaElement video = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
+                            video.MediaEnded += MediaElement_MediaEnded;
+                            break;
                     }
                 }
 
@@ -1010,49 +1091,66 @@ namespace Precios_Turnos
 
         public DataTable CargarTabla(string pNombre, string pTag)
         {
+            string[] datos = pTag.Split('|');
             try
             {
-                string[] datos = pTag.Split('|');
-
-            Seguridad vSeguridad = new Seguridad();
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            string odbc = config.AppSettings.Settings["odbc"].Value;
-            string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
-            string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
-            string consulta = config.AppSettings.Settings[pNombre].Value;
-
-            OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-
-                connection.Open();
-                OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
-                OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                if (MyDataReader.HasRows)
+                Seguridad vSeguridad = new Seguridad();
+                //Create the object
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                string odbc = config.AppSettings.Settings["odbc"].Value;
+                string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
+                string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
+                string consulta = string.Empty;
+                if (config.AppSettings.Settings[pNombre] != null)
                 {
-                    DataGrid control = (DataGrid)FindName(pNombre);
-                    DataTable dt = new DataTable();
-                    dt.Load(MyDataReader);
-                    LlenarListaTablas(pNombre, int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2]);
+                    consulta = config.AppSettings.Settings[pNombre].Value;
 
+                    OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                    connection.Open();
+                    OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                    OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                    if (MyDataReader.HasRows)
+                    {
+                        DataGrid control = (DataGrid)FindName(pNombre);
+                        DataTable dt = new DataTable();
+                        dt.Load(MyDataReader);
+                        LlenarListaTablas(pNombre, int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2]);
+
+                    }
+                    connection.Close();
                 }
-                connection.Close();
+                else
+                {
+                    LlenarListaTablas(pNombre, int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2]);
+                }
             }
             catch (Exception ex)
             {
-                
+                Mensajes dialog = new Mensajes();
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error al cargar la consulta: \n" + ex.Message;
+                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.ShowDialog();
+                LlenarListaTablas(pNombre, int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2]);
             }
-            return ListTablas[0];
+            foreach (var item in ListaTablasDataGrids)
+                if (item.Key == pNombre)
+                    return item.Value[0];
+
+            return null;
         }
-        
-        private void ColorFuenteFondoTabla(string pNombre, string pTag)
+
+
+        public void ColorFuenteFondoTabla(string pNombre, string pTag)
         {
             string[] datos = pTag.Split('|');
             DataGrid control = (DataGrid)FindName(pNombre);
-
             if (datos.Length == 7)
             {
-                foreach (var item in control.ItemsSource as IEnumerable)
-                {
+                    foreach (DataRowView item in control.ItemsSource)
+                    {
                     DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
 
                     if (row != null)
@@ -1068,6 +1166,83 @@ namespace Precios_Turnos
                         }
                 }
             }
+            else
+            {
+                control.Foreground = control.Foreground;
+                control.Background = control.Background;
+                control.RowStyle = new Style(typeof(DataGridRow))
+                {
+                    Setters = {
+                        new Setter(BackgroundProperty, control.Background)
+                    }
+                };
+            }
+        }
+
+        private void SaveFrameworkElementToPng(FrameworkElement frameworkElement,
+                                       int width,
+                                       int height,
+                                       string filePath)
+        {
+            BitmapImage bitmapImage = VisualToBitmapImage(frameworkElement);
+            SaveImage(bitmapImage, width, height, filePath);
+        }
+
+        public BitmapImage VisualToBitmapImage(FrameworkElement frameworkElement)
+        {
+            RenderTargetBitmap rtb = new RenderTargetBitmap((int)frameworkElement.ActualWidth,
+                                                            (int)frameworkElement.ActualHeight,
+                                                            96d,
+                                                            96d,
+                                                            PixelFormats.Default);
+            rtb.Render(frameworkElement);
+
+            MemoryStream stream = new MemoryStream();
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            encoder.Save(stream);
+
+            BitmapImage bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = stream;
+            bitmapImage.EndInit();
+
+            return bitmapImage;
+        }
+        public void SaveImage(BitmapImage sourceImage,
+                        int width,
+                        int height,
+                        string filePath)
+        {
+            TransformGroup transformGroup = new TransformGroup();
+            ScaleTransform scaleTransform = new ScaleTransform();
+            scaleTransform.ScaleX = (double)width / sourceImage.PixelWidth;
+            scaleTransform.ScaleY = (double)height / sourceImage.PixelHeight;
+            transformGroup.Children.Add(scaleTransform);
+
+            DrawingVisual vis = new DrawingVisual();
+            DrawingContext cont = vis.RenderOpen();
+            cont.PushTransform(transformGroup);
+            cont.DrawImage(sourceImage, new Rect(new Size(sourceImage.PixelWidth, sourceImage.PixelHeight)));
+            cont.Close();
+
+            RenderTargetBitmap rtb = new RenderTargetBitmap(width, height, 96d, 96d, PixelFormats.Default);
+            rtb.Render(vis);
+
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            using (FileStream stream = new FileStream(filePath, FileMode.Create))
+            {
+                encoder.Save(stream);
+                stream.Close();
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            CargarControles();
+            CargarVistaPrevia();
         }
     }
 }
