@@ -184,9 +184,10 @@ namespace Precios_Turnos
                     }
                 };
             }
-            control.Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+            ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
-                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                    ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
         }
 
@@ -386,16 +387,34 @@ namespace Precios_Turnos
 
         private void chkLineas_Checked(object sender, RoutedEventArgs e)
         {
-            DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            control.GridLinesVisibility = DataGridGridLinesVisibility.All;
-            control.BorderBrush = new SolidColorBrush(Colors.Black);
+            if (!esInicio)
+            {
+                DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
+                control.GridLinesVisibility = DataGridGridLinesVisibility.All;
+                control.BorderBrush = new SolidColorBrush(Colors.Black);
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                       int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
+                       ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                        ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
+                       (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                RecargarTablas();
+            }
         }
 
         private void chkLineas_Unchecked(object sender, RoutedEventArgs e)
         {
-            DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            control.GridLinesVisibility = DataGridGridLinesVisibility.None;
-            control.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            if (!esInicio)
+            {
+                DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
+                control.GridLinesVisibility = DataGridGridLinesVisibility.None;
+                control.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                       int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
+                       ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                        ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
+                       (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+                RecargarTablas();
+            }
         }
 
         private void btnContenido_Click(object sender, RoutedEventArgs e)
@@ -421,7 +440,8 @@ namespace Precios_Turnos
             {
                 ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
-                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                    ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
                 RecargarTablas();
             }
@@ -433,7 +453,8 @@ namespace Precios_Turnos
             {
                 ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
                    int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
-                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() +
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                    ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
                 RecargarTablas();
             }
@@ -460,9 +481,21 @@ namespace Precios_Turnos
                     }
                 };
             }
-            control.ItemsSource = mainWindow.CargarTabla(NombreControl.Text, control.Tag.ToString()).DefaultView;
+            control.ItemsSource = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString())[0].DefaultView;
             control.UpdateLayout();
             ColorFuenteFondo();
+        }
+
+        private void cbxCambiar_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!esInicio)
+            {
+                ((DataGrid)mainWindow.FindName(NombreControl.Text)).Tag = int.Parse(((ComboBoxItem)cbxCBloques.SelectedItem).Tag.ToString()) + "|" +
+                   int.Parse(((ComboBoxItem)cbxCRegistros.SelectedItem).Tag.ToString()) + "|" +
+                   ((ComboBoxItem)cbxOrientacion.SelectedItem).Tag.ToString() + "|" +
+                    ((ComboBoxItem)cbxCambiar.SelectedItem).Tag.ToString() +
+                   (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
+            }
         }
     }
 }

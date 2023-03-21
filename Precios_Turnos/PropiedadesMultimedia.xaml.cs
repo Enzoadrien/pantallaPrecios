@@ -309,5 +309,31 @@ namespace Precios_Turnos
                 default: break;
             }
         }
+
+        private void chkMaximizar_Checked(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
+            Cada.Text = "900";
+            Durar.Text = "0";
+            Cada.IsEnabled = true;
+            Durar.IsEnabled = true;
+        }
+
+        private void chkMaximizar_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            ((MediaElement)item).Tag = "";
+            Cada.Text = "";
+            Durar.Text = "";
+            Cada.IsEnabled = false;
+            Durar.IsEnabled = false;
+        }
+
+        private void CadaDurante_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
+        }
     }
 }

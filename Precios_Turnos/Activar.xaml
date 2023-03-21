@@ -125,6 +125,7 @@
                 </Button.Style>
             </Button>
         </StackPanel>
+        <Label x:Name="lblFecha" Content="Fecha licencia:" Grid.Row="5" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14"/>
         <StackPanel Grid.Row="5"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

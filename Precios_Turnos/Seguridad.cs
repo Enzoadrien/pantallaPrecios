@@ -98,7 +98,7 @@ namespace Precios_Turnos
         {
             try
             {
-                const string ntpServer = "pool.ntp.org";
+                const string ntpServer = "1.north-america.pool.ntp.org";
                 var ntpData = new byte[48];
                 ntpData[0] = 0x1B; //LeapIndicator = 0 (no warning), VersionNum = 3 (IPv4 only), Mode = 3 (Client Mode)
                 var addresses = Dns.GetHostEntry(ntpServer).AddressList;

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Configurar conexión" Background="#FFD2CBCB" Opacity="0.9" Height="150" Width="600" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="170" Width="600" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
     <Window.DataContext>
         <local:ViewModel/>
     </Window.DataContext>
@@ -20,11 +20,12 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
                     Background="#FF989090" Grid.ColumnSpan="3"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
-            <Label x:Name="Titulo" Content="Configurar conexión"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+            <Label x:Name="Titulo" Content="Contenido consulta SQL"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="2" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>
@@ -52,7 +53,10 @@
         <ScrollViewer Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" Margin="5,0,5,0">
             <TextBox x:Name="Consulta"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap"/>
         </ScrollViewer>
-        <StackPanel Grid.Row="4"
+        <CheckBox x:Name="chkImagen" Content="Mostrar imagen" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkImagen_Checked" Unchecked="chkImagen_Unchecked"/>
+        <Label x:Name="lblImagen" Content="Campo de la imagen:" Grid.Row="4" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Imagen" Grid.Row="4" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <StackPanel Grid.Row="45"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="2" >

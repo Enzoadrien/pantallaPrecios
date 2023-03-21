@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,6 +27,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pmainWindow;
+            CargarInfo();
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -44,6 +46,44 @@ namespace Precios_Turnos
             Close();
         }
 
+        private void CargarInfo()
+        {
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            Codigo.Text = config.AppSettings.Settings["CodigoActivacion"].Value;
+            Correo.Text = vSeguridad.DecryptString(Codigo.Text, config.AppSettings.Settings["Correo"].Value);
+            Llave.Text = vSeguridad.DecryptString(Codigo.Text, config.AppSettings.Settings["Llave"].Value);
+            if(Llave.Text.Length > 0)
+            {
+                string cadena = vSeguridad.DecryptString(Codigo.Text, Llave.Text);
+                string[] subs = cadena.Split('|');
+                if (subs.Length >= 3)
+                {
+                    if (subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
+                        && subs[3].Equals(mainWindow.nombreApp))
+                    {
+                        if (!subs[4].Equals("0"))
+                        {
+                            if (vSeguridad.GetNetworkTime() > Convert.ToDateTime(subs[4]))
+                            {
+                                Correo.IsReadOnly = true;
+                                Llave.IsReadOnly = true;
+                                btnGenerar.IsEnabled = false;
+                                lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]);
+                            }
+                        }
+                        else
+                        {
+                            Correo.IsReadOnly = true;
+                            Llave.IsReadOnly = true;
+                            btnGenerar.IsEnabled = false;
+                            lblFecha.Content = "Fecha licencia: Permanete";
+                        }
+                    }
+                }
+                
+            }
+        }
+
         private void GuardarInfo()
         {
             string cadena = vSeguridad.DecryptString(Codigo.Text, Llave.Text);
@@ -51,26 +91,64 @@ namespace Precios_Turnos
             if (subs.Length >= 3)
             {
                 if(subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase()) 
-                    && subs[3].Equals(mainWindow.nombreApp) && vSeguridad.GetNetworkTime() <= Convert.ToDateTime(subs[4])) {
-                    //Create the object
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    config.AppSettings.Settings["Correo"].Value = vSeguridad.EncryptString(Codigo.Text, Correo.Text);
-                    config.AppSettings.Settings["CodigoActivacion"].Value = Codigo.Text;
-                    config.AppSettings.Settings["Llave"].Value = vSeguridad.EncryptString(Codigo.Text, Llave.Text);
-                    config.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection("appSettings");
+                    && subs[3].Equals(mainWindow.nombreApp)) {
 
-                    mainWindow.Activar.IsEnabled = false;
-                    mainWindow.Conexion.IsEnabled = true;
-                    mainWindow.Turnero.IsEnabled = true;
-                    mainWindow.EditarDiseno.IsEnabled = true;
 
-                    Mensajes dialog = new Mensajes();
-                    dialog.lblNombre.Content = "¡Listo!";
-                    dialog.lblTexto.Text = "Su producto se activo correctamente";
-                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                    dialog.ShowDialog();
+                    if (!subs[4].Equals("0"))
+                    {
+                        if (vSeguridad.GetNetworkTime() > Convert.ToDateTime(subs[4]))
+                        {
+                            //Create the object
+                            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                            config.AppSettings.Settings["Correo"].Value = vSeguridad.EncryptString(Codigo.Text, Correo.Text);
+                            config.AppSettings.Settings["CodigoActivacion"].Value = Codigo.Text;
+                            config.AppSettings.Settings["Llave"].Value = vSeguridad.EncryptString(Codigo.Text, Llave.Text);
+                            config.Save(ConfigurationSaveMode.Modified);
+                            ConfigurationManager.RefreshSection("appSettings");
+
+                            mainWindow.Conexion.IsEnabled = true;
+                            mainWindow.Turnero.IsEnabled = true;
+                            mainWindow.EditarDiseno.IsEnabled = true;
+
+                            Mensajes dialog = new Mensajes();
+                            dialog.lblNombre.Content = "¡Listo!";
+                            dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: "+Convert.ToDateTime(subs[4]);
+                            dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                            dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                            dialog.ShowDialog();
+                        }
+                        else
+                        {
+                            Mensajes dialog = new Mensajes();
+                            dialog.lblNombre.Content = "¡Error!";
+                            dialog.lblTexto.Text = "Su licencia ha caducado. \n Fecha: "+Convert.ToDateTime(subs[4]);
+                            dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                            dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                            dialog.ShowDialog();
+                        }
+                    }
+                    else
+                    {
+                        //Create the object
+                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                        config.AppSettings.Settings["Correo"].Value = vSeguridad.EncryptString(Codigo.Text, Correo.Text);
+                        config.AppSettings.Settings["CodigoActivacion"].Value = Codigo.Text;
+                        config.AppSettings.Settings["Llave"].Value = vSeguridad.EncryptString(Codigo.Text, Llave.Text);
+                        config.Save(ConfigurationSaveMode.Modified);
+                        ConfigurationManager.RefreshSection("appSettings");
+
+                        mainWindow.Conexion.IsEnabled = true;
+                        mainWindow.Turnero.IsEnabled = true;
+                        mainWindow.EditarDiseno.IsEnabled = true;
+
+                        Mensajes dialog = new Mensajes();
+                        dialog.lblNombre.Content = "¡Listo!";
+                        dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante. ";
+                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                        dialog.ShowDialog();
+                    }
+
                 }
                 else
                 {
