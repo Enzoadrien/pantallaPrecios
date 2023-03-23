@@ -42,8 +42,8 @@ namespace Precios_Turnos
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            GuardarInfo();
-            Close();
+            if(GuardarInfo())
+                Close();
         }
 
         private void CargarInfo()
@@ -63,12 +63,12 @@ namespace Precios_Turnos
                     {
                         if (!subs[4].Equals("0"))
                         {
-                            if (vSeguridad.GetNetworkTime() > Convert.ToDateTime(subs[4]))
+                            if (vSeguridad.GetNetworkTime().Date < Convert.ToDateTime(subs[4]).Date)
                             {
                                 Correo.IsReadOnly = true;
                                 Llave.IsReadOnly = true;
                                 btnGenerar.IsEnabled = false;
-                                lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]);
+                                lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
                             }
                         }
                         else
@@ -84,7 +84,7 @@ namespace Precios_Turnos
             }
         }
 
-        private void GuardarInfo()
+        private bool GuardarInfo()
         {
             string cadena = vSeguridad.DecryptString(Codigo.Text, Llave.Text);
             string[] subs = cadena.Split('|');
@@ -96,7 +96,7 @@ namespace Precios_Turnos
 
                     if (!subs[4].Equals("0"))
                     {
-                        if (vSeguridad.GetNetworkTime() > Convert.ToDateTime(subs[4]))
+                        if (vSeguridad.GetNetworkTime() < Convert.ToDateTime(subs[4]))
                         {
                             //Create the object
                             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -109,6 +109,7 @@ namespace Precios_Turnos
                             mainWindow.Conexion.IsEnabled = true;
                             mainWindow.Turnero.IsEnabled = true;
                             mainWindow.EditarDiseno.IsEnabled = true;
+                            mainWindow.ResizeMode = ResizeMode.CanResize;
 
                             Mensajes dialog = new Mensajes();
                             dialog.lblNombre.Content = "¡Listo!";
@@ -116,6 +117,7 @@ namespace Precios_Turnos
                             dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
                             dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                             dialog.ShowDialog();
+                            return true;
                         }
                         else
                         {
@@ -140,6 +142,7 @@ namespace Precios_Turnos
                         mainWindow.Conexion.IsEnabled = true;
                         mainWindow.Turnero.IsEnabled = true;
                         mainWindow.EditarDiseno.IsEnabled = true;
+                        mainWindow.ResizeMode = ResizeMode.CanResize;
 
                         Mensajes dialog = new Mensajes();
                         dialog.lblNombre.Content = "¡Listo!";
@@ -147,6 +150,7 @@ namespace Precios_Turnos
                         dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
                         dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                         dialog.ShowDialog();
+                        return true;
                     }
 
                 }
@@ -170,6 +174,7 @@ namespace Precios_Turnos
                 dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                 dialog.ShowDialog();
             }
+            return false;
         }
 
         bool IsValidEmail(string email)

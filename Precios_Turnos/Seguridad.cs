@@ -15,55 +15,71 @@ namespace Precios_Turnos
     {
         internal string EncryptString(string key, string plainText)
         {
-            byte[] iv = new byte[16];
-            byte[] array;
-
-            using (Aes aes = Aes.Create())
+            try
             {
-                aes.Key = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(key));
-                aes.IV = iv;
+                byte[] iv = new byte[16];
+                byte[] array;
 
-                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-                using (MemoryStream memoryStream = new MemoryStream())
+                using (Aes aes = Aes.Create())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
-                        {
-                            streamWriter.Write(plainText);
-                        }
+                    aes.Key = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(key));
+                    aes.IV = iv;
 
-                        array = memoryStream.ToArray();
+                    ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, encryptor, CryptoStreamMode.Write))
+                        {
+                            using (StreamWriter streamWriter = new StreamWriter((Stream)cryptoStream))
+                            {
+                                streamWriter.Write(plainText);
+                            }
+
+                            array = memoryStream.ToArray();
+                        }
                     }
                 }
-            }
 
-            return Convert.ToBase64String(array);
+                return Convert.ToBase64String(array);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+            
         }
 
         internal string DecryptString(string key, string cipherText)
         {
-            byte[] iv = new byte[16];
-            byte[] buffer = Convert.FromBase64String(cipherText);
-
-            using (Aes aes = Aes.Create())
+            try
             {
-                aes.Key = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(key));
-                aes.IV = iv;
-                ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                byte[] iv = new byte[16];
+                byte[] buffer = Convert.FromBase64String(cipherText);
 
-                using (MemoryStream memoryStream = new MemoryStream(buffer))
+                using (Aes aes = Aes.Create())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
+                    aes.Key = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(key));
+                    aes.IV = iv;
+                    ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                    using (MemoryStream memoryStream = new MemoryStream(buffer))
                     {
-                        using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                        using (CryptoStream cryptoStream = new CryptoStream((Stream)memoryStream, decryptor, CryptoStreamMode.Read))
                         {
-                            return streamReader.ReadToEnd();
+                            using (StreamReader streamReader = new StreamReader((Stream)cryptoStream))
+                            {
+                                return streamReader.ReadToEnd();
+                            }
                         }
                     }
                 }
             }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+           
         }
         
         internal string numeroSerieHD()
@@ -98,7 +114,7 @@ namespace Precios_Turnos
         {
             try
             {
-                const string ntpServer = "1.north-america.pool.ntp.org";
+                const string ntpServer = "pool.ntp.org";
                 var ntpData = new byte[48];
                 ntpData[0] = 0x1B; //LeapIndicator = 0 (no warning), VersionNum = 3 (IPv4 only), Mode = 3 (Client Mode)
                 var addresses = Dns.GetHostEntry(ntpServer).AddressList;

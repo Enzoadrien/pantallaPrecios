@@ -62,7 +62,8 @@ namespace Precios_Turnos
 
             if (config.AppSettings.Settings[NombreControl] != null)
             {
-                string[] datos = config.AppSettings.Settings[NombreControl].Value.Split('|');
+                Seguridad vSeguridad = new Seguridad();
+                string[] datos = vSeguridad.DecryptString(mainWindow.nombreApp, config.AppSettings.Settings[NombreControl].Value).Split('|');
                 Consulta.Text = datos[0];
                 if (datos.Length > 1)
                 {
@@ -88,21 +89,21 @@ namespace Precios_Turnos
             {
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
+                Seguridad vSeguridad = new Seguridad();
 
                 if (config.AppSettings.Settings[NombreControl] == null)
                 {
                     if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings.Add(NombreControl, Consulta.Text + "|" + Imagen.Text);
+                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text));
                     else
-                        config.AppSettings.Settings.Add(NombreControl, Consulta.Text);
+                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text));
                 }
                 else
                 {
                     if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings[NombreControl].Value = Consulta.Text + "|" + Imagen.Text;
+                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text);
                     else
-                        config.AppSettings.Settings[NombreControl].Value = Consulta.Text;
+                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text);
                 }
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");

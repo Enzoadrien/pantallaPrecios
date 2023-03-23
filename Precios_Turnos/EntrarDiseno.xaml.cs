@@ -51,15 +51,27 @@ namespace Precios_Turnos
             string Correo = vSeguridad.DecryptString(Codigo, config.AppSettings.Settings["Correo"].Value);
             if (Llave.Text.Length > 0)
             {
-                string cadena = vSeguridad.DecryptString(Codigo, Llave.Text);
-                string[] subs = cadena.Split('|');
-                if (subs.Length >= 3)
+                try
                 {
-                    if (subs[0].Equals(Correo) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
-                        && subs[3].Equals(mainWindow.nombreApp) && DateTime.Now.Date <= Convert.ToDateTime(subs[4]))
+                    string cadena = vSeguridad.DecryptString(Codigo, Llave.Text);
+                    string[] subs = cadena.Split('|');
+                    if (subs.Length >= 3)
                     {
-                        DialogResult = true;
-                        Close();
+                        if (subs[0].Equals(Correo) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
+                            && subs[3].Equals(mainWindow.nombreApp) && DateTime.Now.Date <= Convert.ToDateTime(subs[4]))
+                        {
+                            DialogResult = true;
+                            Close();
+                        }
+                        else
+                        {
+                            Mensajes dialog = new Mensajes();
+                            dialog.lblNombre.Content = "¡Error!";
+                            dialog.lblTexto.Text = "Los datos ingresados no son correctos";
+                            dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                            dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                            dialog.ShowDialog();
+                        }
                     }
                     else
                     {
@@ -71,7 +83,7 @@ namespace Precios_Turnos
                         dialog.ShowDialog();
                     }
                 }
-                else
+                catch (Exception)
                 {
                     Mensajes dialog = new Mensajes();
                     dialog.lblNombre.Content = "¡Error!";
@@ -80,7 +92,6 @@ namespace Precios_Turnos
                     dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
                     dialog.ShowDialog();
                 }
-
             }
             else
             {

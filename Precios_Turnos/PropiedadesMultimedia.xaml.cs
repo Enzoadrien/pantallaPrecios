@@ -292,7 +292,7 @@ namespace Precios_Turnos
             {
                 case "MediaElement":
                     ((MediaElement)item).Volume = 1;
-                    break;
+                        break;
                 default: break;
             }
             }
@@ -313,7 +313,9 @@ namespace Precios_Turnos
         private void chkMaximizar_Checked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
+            if (chkSonido.IsChecked == true)
+                ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
+            
             Cada.Text = "900";
             Durar.Text = "0";
             Cada.IsEnabled = true;
@@ -333,7 +335,7 @@ namespace Precios_Turnos
         private void CadaDurante_TextChanged(object sender, TextChangedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
+                ((MediaElement)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
         }
     }
 }
