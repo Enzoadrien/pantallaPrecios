@@ -70,6 +70,10 @@ namespace Precios_Turnos
                         }
                         else
                         {
+                            Conexion.IsEnabled = false;
+                            Turnero.IsEnabled = false;
+                            EditarDiseno.IsEnabled = false;
+
                             Mensajes dialog = new Mensajes();
                             dialog.lblNombre.Content = "¡Error!";
                             dialog.lblTexto.Text = "Su licencia ha caducado. \n Fecha: " + Convert.ToDateTime(subs[4]).Date;
@@ -80,6 +84,7 @@ namespace Precios_Turnos
                     }
                     else
                     {
+
                         Conexion.IsEnabled = true;
                         Turnero.IsEnabled = true;
                         EditarDiseno.IsEnabled = true;
@@ -88,6 +93,10 @@ namespace Precios_Turnos
                 }
                 else
                 {
+                    Conexion.IsEnabled = false;
+                    Turnero.IsEnabled = false;
+                    EditarDiseno.IsEnabled = false;
+
                     Mensajes dialog = new Mensajes();
                     dialog.lblNombre.Content = "¡Error!";
                     dialog.lblTexto.Text = "La licencia no es válida";
