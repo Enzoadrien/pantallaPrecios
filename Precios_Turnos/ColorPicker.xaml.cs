@@ -28,7 +28,7 @@ namespace Precios_Turnos
         private DrawingAttributes drawingAttributes = new DrawingAttributes();
         private Color selectedColor = Colors.Transparent;
         private Boolean IsMouseDown = false;
-        private MainWindow mainWindow;
+        private Window mainWindow;
         private int numAnterior=0;
 
         #endregion
@@ -39,13 +39,13 @@ namespace Precios_Turnos
         /// Constructor that initializes to ColorPicker to the specified color.
         /// </summary>
         /// <param name="initialColor"></param>
-        public ColorPicker(MainWindow pMainWindow, Color initialColor)
+        public ColorPicker(Window pWindow, Color pUltimoColorLetra, Color pUltimoColorFondo, Color initialColor)
         {
             InitializeComponent();
             SelectedColor = initialColor;
-            mainWindow = pMainWindow;
-            ultimoColorLetra.Background = new SolidColorBrush(mainWindow.ultimoColorLetra);
-            ultimoColorFondo.Background = new SolidColorBrush(mainWindow.ultimoColorFondo);
+            mainWindow = pWindow;
+            ultimoColorLetra.Background = new SolidColorBrush(pUltimoColorLetra);
+            ultimoColorFondo.Background = new SolidColorBrush(pUltimoColorFondo);
         }
 
         #endregion

@@ -15,22 +15,22 @@ using System.Windows.Shapes;
 namespace Precios_Turnos
 {
     /// <summary>
-    /// Lógica de interacción para PropiedadesFondo.xaml
+    /// Lógica de interacción para PropiedadesFondoTurnero.xaml
     /// </summary>
-    public partial class PropiedadesFondo : Window
+    public partial class PropiedadesFondoTurnero : Window
     {
-        private MainWindow mainWindow;
-        public PropiedadesFondo(MainWindow pmainWindow)
+        private MostrarTurno mainWindow;
+        public PropiedadesFondoTurnero(MostrarTurno pMostrarTurno)
         {
             InitializeComponent();
-            mainWindow = pmainWindow;
+            mainWindow = pMostrarTurno;
         }
-        
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
-        
+
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
@@ -43,7 +43,7 @@ namespace Precios_Turnos
                 Close();
             }
         }
-        
+
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             SolidColorBrush colorBase = new SolidColorBrush(Colors.White);

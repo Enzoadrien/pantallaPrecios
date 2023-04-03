@@ -20,12 +20,12 @@ namespace Precios_Turnos
     /// </summary>
     public partial class CapturaTextoDialogo : Window
     {
-        private MainWindow mainWindow;
+        private Window mainWindow;
         public bool esVideo = false;
-        public CapturaTextoDialogo(MainWindow pmainWindow)
+        public CapturaTextoDialogo(Window pMainWindow)
         {
             InitializeComponent();
-            mainWindow = pmainWindow;
+            mainWindow = pMainWindow;
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)

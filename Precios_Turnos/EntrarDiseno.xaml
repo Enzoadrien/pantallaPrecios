@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-       Title="Llave" Background="#FFD2CBCB" WindowStyle="None" Height="140" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize">
+       Title="Llave" Background="#FFD2CBCB" WindowStyle="None" Height="140" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>

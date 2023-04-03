@@ -63,7 +63,7 @@ namespace Precios_Turnos
             if (config.AppSettings.Settings[NombreControl] != null)
             {
                 Seguridad vSeguridad = new Seguridad();
-                string[] datos = vSeguridad.DecryptString(mainWindow.nombreApp, config.AppSettings.Settings[NombreControl].Value).Split('|');
+                string[] datos = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[NombreControl].Value).Split('|');
                 Consulta.Text = datos[0];
                 if (datos.Length > 1)
                 {
@@ -94,16 +94,16 @@ namespace Precios_Turnos
                 if (config.AppSettings.Settings[NombreControl] == null)
                 {
                     if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text));
+                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text));
                     else
-                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text));
+                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text));
                 }
                 else
                 {
                     if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text);
+                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text);
                     else
-                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(mainWindow.nombreApp, Consulta.Text);
+                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text);
                 }
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");

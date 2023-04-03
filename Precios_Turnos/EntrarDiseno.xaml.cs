@@ -25,8 +25,8 @@ namespace Precios_Turnos
         public EntrarDiseno(MainWindow pmainWindow)
         {
             InitializeComponent();
+            CargarLlaveTemp();
             mainWindow = pmainWindow;
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
@@ -43,6 +43,39 @@ namespace Precios_Turnos
         {
             try { DragMove(); } catch (Exception) { }
         }
+
+        private void CargarLlaveTemp()
+        {
+            Seguridad vSeguridad = new Seguridad();
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string Codigo = config.AppSettings.Settings["CodigoActivacion"].Value;
+            string Correo = vSeguridad.DecryptString(Codigo, config.AppSettings.Settings["Correo"].Value);
+            string LlaveTemp = vSeguridad.DecryptString(Codigo, config.AppSettings.Settings["LlaveTemp"].Value);
+            if (LlaveTemp.Length > 0)
+            {
+                try
+                {
+                    string cadena = vSeguridad.DecryptString(Codigo, LlaveTemp);
+                    string[] subs = cadena.Split('|');
+                    if (subs.Length >= 3)
+                    {
+                        if (subs[0].Equals(Correo) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
+                            && subs[3].Equals(MainWindow.nombreApp))
+                        {
+                            if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                            {
+                                if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                                {
+                                    Llave.Text = LlaveTemp;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }       
+        }
+
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             Seguridad vSeguridad = new Seguridad();
@@ -58,10 +91,39 @@ namespace Precios_Turnos
                     if (subs.Length >= 3)
                     {
                         if (subs[0].Equals(Correo) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
-                            && subs[3].Equals(mainWindow.nombreApp) && DateTime.Now.Date <= Convert.ToDateTime(subs[4]))
+                            && subs[3].Equals(MainWindow.nombreApp))
                         {
-                            DialogResult = true;
-                            Close();
+                            if(vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                            { 
+                                if(vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                                {
+                                    config.AppSettings.Settings["LlaveTemp"].Value = vSeguridad.EncryptString(Codigo, Llave.Text);
+                                    config.Save(ConfigurationSaveMode.Modified);
+                                    ConfigurationManager.RefreshSection("appSettings");
+
+                                    DialogResult = true;
+                                    Close();
+                                }
+                                else
+                                {
+                                    Mensajes dialog = new Mensajes();
+                                    dialog.lblNombre.Content = "¡Error!";
+                                    dialog.lblTexto.Text = "La licencia ha caducado";
+                                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                    dialog.ShowDialog();
+                                }
+                               
+                            }
+                            else
+                            {
+                                Mensajes dialog = new Mensajes();
+                                dialog.lblNombre.Content = "¡Error!";
+                                dialog.lblTexto.Text = "Se requiere de una conexión a internet para poder entrar en modo edición";
+                                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                dialog.ShowDialog();
+                            }
                         }
                         else
                         {

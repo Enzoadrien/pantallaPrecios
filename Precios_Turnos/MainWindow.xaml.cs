@@ -29,12 +29,14 @@ namespace Precios_Turnos
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string nombreApp = "Precios_Turnos";
+        public static string nombreApp = "Precios_Turnos";
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
         private bool editar = false;
         private bool animaciones = false;
         private bool maximizado = false;
+        private bool activarTurnero = false;
+        private bool estaSaliendo = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
         private string controlClickName;
@@ -141,6 +143,10 @@ namespace Precios_Turnos
                     PausarVideos(true);
                     animaciones = true;
                     Task.Run(() => AnimacionesObjetos());
+
+                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    activarTurnero = config.AppSettings.Settings["Turnero"].Value.Equals("true") ? true : false;
+                    Task.Run(() => EscuhcarTurnos());
                 }
 
                 else if (WindowState == WindowState.Maximized && editar)
@@ -164,22 +170,28 @@ namespace Precios_Turnos
                 }
                 else if (WindowState != WindowState.Maximized && !editar && maximizado)
                 {
+                    LimpiarVistaPrevia();
                     maximizado = false;
                     animaciones = false;
+                    AsynchronousSocketListener.StopListening();
                     Topmost = false;
                     Menu.Visibility = Visibility.Visible;
                     ResizeMode = ResizeMode.CanResize;
                     WindowStyle = WindowStyle.ThreeDBorderWindow;
                     Principal.IsHitTestVisible = true;
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    CargarVistaPrevia();
                 }
             }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape && maximizado)
+            if (e.Key == Key.Escape && maximizado && !estaSaliendo)
             {
+                estaSaliendo = true;
                 SalirEdicion();
+                estaSaliendo = false;
             }
         }
 
@@ -379,7 +391,6 @@ namespace Precios_Turnos
                 GuardarControles();
                 editar = false;
             }
-            CargarVistaPrevia();
 
             WindowState = WindowState.Normal;
             LogoPrincipal.Visibility = Visibility.Visible;
@@ -969,7 +980,7 @@ namespace Precios_Turnos
             if (ListTablas.Count == 0)
             {
                 dtFinal.Columns.Add();
-                dtFinal.Rows.Add(new object[1] { "Agregar datos" }.ToArray());
+                dtFinal.Rows.Add(new object[1] { "Sin datos" }.ToArray());
                 ListTablas.Add(dtFinal);
             }
             return ListTablas;
@@ -1050,6 +1061,11 @@ namespace Precios_Turnos
 
         private void GuardarControles()
         {
+            DirectoryInfo di = new DirectoryInfo(@".\objetos");
+            foreach (FileInfo file in di.EnumerateFiles())
+            {
+                file.Delete();
+            }
             int x = 0;
             foreach (var itemObjets in Principal.Children)
             {
@@ -1146,7 +1162,9 @@ namespace Precios_Turnos
                     }
                                     };
                                 }
-                                control.ItemsSource = CargarListaTablas(control.Name, control.Tag.ToString())[0].DefaultView;
+                                List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
+                                if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
+                                    control.ItemsSource = list[0].DefaultView;
                                 control.UpdateLayout();
                                 ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                 break;
@@ -1164,15 +1182,15 @@ namespace Precios_Turnos
         public List<DataTable> CargarListaTablas(string pNombre, string pTag)
         {
             string[] datos = pTag.Split('|');
-            List<DataTable> ListaTablas = new List<DataTable>();
+            List<DataTable> ListaTablas;
             try
             {
                 Seguridad vSeguridad = new Seguridad();
                 //Create the object
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                string odbc = config.AppSettings.Settings["odbc"].Value;
-                string usuario = config.AppSettings.Settings["usuarioODBC"].Value;
-                string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
+                string odbc = config.AppSettings.Settings["ODBC"].Value;
+                string usuario = config.AppSettings.Settings["UsuarioODBC"].Value;
+                string contrasena = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["ContrasenaODBC"].Value);
                 string Codigo = config.AppSettings.Settings["CodigoActivacion"].Value;
                 string consulta = string.Empty;
                 if (config.AppSettings.Settings[pNombre] != null)
@@ -1194,12 +1212,6 @@ namespace Precios_Turnos
                     }
                     else
                     {
-                        Mensajes dialog = new Mensajes();
-                        dialog.lblNombre.Content = "¡Error!";
-                        dialog.lblTexto.Text = "No hay registros en la consulta";
-                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                        dialog.ShowDialog();
                         ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2]);
                     }
                     connection.Close();
@@ -1295,6 +1307,7 @@ namespace Precios_Turnos
                         int height,
                         string filePath)
         {
+            try { 
             TransformGroup transformGroup = new TransformGroup();
             ScaleTransform scaleTransform = new ScaleTransform();
             scaleTransform.ScaleX = (double)width / sourceImage.PixelWidth;
@@ -1318,15 +1331,20 @@ namespace Precios_Turnos
                 encoder.Save(stream);
                 stream.Close();
             }
+            }
+            catch { }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                CargarControles();
-                if (WindowState != WindowState.Maximized)
-                    CargarVistaPrevia();
+                if (ValidarActivar())
+                {
+                    CargarControles();
+                    if (WindowState != WindowState.Maximized)
+                        CargarVistaPrevia();
+                }
             }
             catch (Exception) { }
 
@@ -1402,6 +1420,18 @@ namespace Precios_Turnos
                 }
             }));
         }
+        
+        private async Task EscuhcarTurnos()
+        {
+            if (activarTurnero)
+            {
+                try
+                {
+                    AsynchronousSocketListener.StartListening();
+                }
+                catch (Exception) { }
+            }
+        }
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)
         {
@@ -1410,7 +1440,10 @@ namespace Precios_Turnos
                 try
                 {
                     DataGrid control = (DataGrid)FindName(pNombre);
-                    control.ItemsSource = pLisTablas[x].DefaultView;
+                    if (!pLisTablas[x].Rows[0][0].ToString().Equals("Sin datos"))
+                        control.ItemsSource = pLisTablas[x].DefaultView;
+                    else
+                        control.ItemsSource = null;
                     foreach (DataGridColumn column in control.Columns)
                         column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
                     control.UpdateLayout();
@@ -1514,5 +1547,10 @@ namespace Precios_Turnos
             }));
         }
 
+        private void Turnero_Click(object sender, RoutedEventArgs e)
+        {
+            Turnero turnero = new Turnero(this);
+            turnero.ShowDialog();
+        }
     }
 }

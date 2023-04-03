@@ -47,18 +47,6 @@ namespace Precios_Turnos
             GuardarInfo();
             Close();
         }
-        private IEnumerable<string> EnumDsn(RegistryKey rootKey)
-        {
-            RegistryKey regKey = rootKey.OpenSubKey(@"Software\ODBC\ODBC.INI\ODBC Data Sources");
-            if (regKey != null)
-            {
-                foreach (string name in regKey.GetValueNames())
-                {
-                    string value = regKey.GetValue(name, "").ToString();
-                    yield return name;
-                }
-            }
-        }
 
         private void btnProbar_Click(object sender, RoutedEventArgs e)
         {
@@ -89,20 +77,29 @@ namespace Precios_Turnos
         {
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            cbxODBC.SelectedItem = config.AppSettings.Settings["odbc"].Value;
-            Usuario.Text = config.AppSettings.Settings["usuarioODBC"].Value;
-            Contrasena.Password = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["contrasenaODBC"].Value);
+            cbxODBC.SelectedItem = config.AppSettings.Settings["ODBC"].Value;
+            Usuario.Text = config.AppSettings.Settings["UsuarioODBC"].Value;
+            Contrasena.Password = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["ContrasenaODBC"].Value);
         }
 
         private void GuardarInfo()
         {
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["odbc"].Value = cbxODBC.Text;
-            config.AppSettings.Settings["usuarioODBC"].Value = Usuario.Text;
-            config.AppSettings.Settings["contrasenaODBC"].Value = vSeguridad.EncryptString(config.AppSettings.Settings["CodigoActivacion"].Value, Contrasena.Password);
+            config.AppSettings.Settings["ODBC"].Value = cbxODBC.Text;
+            config.AppSettings.Settings["UsuarioODBC"].Value = Usuario.Text;
+            config.AppSettings.Settings["ContrasenaODBC"].Value = vSeguridad.EncryptString(config.AppSettings.Settings["CodigoActivacion"].Value, Contrasena.Password);
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                GuardarInfo();
+                Close();
+            }
         }
     }
     public class ViewModel

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Activar" Background="#FFD2CBCB" Height="240" Width="500" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+        Title="Activar" Background="#FFD2CBCB" Height="240" Width="500" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" KeyDown="Window_KeyDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="30*"/>

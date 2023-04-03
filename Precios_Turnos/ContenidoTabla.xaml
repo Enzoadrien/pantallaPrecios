@@ -61,9 +61,9 @@
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="2" >
             <Button x:Name="btnProbar"
-              Content="Probar conexión"
+              Content="Cargar vista previa"
               IsDefault="True"
-              Width="120"
+              Width="150"
               Height="20"
               Margin="0,0,0,0"
               TabIndex="0"

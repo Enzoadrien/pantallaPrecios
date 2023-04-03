@@ -18,12 +18,12 @@ namespace Precios_Turnos
     /// <summary>
     /// Lógica de interacción para ConfigDiseno.xaml
     /// </summary>
-    public partial class PropiedadesLabel : Window
+    public partial class PropiedadesLabelTurno : Window
     {
-        private MainWindow mainWindow;
+        private MostrarTurno mainWindow;
         bool esInicio = true;
 
-        public PropiedadesLabel(MainWindow pMainWindow)
+        public PropiedadesLabelTurno(MostrarTurno pMainWindow)
         {
             InitializeComponent();
             mainWindow = pMainWindow;

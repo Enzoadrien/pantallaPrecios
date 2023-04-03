@@ -31,6 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="DataGate">
+      <HintPath>bin\x86\Debug\net6.0-windows\DataGate.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="ColorSwatchCircle.png" />
     <Resource Include="ColorSwatchSquare1.png" />
     <Resource Include="ColorSwatchSquare2.png" />
@@ -43,6 +49,15 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Update="PropiedadesBordeTurnero.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="PropiedadesLabelTurno.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="PropiedadesMultimediaTurno.xaml.cs">
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 

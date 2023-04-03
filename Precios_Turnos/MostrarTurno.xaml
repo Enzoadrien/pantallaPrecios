@@ -1,17 +1,18 @@
-﻿<Window x:Class="Precios_Turnos.MainWindow"
+﻿<Window x:Class="Precios_Turnos.MostrarTurno"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico" Loaded="Window_Loaded" MinWidth="920" MinHeight="600">
+        Title="Mostrar turno" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Mostrar/ocultar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Mostrar/ocultar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Mostrar/ocultar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -27,21 +28,11 @@
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
         <Grid x:Name="Fondo"></Grid>
-        <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"></Grid>
-        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000">
-            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
-                <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
-                <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
-                <Separator />
-                <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
-                <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <Separator />
-                <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
-            </MenuItem>
-        </Menu>
+        <Border x:Name="Borde" BorderBrush="Black" BorderThickness="3"/>
+        <Label x:Name="NumeroTurno" Content="Num. turno" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="NumeroEquipo" Content="Num. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="NombreEquipo" Content="Nom. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="ModoEdicion" Content="Modo edición" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
-        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
-        <Grid x:Name="Video" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
     </Grid>
 </Window>

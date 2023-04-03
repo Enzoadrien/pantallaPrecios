@@ -126,7 +126,7 @@ namespace Precios_Turnos
         private void btnColorFuente_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            ColorPicker colorPicker = new ColorPicker(mainWindow, (control.Foreground as SolidColorBrush).Color);
+            ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Foreground as SolidColorBrush).Color);
             // get the parent container
 
             // get the position within the container
@@ -194,7 +194,7 @@ namespace Precios_Turnos
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            ColorPicker colorPicker = new ColorPicker(mainWindow, (control.Background as SolidColorBrush).Color);
+            ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Background as SolidColorBrush).Color);
             // get the parent container
 
             // get the position within the container
@@ -221,7 +221,7 @@ namespace Precios_Turnos
         private void btnColorFuente2_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            ColorPicker colorPicker = new ColorPicker(mainWindow, (control.Foreground as SolidColorBrush).Color);
+            ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Foreground as SolidColorBrush).Color);
             // get the parent container
 
             // get the position within the container
@@ -248,7 +248,7 @@ namespace Precios_Turnos
         private void btnColorFondo2_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
-            ColorPicker colorPicker = new ColorPicker(mainWindow, (control.Background as SolidColorBrush).Color);
+            ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Background as SolidColorBrush).Color);
             // get the parent container
 
             // get the position within the container
@@ -352,7 +352,7 @@ namespace Precios_Turnos
                         //control.RenderTransform = new TranslateTransform(double.Parse(CoordenadaX.Text),double.Parse(CoordenadaY.Text));
                     }
                 }
-                catch (Exception ex) { }
+                catch (Exception) { }
             }
         }
 

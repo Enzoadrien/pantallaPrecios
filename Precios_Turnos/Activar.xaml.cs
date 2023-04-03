@@ -59,7 +59,7 @@ namespace Precios_Turnos
                 if (subs.Length >= 3)
                 {
                     if (subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
-                        && subs[3].Equals(mainWindow.nombreApp))
+                        && subs[3].Equals(MainWindow.nombreApp))
                     {
                         if (!subs[4].Equals("0"))
                         {
@@ -91,7 +91,7 @@ namespace Precios_Turnos
             if (subs.Length >= 3)
             {
                 if(subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase()) 
-                    && subs[3].Equals(mainWindow.nombreApp)) {
+                    && subs[3].Equals(MainWindow.nombreApp)) {
 
 
                     if (!subs[4].Equals("0"))
@@ -195,7 +195,7 @@ namespace Precios_Turnos
             if (IsValidEmail(Correo.Text))
                 Codigo.Text = vSeguridad.EncryptString(Correo.Text, vSeguridad.numeroSerieHD() + "|" +
                                                                     vSeguridad.numeroSeriePlacaBase() + "|" +
-                                                                    mainWindow.nombreApp);
+                                                                    MainWindow.nombreApp);
             else
             {
                 Mensajes dialog = new Mensajes();
@@ -216,6 +216,14 @@ namespace Precios_Turnos
             catch (Exception)
             {
 
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Close();
             }
         }
     }
