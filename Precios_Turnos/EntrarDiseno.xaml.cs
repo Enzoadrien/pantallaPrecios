@@ -27,6 +27,7 @@ namespace Precios_Turnos
             InitializeComponent();
             CargarLlaveTemp();
             mainWindow = pmainWindow;
+            FocusManager.SetFocusedElement(this, Llave);
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
@@ -62,14 +63,30 @@ namespace Precios_Turnos
                         if (subs[0].Equals(Correo) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
                             && subs[3].Equals(MainWindow.nombreApp))
                         {
-                            if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
-                            {
-                                if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                                Llave.Text = LlaveTemp;
+                                if (!subs[4].Equals("0"))
                                 {
-                                    Llave.Text = LlaveTemp;
+                                    if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                                    {
+                                        Llave.IsReadOnly = true;
+                                        lblFecha.Foreground= new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                                        lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
+                                    }
+                                    else
+                                    {
+                                        Llave.Text = "";
+                                        lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                        lblFecha.Content = "Fecha licencia caducada: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
+                                    }
+
+                                }
+                                else
+                                {
+                                    Llave.IsReadOnly = true;
+                                    lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                                    lblFecha.Content = "Fecha licencia: Permanete";
                                 }
                             }
-                        }
                     }
                 }
                 catch { }
@@ -94,8 +111,29 @@ namespace Precios_Turnos
                             && subs[3].Equals(MainWindow.nombreApp))
                         {
                             if(vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
-                            { 
-                                if(vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                            {
+                                if (!subs[4].Equals("0"))
+                                {
+                                    if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]))
+                                    {
+                                        config.AppSettings.Settings["LlaveTemp"].Value = vSeguridad.EncryptString(Codigo, Llave.Text);
+                                        config.Save(ConfigurationSaveMode.Modified);
+                                        ConfigurationManager.RefreshSection("appSettings");
+
+                                        DialogResult = true;
+                                        Close();
+                                    }
+                                    else
+                                    {
+                                        Mensajes dialog = new Mensajes();
+                                        dialog.lblNombre.Content = "¡Error!";
+                                        dialog.lblTexto.Text = "La licencia ha caducado";
+                                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                        dialog.ShowDialog();
+                                    }
+                                }
+                                else
                                 {
                                     config.AppSettings.Settings["LlaveTemp"].Value = vSeguridad.EncryptString(Codigo, Llave.Text);
                                     config.Save(ConfigurationSaveMode.Modified);
@@ -104,16 +142,7 @@ namespace Precios_Turnos
                                     DialogResult = true;
                                     Close();
                                 }
-                                else
-                                {
-                                    Mensajes dialog = new Mensajes();
-                                    dialog.lblNombre.Content = "¡Error!";
-                                    dialog.lblTexto.Text = "La licencia ha caducado";
-                                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                    dialog.ShowDialog();
-                                }
-                               
+
                             }
                             else
                             {

@@ -32,6 +32,7 @@ namespace Precios_Turnos
             mainWindow = pMainWindow;
             NombreControl = pNombreControl;
             CargarInfo();
+            FocusManager.SetFocusedElement(this, Consulta);
         }
 
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

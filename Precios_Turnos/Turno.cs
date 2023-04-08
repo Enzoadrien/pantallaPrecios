@@ -14,6 +14,8 @@ namespace Precios_Turnos
         private static string CodEquipo = "C";
         private string NumEquipo;
         private int NumTurno;
+        private string NumEquipoAnt;
+        private int NumTurnoAnt;
 
         internal string GetCodTurnero()
         {
@@ -55,6 +57,24 @@ namespace Precios_Turnos
         internal int GetNumTurno()
         {
             return NumTurno;
+        }
+
+        internal void SetNumEquipoAnt(string pvStrNumEquipoAnt)
+        {
+            NumEquipoAnt = pvStrNumEquipoAnt;
+        }
+        internal string GetNumEquipoAnt()
+        {
+            return NumEquipoAnt;
+        }
+
+        internal void SetNumTurnoAnt(int pvIntNumTurnoAnt)
+        {
+            NumTurnoAnt = pvIntNumTurnoAnt;
+        }
+        internal int GetNumTurnoAnt()
+        {
+            return NumTurnoAnt;
         }
 
     }

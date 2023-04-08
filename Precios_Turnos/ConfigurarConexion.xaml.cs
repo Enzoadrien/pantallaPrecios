@@ -32,6 +32,7 @@ namespace Precios_Turnos
             InitializeComponent();
             DataContext = new ViewModel();
             CargarInfo();
+            FocusManager.SetFocusedElement(this, cbxODBC);
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
         {

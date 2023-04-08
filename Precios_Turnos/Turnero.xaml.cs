@@ -41,6 +41,7 @@ namespace Precios_Turnos
             InitializeComponent();
             CargarDatos();
             mainWindow = pmainWindow;
+            FocusManager.SetFocusedElement(this, cbxTipo);
             backgroundWorker.WorkerReportsProgress = true;
             backgroundWorker.WorkerSupportsCancellation = true;
             backgroundWorker.ProgressChanged += ProgressChanged;

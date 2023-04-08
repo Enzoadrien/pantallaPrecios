@@ -28,7 +28,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pmainWindow;
-
+            FocusManager.SetFocusedElement(this, Opacidad);
         }
 
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

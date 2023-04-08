@@ -405,7 +405,12 @@ namespace Precios_Turnos
             try
             {
                 ImageBrush myBrush = new ImageBrush();
-                myBrush.ImageSource = new BitmapImage(new Uri(@"./Principal.png", UriKind.Relative));
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(@"./Principal.png", UriKind.Relative);
+                image.EndInit();
+                myBrush.ImageSource = image;
 
                 VistaPrevia.Background = myBrush;
             }
@@ -514,7 +519,7 @@ namespace Precios_Turnos
         {
             var item = FindName(controlClickName) as UIElement;
 
-            Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
+            var point = e.GetPosition(Principal);
 
             switch (item.GetType().Name.ToString())
             {
@@ -1307,30 +1312,31 @@ namespace Precios_Turnos
                         int height,
                         string filePath)
         {
-            try { 
-            TransformGroup transformGroup = new TransformGroup();
-            ScaleTransform scaleTransform = new ScaleTransform();
-            scaleTransform.ScaleX = (double)width / sourceImage.PixelWidth;
-            scaleTransform.ScaleY = (double)height / sourceImage.PixelHeight;
-            transformGroup.Children.Add(scaleTransform);
-
-            DrawingVisual vis = new DrawingVisual();
-            DrawingContext cont = vis.RenderOpen();
-            cont.PushTransform(transformGroup);
-            cont.DrawImage(sourceImage, new Rect(new Size(sourceImage.PixelWidth, sourceImage.PixelHeight)));
-            cont.Close();
-
-            RenderTargetBitmap rtb = new RenderTargetBitmap(width, height, 96d, 96d, PixelFormats.Default);
-            rtb.Render(vis);
-
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
-
-            using (FileStream stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                encoder.Save(stream);
-                stream.Close();
-            }
+                TransformGroup transformGroup = new TransformGroup();
+                ScaleTransform scaleTransform = new ScaleTransform();
+                scaleTransform.ScaleX = (double)width / sourceImage.PixelWidth;
+                scaleTransform.ScaleY = (double)height / sourceImage.PixelHeight;
+                transformGroup.Children.Add(scaleTransform);
+
+                DrawingVisual vis = new DrawingVisual();
+                DrawingContext cont = vis.RenderOpen();
+                cont.PushTransform(transformGroup);
+                cont.DrawImage(sourceImage, new Rect(new Size(sourceImage.PixelWidth, sourceImage.PixelHeight)));
+                cont.Close();
+
+                RenderTargetBitmap rtb = new RenderTargetBitmap(width, height, 96d, 96d, PixelFormats.Default);
+                rtb.Render(vis);
+
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+                using (FileStream stream = new FileStream(filePath, FileMode.Create))
+                {
+                    encoder.Save(stream);
+                    stream.Close();
+                }
             }
             catch { }
         }
@@ -1420,7 +1426,7 @@ namespace Precios_Turnos
                 }
             }));
         }
-        
+
         private async Task EscuhcarTurnos()
         {
             if (activarTurnero)
@@ -1472,6 +1478,7 @@ namespace Precios_Turnos
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.Height = this.ActualHeight;
+                    obj.Volume = 1;
 
                     duracion = Convert.ToInt32(Math.Round(control.NaturalDuration.TimeSpan.TotalMilliseconds));
                     if (int.Parse(datos[2]) != 0)
@@ -1493,7 +1500,7 @@ namespace Precios_Turnos
             }));
             return duracion;
         }
-        
+
         public async Task EliminarVideoFullScream(string pNombre, string pTag)
         {
             Application.Current.Dispatcher.Invoke(new Action(() =>

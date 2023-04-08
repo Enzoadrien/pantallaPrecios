@@ -30,6 +30,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pmainWindow;
+            FocusManager.SetFocusedElement(this, btnContenido);
         }
 
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -130,15 +131,15 @@ namespace Precios_Turnos
             // get the parent container
 
             // get the position within the container
-            var mousePosition = e.GetPosition(mainWindow);
+            var mousePosition = e.GetPosition(mainWindow.Principal);
 
-            if (mousePosition.Y + 480 >= mainWindow.MaxHeight)
-                colorPicker.Top = mousePosition.Y - 480;
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
             else
                 colorPicker.Top = mousePosition.Y;
 
-            if (mousePosition.X + 330 >= mainWindow.MaxWidth)
-                colorPicker.Left = mousePosition.X - 330;
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
             else
                 colorPicker.Left = mousePosition.X;
 
@@ -198,15 +199,15 @@ namespace Precios_Turnos
             // get the parent container
 
             // get the position within the container
-            var mousePosition = e.GetPosition(mainWindow);
+            var mousePosition = e.GetPosition(mainWindow.Principal);
 
-            if (mousePosition.Y + 480 >= mainWindow.MaxHeight)
-                colorPicker.Top = mousePosition.Y - 480;
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
             else
                 colorPicker.Top = mousePosition.Y;
 
-            if (mousePosition.X + 330 >= mainWindow.MaxWidth)
-                colorPicker.Left = mousePosition.X - 330;
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
             else
                 colorPicker.Left = mousePosition.X;
 
@@ -225,15 +226,15 @@ namespace Precios_Turnos
             // get the parent container
 
             // get the position within the container
-            var mousePosition = e.GetPosition(mainWindow);
+            var mousePosition = e.GetPosition(mainWindow.Principal);
 
-            if (mousePosition.Y + 480 >= mainWindow.MaxHeight)
-                colorPicker.Top = mousePosition.Y - 480;
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
             else
                 colorPicker.Top = mousePosition.Y;
 
-            if (mousePosition.X + 330 >= mainWindow.MaxWidth)
-                colorPicker.Left = mousePosition.X - 330;
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
             else
                 colorPicker.Left = mousePosition.X;
 
@@ -252,15 +253,15 @@ namespace Precios_Turnos
             // get the parent container
 
             // get the position within the container
-            var mousePosition = e.GetPosition(mainWindow);
+            var mousePosition = e.GetPosition(mainWindow.Principal);
 
-            if (mousePosition.Y + 480 >= mainWindow.MaxHeight)
-                colorPicker.Top = mousePosition.Y - 480;
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
             else
                 colorPicker.Top = mousePosition.Y;
 
-            if (mousePosition.X + 330 >= mainWindow.MaxWidth)
-                colorPicker.Left = mousePosition.X - 330;
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
             else
                 colorPicker.Left = mousePosition.X;
 
@@ -422,13 +423,20 @@ namespace Precios_Turnos
             ContenidoTabla dialog = new ContenidoTabla(mainWindow, NombreControl.Text);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
+            var relativeCenterParent = Mouse.GetPosition(this);
+
+            // get the position within the container
+            var mousePosition = this.PointToScreen(relativeCenterParent);
+
+            if (mousePosition.Y + dialog.Height >= mainWindow.MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            if (mousePosition.X + dialog.Width >= mainWindow.MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
 
             dialog.ShowDialog();
             ColorFuenteFondo();

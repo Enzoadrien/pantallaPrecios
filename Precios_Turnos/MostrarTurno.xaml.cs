@@ -165,7 +165,7 @@ namespace Precios_Turnos
                     if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
-                        MenuItem itemCm = (MenuItem)cm.Items[6];
+                        MenuItem itemCm = (MenuItem)cm.Items[9];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -203,17 +203,32 @@ namespace Precios_Turnos
 
         private void MenuEliminar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (controlClickName.Equals("Borde"))
-            {
-                Mensajes dialog = new Mensajes();
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Este objeto no puede ser borrado";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                dialog.ShowDialog();
-            }
-            else
                 BorarObjeto(controlClickName);
+        }
+
+        private bool SeEliminaControl(string name)
+        {
+            bool seElimina;
+            switch (name)
+            {
+                case "Coordenadas":
+                case "ModoEdicion":
+                case "Principal":
+                case "Fondo":
+                case "Borde":
+                case "NumeroTurno":
+                case "NumeroEquipo":
+                case "NombreEquipo":
+                case "NumeroTurnoAnt":
+                case "NumeroEquipoAnt":
+                case "NombreEquipoAnt":
+                    seElimina = false;
+                    break;
+                default:
+                    seElimina = true;
+                    break;
+            }
+            return seElimina;
         }
 
         private bool SeModificaControl(string name)
@@ -260,7 +275,8 @@ namespace Precios_Turnos
                     propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesLabel.TipoControl.Text = "Texto";
                     propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
-                    if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo"))
+                    if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo") || item.GetValue(NameProperty).ToString().Equals("NombreEquipo")
+                        || item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt") || item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
                         propiedadesLabel.Contenido.IsReadOnly = true;
                     propiedadesLabel.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
                     propiedadesLabel.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
@@ -339,24 +355,38 @@ namespace Precios_Turnos
 
         public void BorarObjeto(string pNombre)
         {
-            var item = FindName(pNombre) as UIElement;
-            Principal.Children.Remove(item);
-            NameScope.GetNameScope(this).UnregisterName(pNombre);
-
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            if (config.AppSettings.Settings[pNombre] != null)
-                config.AppSettings.Settings.Remove(pNombre);
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
-
-            DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
-            foreach (var file in info.GetFiles())
+            if(SeEliminaControl(pNombre))
             {
-                string[] nombre = file.Name.Split('-');
-                if (nombre[1].Equals(pNombre + ".xaml"))
-                    File.Delete(file.FullName);
+                var item = FindName(pNombre) as UIElement;
+                Principal.Children.Remove(item);
+                NameScope.GetNameScope(this).UnregisterName(pNombre);
+
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (config.AppSettings.Settings[pNombre] != null)
+                    config.AppSettings.Settings.Remove(pNombre);
+
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+
+                DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
+                foreach (var file in info.GetFiles())
+                {
+                    string[] nombre = file.Name.Split('-');
+                    if (nombre[1].Equals(pNombre + ".xaml"))
+                        File.Delete(file.FullName);
+                }
             }
+            else
+            {
+                Mensajes dialog = new Mensajes();
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Este objeto no puede ser borrado";
+                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.ShowDialog();
+            }
+            
+   
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -569,6 +599,30 @@ namespace Precios_Turnos
                         NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                         Principal.Children.Add(item);
                     }
+                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt"))
+                    {
+                        Principal.Children.Remove(NumeroTurnoAnt);
+                        NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
+                        ((Label)item).Content = NumeroTurnoAnt.Content;
+                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                        Principal.Children.Add(item);
+                    }
+                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt"))
+                    {
+                        Principal.Children.Remove(NumeroEquipoAnt);
+                        NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
+                        ((Label)item).Content = NumeroEquipoAnt.Content;
+                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                        Principal.Children.Add(item);
+                    }
+                    else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
+                    {
+                        Principal.Children.Remove(NombreEquipoAnt);
+                        NameScope.GetNameScope(this).UnregisterName(NombreEquipoAnt.Name);
+                        ((Label)item).Content = NombreEquipoAnt.Content;
+                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                        Principal.Children.Add(item);
+                    }
                     else
                     {
                         try
@@ -598,6 +652,12 @@ namespace Precios_Turnos
             }
         }
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (esDiseno)
+                GuardarControles();
+        }
+
         private void MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Label control = (Label)FindName("NumeroTurno");
@@ -618,15 +678,38 @@ namespace Precios_Turnos
                 control.Visibility = Visibility.Visible;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (esDiseno)
-                GuardarControles();
-        }
-
         private void MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Label control = (Label)FindName("NombreEquipo");
+            if (control.Visibility == Visibility.Visible)
+                control.Visibility = Visibility.Hidden;
+            else
+                control.Visibility = Visibility.Visible;
+        }
+
+        private void MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Label control = (Label)FindName("NumeroTurnoAnt");
+            if (control.Visibility == Visibility.Visible)
+                control.Visibility = Visibility.Hidden;
+            else
+                control.Visibility = Visibility.Visible;
+
+
+        }
+
+        private void MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Label control = (Label)FindName("NumeroEquipoAnt");
+            if (control.Visibility == Visibility.Visible)
+                control.Visibility = Visibility.Hidden;
+            else
+                control.Visibility = Visibility.Visible;
+        }
+
+        private void MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Label control = (Label)FindName("NombreEquipoAnt");
             if (control.Visibility == Visibility.Visible)
                 control.Visibility = Visibility.Hidden;
             else

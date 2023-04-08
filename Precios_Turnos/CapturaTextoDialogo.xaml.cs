@@ -26,6 +26,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pMainWindow;
+            FocusManager.SetFocusedElement(this, NombreTextBox);
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)

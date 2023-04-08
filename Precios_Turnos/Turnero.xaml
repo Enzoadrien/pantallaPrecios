@@ -68,11 +68,11 @@
         </ComboBox>
         <Label x:Name="lblPuerto" Content="Puerto:" Grid.Row="3" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Puerto" Grid.Row="3" Grid.ColumnSpan="2" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0"/>
+        <Label x:Name="lblAudio" Content="Audio:" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxAudio" ItemsSource="{Binding CmbContentAudio}" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,5,0" SelectionChanged="cbxAudio_SelectionChanged"/>
         <Label x:Name="lblDurar" Content="Durar:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Durar" Grid.Row="5" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" />
         <Label x:Name="lblSeg" Content="s" Grid.Row="5" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblAudio" Content="Audio:" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxAudio" ItemsSource="{Binding CmbContentAudio}" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,5,0" SelectionChanged="cbxAudio_SelectionChanged"/>
         <Label x:Name="lblIP" Content="IP base:" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="IP" Grid.Row="6" Text="" Grid.Column="1" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" />
         <StackPanel Grid.Row="7"

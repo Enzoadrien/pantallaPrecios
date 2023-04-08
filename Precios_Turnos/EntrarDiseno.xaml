@@ -23,6 +23,7 @@
         <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
             <TextBox x:Name="Llave"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap" Margin="5,5,5,0"/>
         </ScrollViewer>
+        <Label x:Name="lblFecha" Content="Fecha licencia:" Grid.Row="2" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14"/>
         <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

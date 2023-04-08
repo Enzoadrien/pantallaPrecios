@@ -28,6 +28,7 @@ namespace Precios_Turnos
             InitializeComponent();
             mainWindow = pmainWindow;
             CargarInfo();
+            FocusManager.SetFocusedElement(this, Correo);
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -46,7 +47,7 @@ namespace Precios_Turnos
                 Close();
         }
 
-        private void CargarInfo()
+        private void CargarInfo()   
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             Codigo.Text = config.AppSettings.Settings["CodigoActivacion"].Value;
@@ -68,7 +69,14 @@ namespace Precios_Turnos
                                 Correo.IsReadOnly = true;
                                 Llave.IsReadOnly = true;
                                 btnGenerar.IsEnabled = false;
+                                lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                                 lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
+                            }
+                            else
+                            {
+                                Llave.Text = "";
+                                lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                lblFecha.Content = "Fecha licencia caducada: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
                             }
                         }
                         else
@@ -76,6 +84,7 @@ namespace Precios_Turnos
                             Correo.IsReadOnly = true;
                             Llave.IsReadOnly = true;
                             btnGenerar.IsEnabled = false;
+                            lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                             lblFecha.Content = "Fecha licencia: Permanete";
                         }
                     }

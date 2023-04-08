@@ -24,6 +24,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pmainWindow;
+            FocusManager.SetFocusedElement(this, btnColorFondo);
         }
         
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -57,15 +58,15 @@ namespace Precios_Turnos
             // get the parent container
 
             // get the position within the container
-            var mousePosition = e.GetPosition(mainWindow);
+            var mousePosition = e.GetPosition(mainWindow.Principal);
 
-            if (mousePosition.Y + 480 >= mainWindow.MaxHeight)
-                colorPicker.Top = mousePosition.Y - 480;
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
             else
                 colorPicker.Top = mousePosition.Y;
 
-            if (mousePosition.X + 330 >= mainWindow.MaxWidth)
-                colorPicker.Left = mousePosition.X - 330;
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
             else
                 colorPicker.Left = mousePosition.X;
 

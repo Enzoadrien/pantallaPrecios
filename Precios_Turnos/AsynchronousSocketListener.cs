@@ -135,14 +135,15 @@ namespace Precios_Turnos
                                     string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
                                     if (clientes[0].Length > 0)
                                         foreach (string cliente in clientes)
-                                            await new AsynchronousClient().StartClient(cliente, puerto, data);
+                                            await new AsynchronousClient().StartClient(cliente, puerto, new Comunicacion().CrearComandoBascula(data));
                                 }
                             });
                                 break;
                         default: break;
                     }
                     // Echo the data back to the client.
-                    msg = Encoding.ASCII.GetBytes(data);
+                    string[] dataSend = data.Split('|');
+                    msg = Encoding.ASCII.GetBytes(new Comunicacion().CrearComandoBascula(dataSend[0]));
                     handler.Send(msg);
                     break;
                 }

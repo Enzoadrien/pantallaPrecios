@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="170" Width="600" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="170" Width="600" WindowStyle="None" KeyDown="Window_KeyDown" AllowsTransparency="True" ResizeMode="NoResize">
     <Window.DataContext>
         <local:ViewModel/>
     </Window.DataContext>
