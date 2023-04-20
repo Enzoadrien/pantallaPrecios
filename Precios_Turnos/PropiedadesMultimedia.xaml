@@ -67,13 +67,13 @@
         <Label x:Name="lblOpacidad" Content="Opacidad:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Slider x:Name="Opacidad" Minimum="0" Maximum="1" SmallChange="0.1" LargeChange="0.3" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="4" Width="120" VerticalAlignment="Center" ValueChanged="Opacidad_ValueChanged" MouseWheel="Opacidad_MouseWheel"/>
         <Label x:Name="lblTamano" Content="Tamaño" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <CheckBox x:Name="chkRelacion" Content="Relación de aspecto" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <Label x:Name="lblAncho" Content="Ancho:" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Ancho" Grid.Row="7" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
         <Label x:Name="lblLargo" Content="Largo:" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Largo" Grid.Row="8" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
         <Label x:Name="lblLargoPX" Content="px" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblAnchoPX" Content="px" Grid.Row="8" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <CheckBox x:Name="chkRelacion" Content="Relación de aspecto" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <CheckBox x:Name="chkMaximizar" Content="Maximizar" Grid.Column="2" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="chkMaximizar_Checked" Unchecked="chkMaximizar_Unchecked"/>
         <Label x:Name="lblCada" Content="Cada:" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Cada" Grid.Row="10" Text="" Grid.Column="2"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CadaDurante_TextChanged"/>
@@ -87,6 +87,41 @@
         <TextBox x:Name="CoordenadaX"  Grid.Row="14" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
         <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="14" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
         <TextBox x:Name="CoordenadaY" Grid.Row="14" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
+        <StackPanel Grid.Row="15"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="5,5,5,5" Grid.ColumnSpan="2">
+            <Button x:Name="btnAnimaciones"
+              Content="Animaciones"
+              IsDefault="True"
+              Width="100"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnAnimaciones_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF1E6D0E"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
         <StackPanel Grid.Row="15"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

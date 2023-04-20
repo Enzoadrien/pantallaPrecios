@@ -170,10 +170,11 @@ namespace Precios_Turnos
                         foreach (var itemObjets in Principal.Children)
                         {
                             string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                            if (SeModificaControl(nombreControl))
+                            if (SeModificaControl(nombreControl) && (itemObjets as UIElement).Visibility==Visibility.Visible)
                             {
                                 MenuItem itemControl = new MenuItem();
-                                itemControl.Header = nombreControl;
+                                itemControl.Header = nombreControl+"-("+ (itemObjets as UIElement).GetType().Name + ")";
+                                itemControl.Tag = nombreControl;
                                 itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
                                 itemCm.Items.Add(itemControl);
                             }
@@ -197,7 +198,7 @@ namespace Precios_Turnos
         private void MenuListaObjetos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             MenuItem item = (MenuItem)e.Source;
-            controlClickName = item.Header.ToString();
+            controlClickName = item.Tag.ToString();
             mostarPropiedadesObjetos(e);
         }
 
@@ -240,6 +241,7 @@ namespace Precios_Turnos
                 case "ModoEdicion":
                 case "Principal":
                 case "Fondo":
+                case "Borde":
                     seModifica = false;
                     break;
                 default:
@@ -255,8 +257,7 @@ namespace Precios_Turnos
 
             var mousePosition = e.GetPosition(Principal); 
             var point = PointToScreen(mousePosition);
-
-            switch (item.GetType().Name.ToString())
+            switch (item.GetType().Name)
             {
                 case "Label":
                     PropiedadesLabelTurno propiedadesLabel = new PropiedadesLabelTurno(this);
@@ -273,7 +274,7 @@ namespace Precios_Turnos
                         propiedadesLabel.Top = point.Y;
 
                     propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesLabel.TipoControl.Text = "Texto";
+                    propiedadesLabel.TipoControl.Text = item.GetType().Name;
                     propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
                     if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo") || item.GetValue(NameProperty).ToString().Equals("NombreEquipo")
                         || item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt") || item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
@@ -305,7 +306,7 @@ namespace Precios_Turnos
 
                     propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesImagen.TipoControl.Text = "Imagen";
+                    propiedadesImagen.TipoControl.Text = item.GetType().Name;
                     propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
                     propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
@@ -321,27 +322,6 @@ namespace Precios_Turnos
                     propiedadesImagen.ShowDialog();
                     break;
 
-                case "Border":
-                    PropiedadesBordeTurnero propiedadesBordeTurnero = new PropiedadesBordeTurnero(this);
-                    propiedadesBordeTurnero.WindowStartupLocation = WindowStartupLocation.Manual;
-
-                    if (point.X + propiedadesBordeTurnero.Width >= MaxWidth)
-                        propiedadesBordeTurnero.Left = point.X - propiedadesBordeTurnero.Width;
-                    else
-                        propiedadesBordeTurnero.Left = point.X;
-
-                    if (point.Y + propiedadesBordeTurnero.Height >= MaxHeight)
-                        propiedadesBordeTurnero.Top = point.Y - propiedadesBordeTurnero.Height;
-                    else
-                        propiedadesBordeTurnero.Top = point.Y;
-
-                    propiedadesBordeTurnero.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesBordeTurnero.TipoControl.Text = "Borde";
-                    propiedadesBordeTurnero.btnColorBorde.Fill = new SolidColorBrush((((Border)item).BorderBrush as SolidColorBrush).Color);
-                    propiedadesBordeTurnero.cbxGrosor.SelectedValue = ((Border)item).BorderThickness.Left;
-                    propiedadesBordeTurnero.ShowDialog();
-                    break;
-
                 default:
 
                     break;
@@ -353,40 +333,51 @@ namespace Precios_Turnos
                     CargarControles();
         }
 
-        public void BorarObjeto(string pNombre)
+        public bool BorarObjeto(string pNombre)
         {
             if(SeEliminaControl(pNombre))
             {
-                var item = FindName(pNombre) as UIElement;
-                Principal.Children.Remove(item);
-                NameScope.GetNameScope(this).UnregisterName(pNombre);
-
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings[pNombre] != null)
-                    config.AppSettings.Settings.Remove(pNombre);
-
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
-
-                DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
-                foreach (var file in info.GetFiles())
+                
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                dialog.lblNombre.Content = "¡Advertencia!";
+                dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto.";
+                
+                if (dialog.ShowDialog() == true)
                 {
-                    string[] nombre = file.Name.Split('-');
-                    if (nombre[1].Equals(pNombre + ".xaml"))
-                        File.Delete(file.FullName);
+                    var item = FindName(pNombre) as UIElement;
+                    Principal.Children.Remove(item);
+                    NameScope.GetNameScope(this).UnregisterName(pNombre);
+
+                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    if (config.AppSettings.Settings[pNombre] != null)
+                        config.AppSettings.Settings.Remove(pNombre);
+
+                    config.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection("appSettings");
+                    try
+                    {
+                        DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
+                    foreach (var file in info.GetFiles())
+                    {
+                        string[] nombre = file.Name.Split('-');
+                        if (nombre[1].Equals(pNombre + ".xaml"))
+                            File.Delete(file.FullName);
+                    }
+                    }
+                    catch { }
+                    return true;
                 }
+                return false;
+                
             }
             else
             {
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Este objeto no puede ser borrado";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.lblTexto.Text = "Este objeto no puede ser borrado.";
                 dialog.ShowDialog();
-            }
-            
-   
+                return false;
+            }    
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -414,6 +405,32 @@ namespace Precios_Turnos
                 propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(Colors.White);
             }
             propiedadesFondo.ShowDialog();
+        }
+
+        private void PropiedadesBorde_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // get the position within the container
+            var mousePosition = e.GetPosition(this);
+            PropiedadesBordeTurnero propiedadesBordeTurnero = new PropiedadesBordeTurnero(this);
+            propiedadesBordeTurnero.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            if (mousePosition.X + propiedadesBordeTurnero.Width >= MaxWidth)
+                propiedadesBordeTurnero.Left = mousePosition.X - propiedadesBordeTurnero.Width;
+            else
+                propiedadesBordeTurnero.Left = mousePosition.X;
+
+            if (mousePosition.Y + propiedadesBordeTurnero.Height >= MaxHeight)
+                propiedadesBordeTurnero.Top = mousePosition.Y - propiedadesBordeTurnero.Height;
+            else
+                propiedadesBordeTurnero.Top = mousePosition.Y;
+
+            var item = FindName("Borde") as UIElement;
+
+            propiedadesBordeTurnero.NombreControl.Text = item.GetValue(NameProperty).ToString();
+            propiedadesBordeTurnero.TipoControl.Text = item.GetType().Name;
+            propiedadesBordeTurnero.btnColorBorde.Fill = new SolidColorBrush((((Border)item).BorderBrush as SolidColorBrush).Color);
+            propiedadesBordeTurnero.cbxGrosor.SelectedValue = ((Border)item).BorderThickness.Left;
+            propiedadesBordeTurnero.ShowDialog();
         }
 
         private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -513,9 +530,38 @@ namespace Precios_Turnos
             SalirEdicion();
         }
 
+        private void MenuReiniciarDiseno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente.";
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
+                    foreach (FileInfo file in di.EnumerateFiles())
+                    {
+                        file.Delete();
+                    }
+                }
+                catch { }
+                esDiseno = false;
+                Close();
+                MostrarTurno dialog2 = new MostrarTurno(true);
+                dialog2.ShowDialog();
+            }
+        }
+
         private void GuardarControles()
         {
-            int x = 0;
+            try
+            {
+                if (!Directory.Exists(@".\objetosTurno"))
+                {
+                    Directory.CreateDirectory(@".\objetosTurno");
+                }
+                int x = 0;
             DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
             foreach (FileInfo file in di.EnumerateFiles())
             {
@@ -525,7 +571,7 @@ namespace Precios_Turnos
             {
                 bool esTabla;
                 string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo"))
+                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Borde"))
                 {
                     StringBuilder outstr = new StringBuilder();
 
@@ -543,7 +589,9 @@ namespace Precios_Turnos
                     Seguridad vSeguridad = new Seguridad();
                     File.WriteAllText(@"objetosTurno\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(MainWindow.nombreApp, savedControls));
                 }
+                }
             }
+            catch (Exception) { }
         }
 
         private void CargarControles()

@@ -84,6 +84,7 @@ namespace Precios_Turnos
         {
             CargarTabla();
         }
+       
         private bool CargarTabla()
         {
             if (chkImagen.IsChecked == false || (chkImagen.IsChecked == true && Imagen.Text.Length > 0 && Consulta.Text.Contains(Imagen.Text)))
@@ -129,18 +130,16 @@ namespace Precios_Turnos
                     }
                     };
                 }
-                control.ItemsSource = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString())[0].DefaultView;
+                control.ItemsSource = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true)[0].DefaultView;
                 control.UpdateLayout();
                 mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
                 return true;
             }
             else
             {
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "El campo de la imagen no existe en la consulta";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.lblTexto.Text = "El campo de la imagen no existe en la consulta.";
                 dialog.ShowDialog();
             }
             return false;
@@ -158,6 +157,7 @@ namespace Precios_Turnos
             Imagen.Visibility = Visibility.Hidden;
             Imagen.Text = "";
         }
+        
         private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
 
@@ -165,6 +165,7 @@ namespace Precios_Turnos
             if (e.Key == Key.Space && item.IsFocused == true)
                 e.Handled = true;
         }
+        
         private Boolean TextAllowed(String s)
         {
             string strAcentos = "ÄÅÁÂÀÃäáâàãÉÊËÈéêëèÍÎÏÌíîïìÖÓÔÒÕöóôòõÜÚÛüúûùÇçñÑ";
@@ -185,6 +186,7 @@ namespace Precios_Turnos
 
             e.Handled = !TextAllowed(e.Text);
         }
+        
         private void PastingHandler(object sender, DataObjectPastingEventArgs e)
         {
             // more error handling would be needed here - this is asking for trouble!

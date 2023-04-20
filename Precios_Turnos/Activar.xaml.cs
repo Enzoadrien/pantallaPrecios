@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,7 +38,7 @@ namespace Precios_Turnos
         {
             Close();
         }
-        
+
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
@@ -43,40 +46,78 @@ namespace Precios_Turnos
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            if(GuardarInfo())
+            if (GuardarInfo())
                 Close();
         }
 
-        private void CargarInfo()   
+        private void CargarInfo()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Codigo.Text = config.AppSettings.Settings["CodigoActivacion"].Value;
-            Correo.Text = vSeguridad.DecryptString(Codigo.Text, config.AppSettings.Settings["Correo"].Value);
-            Llave.Text = vSeguridad.DecryptString(Codigo.Text, config.AppSettings.Settings["Llave"].Value);
-            if(Llave.Text.Length > 0)
+            Licencia licencia = new Licencia();
+            try
             {
-                string cadena = vSeguridad.DecryptString(Codigo.Text, Llave.Text);
-                string[] subs = cadena.Split('|');
-                if (subs.Length >= 3)
+                using (Stream stream = new FileStream(@".\Llave.key", FileMode.Open))
                 {
-                    if (subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase())
-                        && subs[3].Equals(MainWindow.nombreApp))
+                    var sr = new StreamReader(stream);
+
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        if (!subs[4].Equals("0"))
+                        try
                         {
-                            if (vSeguridad.GetNetworkTime().Date < Convert.ToDateTime(subs[4]).Date)
+                            licencia = JsonSerializer.Deserialize<Licencia>(line)!;
+                        }
+                        catch { }
+
+                    }
+                    stream.Close();
+                }
+            }
+            catch { }
+
+            if (licencia.Correo != null && licencia.Codigo != null && licencia.Llave != null && licencia.Key != null)
+            {
+                Codigo.Text = licencia.Codigo;
+                Correo.Text = vSeguridad.DecryptString(licencia.Codigo, licencia.Correo);
+                Llave.Text = licencia.Llave;
+
+                string cadena = vSeguridad.DecryptString(Codigo.Text, licencia.Key);
+                string[] subs = cadena.Split('|');
+                if (subs.Length > 1)
+                {
+                    if (subs[0].Equals(Correo.Text) && subs[3].Equals(vSeguridad.numeroSerieHD()) && subs[4].Equals(vSeguridad.numeroSeriePlacaBase())
+                        && subs[5].Equals(MainWindow.nombreApp))
+                    {
+                        if (!subs[1].Equals("0"))
+                        {
+                            if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                             {
-                                Correo.IsReadOnly = true;
-                                Llave.IsReadOnly = true;
-                                btnGenerar.IsEnabled = false;
-                                lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                                lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
+                                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
+                                string LlaveReg = key.GetValue("Key").ToString();
+                                Licencia licencia2 = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
+
+                                if (!licencia.Correo.Equals(licencia2.Correo) || !licencia.Codigo.Equals(licencia2.Codigo) 
+                                    || !licencia.Llave.Equals(licencia2.Llave) || !licencia.Key.Equals(licencia2.Key))
+                                {
+                                    Llave.Text = "";
+                                    lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                    lblFecha.Content = "Licencia no válida";
+                                }
+                                else
+                                {
+                                    Correo.IsReadOnly = true;
+                                    Llave.IsReadOnly = true;
+                                    btnGenerar.IsEnabled = false;
+                                    btnOK.IsEnabled = false;
+                                    lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                                    lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+                                }
+
                             }
                             else
                             {
                                 Llave.Text = "";
                                 lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                lblFecha.Content = "Fecha licencia caducada: " + Convert.ToDateTime(subs[4]).Date.ToShortDateString();
+                                lblFecha.Content = "Fecha licencia caducada: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
                             }
                         }
                         else
@@ -89,7 +130,6 @@ namespace Precios_Turnos
                         }
                     }
                 }
-                
             }
         }
 
@@ -97,96 +137,111 @@ namespace Precios_Turnos
         {
             string cadena = vSeguridad.DecryptString(Codigo.Text, Llave.Text);
             string[] subs = cadena.Split('|');
-            if (subs.Length >= 3)
+            if (subs.Length > 0)
             {
-                if(subs[0].Equals(Correo.Text) && subs[1].Equals(vSeguridad.numeroSerieHD()) && subs[2].Equals(vSeguridad.numeroSeriePlacaBase()) 
-                    && subs[3].Equals(MainWindow.nombreApp)) {
+                if (subs[0].Equals(Correo.Text) && subs[3].Equals(vSeguridad.numeroSerieHD()) && subs[4].Equals(vSeguridad.numeroSeriePlacaBase())
+                    && subs[5].Equals(MainWindow.nombreApp))
+                {
 
-
-                    if (!subs[4].Equals("0"))
+                    string strKey = vSeguridad.EncryptString(Codigo.Text, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
+                    if (!subs[1].Equals("0"))
                     {
-                        if (vSeguridad.GetNetworkTime() < Convert.ToDateTime(subs[4]))
+                        if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1)
+                            && vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[2]).AddDays(30))
                         {
-                            //Create the object
-                            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                            config.AppSettings.Settings["Correo"].Value = vSeguridad.EncryptString(Codigo.Text, Correo.Text);
-                            config.AppSettings.Settings["CodigoActivacion"].Value = Codigo.Text;
-                            config.AppSettings.Settings["Llave"].Value = vSeguridad.EncryptString(Codigo.Text, Llave.Text);
-                            config.Save(ConfigurationSaveMode.Modified);
-                            ConfigurationManager.RefreshSection("appSettings");
+                            Licencia licencia = new Licencia();
+                            try 
+                            {
+                                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Lista de precios 3K", true);
+                                string LlaveReg = key.GetValue("Key").ToString();
+                                licencia = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
+                            }
+                            catch { }
 
-                            mainWindow.Conexion.IsEnabled = true;
-                            mainWindow.Turnero.IsEnabled = true;
-                            mainWindow.EditarDiseno.IsEnabled = true;
-                            mainWindow.ResizeMode = ResizeMode.CanResize;
+                            if (Correo.Text.Equals(vSeguridad.DecryptString(Codigo.Text, licencia.Correo)) && Codigo.Text.Equals(licencia.Codigo) && Llave.Text.Equals(licencia.Llave))
+                            {
 
-                            Mensajes dialog = new Mensajes();
-                            dialog.lblNombre.Content = "¡Listo!";
-                            dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: "+Convert.ToDateTime(subs[4]);
-                            dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                            dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                            dialog.ShowDialog();
-                            return true;
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR); 
+                                dialog.lblNombre.Content = "¡Error!";
+                                dialog.lblTexto.Text = "Esta licencia ya se utilizó en este equipo.";
+                                dialog.ShowDialog();
+                            }
+                            else
+                            {
+                                GuardarLicencia(strKey);
+                                mainWindow.Conexion.IsEnabled = true;
+                                mainWindow.Turnero.IsEnabled = true;
+                                mainWindow.EditarDiseno.IsEnabled = true;
+                                mainWindow.ResizeMode = ResizeMode.CanResize;
+
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
+                                dialog.lblNombre.Content = "¡Listo!";
+                                dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
+                                dialog.ShowDialog();
+                                return true;
+                            }
                         }
                         else
                         {
-                            Mensajes dialog = new Mensajes();
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                             dialog.lblNombre.Content = "¡Error!";
-                            dialog.lblTexto.Text = "Su licencia ha caducado. \n Fecha: "+Convert.ToDateTime(subs[4]);
-                            dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                            dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                            dialog.lblTexto.Text = "Su licencia ha caducado. \n Las licencias tienen un tiempo maximo de activación de 30 días despues de ser generadas.";
                             dialog.ShowDialog();
                         }
                     }
                     else
                     {
-                        //Create the object
-                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        config.AppSettings.Settings["Correo"].Value = vSeguridad.EncryptString(Codigo.Text, Correo.Text);
-                        config.AppSettings.Settings["CodigoActivacion"].Value = Codigo.Text;
-                        config.AppSettings.Settings["Llave"].Value = vSeguridad.EncryptString(Codigo.Text, Llave.Text);
-                        config.Save(ConfigurationSaveMode.Modified);
-                        ConfigurationManager.RefreshSection("appSettings");
+                        GuardarLicencia(strKey);
 
                         mainWindow.Conexion.IsEnabled = true;
                         mainWindow.Turnero.IsEnabled = true;
                         mainWindow.EditarDiseno.IsEnabled = true;
                         mainWindow.ResizeMode = ResizeMode.CanResize;
 
-                        Mensajes dialog = new Mensajes();
+                        Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
                         dialog.lblNombre.Content = "¡Listo!";
-                        dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante. ";
-                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                        dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
                         dialog.ShowDialog();
                         return true;
                     }
-
                 }
-                else
-                {
-                    Mensajes dialog = new Mensajes();
-                    dialog.lblNombre.Content = "¡Error!";
-                    dialog.lblTexto.Text = "Los datos ingresados no son correctos";
-                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                    dialog.ShowDialog();
-                }
-
-             }
+            }
             else
             {
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Los datos ingresados no son correctos";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.lblTexto.Text = "Licencia no válida.";
                 dialog.ShowDialog();
             }
             return false;
         }
 
-        bool IsValidEmail(string email)
+        private void GuardarLicencia(string pStrKey)
+        {
+            var Licencia = new Licencia
+            {
+                Correo = vSeguridad.EncryptString(Codigo.Text, Correo.Text),
+                Codigo = Codigo.Text,
+                Llave = Llave.Text,
+                Key = pStrKey
+            };
+
+            string jsonString = JsonSerializer.Serialize(Licencia);
+
+            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
+            key.SetValue("Key", jsonString);
+
+            using (Stream stream = new FileStream(@".\Llave.key", FileMode.Create))
+            {
+                stream.SetLength(0);
+                byte[] bytes = Encoding.UTF8.GetBytes(jsonString);
+                stream.Write(bytes, 0, bytes.Length);
+                stream.Close();
+            }
+
+        }
+
+        private bool IsValidEmail(string email)
         {
             try
             {
@@ -207,13 +262,11 @@ namespace Precios_Turnos
                                                                     MainWindow.nombreApp);
             else
             {
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Ingrese un correo electrónico valido";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.lblTexto.Text = "Ingrese un correo electrónico valido.";
                 dialog.ShowDialog();
-            } 
+            }
         }
 
         private void btnCopiar_Click(object sender, RoutedEventArgs e)

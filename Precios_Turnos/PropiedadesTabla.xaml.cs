@@ -51,6 +51,10 @@ namespace Precios_Turnos
             {
                 Close();
             }
+            else if (e.Key == Key.Enter)
+            {
+                Close();
+            }
         }
 
         private void cbxFuente_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -275,8 +279,8 @@ namespace Precios_Turnos
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
         {
-            mainWindow.BorarObjeto(NombreControl.Text);
-            Close();
+            if (mainWindow.BorarObjeto(NombreControl.Text))
+                Close();
         }
 
         private void Coordenada_LostFocus(object sender, RoutedEventArgs e)

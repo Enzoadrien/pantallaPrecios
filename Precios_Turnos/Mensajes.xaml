@@ -21,9 +21,9 @@
             <Label x:Name="lblNombre" Content="Tipo"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
-        <TextBlock x:Name="lblTexto"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,5,5,0"/>
+            <TextBlock x:Name="lblTexto"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,5,5,0"/>
         </ScrollViewer>
-            <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="1" >
@@ -52,6 +52,42 @@
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#FF1E6D0E"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="2"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="0,5,70,5" Grid.Column="1" >
+            <Button x:Name="btnCancelar"
+              Content="Cancelar"
+              Click="btnCancelar_Click"
+              IsDefault="True"
+              Width="65"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Visibility="Hidden">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </Style.Triggers>

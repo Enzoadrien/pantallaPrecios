@@ -108,6 +108,7 @@ namespace Precios_Turnos
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             chkTurnero.IsChecked = config.AppSettings.Settings["Turnero"].Value.Equals("true")? true : false;
+            chkTeclasDemo.IsChecked = config.AppSettings.Settings["TeclasDemo"].Value.Equals("true") ? true : false;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
@@ -128,6 +129,7 @@ namespace Precios_Turnos
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["Turnero"].Value = chkTurnero.IsChecked == true ? "true" : "false";
+            config.AppSettings.Settings["TeclasDemo"].Value = chkTeclasDemo.IsChecked == true ? "true" : "false";
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
@@ -223,22 +225,18 @@ namespace Precios_Turnos
                     }
                     else
                     {
-                        Mensajes dialog = new Mensajes();
+                        Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                         dialog.lblNombre.Content = "¡Error!";
-                        dialog.lblTexto.Text = "No es una dirección IP valida";
-                        dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                        dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                        dialog.lblTexto.Text = "No es una dirección IP valida.";
                         dialog.ShowDialog();
                     }
 
                 }
                 else
                 {
-                    Mensajes dialog = new Mensajes();
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                     dialog.lblNombre.Content = "¡Error!";
-                    dialog.lblTexto.Text = "No es una dirección IP valida";
-                    dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                    dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                    dialog.lblTexto.Text = "No es una dirección IP valida.";
                     dialog.ShowDialog();
                 }
             }    
@@ -305,6 +303,17 @@ namespace Precios_Turnos
         {
             Process p = Process.Start("notepad.exe", @".\nombreEquipos.3k");
             p.WaitForInputIdle();
+        }
+
+        private void chkTurnero_Checked(object sender, RoutedEventArgs e)
+        {
+            chkTeclasDemo.Visibility = Visibility.Visible;
+        }
+
+        private void chkTurnero_Unchecked(object sender, RoutedEventArgs e)
+        {
+            chkTeclasDemo.IsChecked = false;
+            chkTeclasDemo.Visibility = Visibility.Hidden;
         }
     }
     public class ViewModelAudio

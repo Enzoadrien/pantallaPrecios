@@ -19,19 +19,40 @@ namespace Precios_Turnos
     /// </summary>
     public partial class Mensajes : Window
     {
-        public Mensajes()
+
+        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta=false)
         {
             InitializeComponent();
             WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            if (tipoMensaje == Recursos.TipoMensaje.ACEPTAR)
+            {
+                lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+            }
+            else if (tipoMensaje == Recursos.TipoMensaje.ADVERTENCIA)
+            {
+                lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFF6B73C"));
+            }
+            else if (tipoMensaje == Recursos.TipoMensaje.ERROR)
+            {
+                lblTexto.Foreground = new SolidColorBrush(Colors.White);
+                lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+            }
+            if(esPregunta)
+                btnCancelar.Visibility = Visibility.Visible;
+
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = false;
             Close();
         }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
+                DialogResult = false;
                 Close();
             }
         }
@@ -41,8 +62,14 @@ namespace Precios_Turnos
         }
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = true;
             Close();
+        }
 
+        private void btnCancelar_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
     }
 }

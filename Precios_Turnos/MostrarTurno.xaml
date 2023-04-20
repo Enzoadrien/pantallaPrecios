@@ -18,8 +18,10 @@
             <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Mostrar/ocultar nombre equipo anterior" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
-            <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="Propiedades" Header="Propiedades fondo" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="PropiedadesBorde" Header="Propiedades borde" PreviewMouseLeftButtonDown="PropiedadesBorde_PreviewMouseLeftButtonDown"/>
             <Separator />
+            <MenuItem x:Name="MenuReiniciarDiseno" Header="Reiniciar diseño" PreviewMouseLeftButtonDown="MenuReiniciarDiseno_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
         <ContextMenu x:Key="cmdContexMenu">
@@ -31,13 +33,13 @@
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
         <Grid x:Name="Fondo"></Grid>
-        <Border x:Name="Borde" BorderBrush="Black" BorderThickness="3"/>
-        <Label x:Name="NumeroTurno" Content="Num. turno" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="NumeroEquipo" Content="Num. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="NombreEquipo" Content="Nom. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="NumeroTurnoAnt" Content="Num. turno anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="NumeroEquipoAnt" Content="Num. equipo anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Label x:Name="NombreEquipoAnt" Content="Nom. equipo anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border x:Name="Borde" BorderBrush="Black" BorderThickness="3" Panel.ZIndex="996"/>
+        <Label x:Name="NumeroTurno" Content="Num. turno" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroEquipo" Content="Num. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NombreEquipo" Content="Nom. equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroTurnoAnt" Content="Num. turno anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroEquipoAnt" Content="Num. equipo anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NombreEquipoAnt" Content="Nom. equipo anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="ModoEdicion" Content="Modo edición" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
     </Grid>

@@ -49,6 +49,10 @@ namespace Precios_Turnos
             {
                 Close();
             }
+            else if (e.Key == Key.Enter)
+            {
+                Close();
+            }
         }
 
         private void Opacidad_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -155,8 +159,8 @@ namespace Precios_Turnos
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
         {
-            mainWindow.BorarObjeto(NombreControl.Text);
-            Close();
+            if (mainWindow.BorarObjeto(NombreControl.Text))
+                Close();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

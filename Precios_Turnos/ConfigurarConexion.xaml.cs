@@ -7,8 +7,11 @@ using System.Configuration;
 using System.Data;
 using System.Data.Odbc;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,20 +59,16 @@ namespace Precios_Turnos
             {
                 connection.Open();
                 connection.Close();
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
                 dialog.lblNombre.Content = "¡Listo!";
-                dialog.lblTexto.Text = "Pruebas completadas correctamente";
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                dialog.lblTexto.Text = "Pruebas completadas correctamente.";
                 dialog.ShowDialog();
             }
             catch (Exception ex)
             {
-                Mensajes dialog = new Mensajes();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "No se puede establecer la conexión: \n"+ ex.Message;
-                dialog.lblTexto.Foreground = new SolidColorBrush(Colors.White);
-                dialog.lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                dialog.lblTexto.Text = "No se puede establecer la conexión: \n" + ex.Message;
                 dialog.ShowDialog();
             }
         }
@@ -80,7 +79,8 @@ namespace Precios_Turnos
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             cbxODBC.SelectedItem = config.AppSettings.Settings["ODBC"].Value;
             Usuario.Text = config.AppSettings.Settings["UsuarioODBC"].Value;
-            Contrasena.Password = vSeguridad.DecryptString(config.AppSettings.Settings["CodigoActivacion"].Value, config.AppSettings.Settings["ContrasenaODBC"].Value);
+            Contrasena.Password = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
+
         }
 
         private void GuardarInfo()
@@ -89,7 +89,7 @@ namespace Precios_Turnos
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["ODBC"].Value = cbxODBC.Text;
             config.AppSettings.Settings["UsuarioODBC"].Value = Usuario.Text;
-            config.AppSettings.Settings["ContrasenaODBC"].Value = vSeguridad.EncryptString(config.AppSettings.Settings["CodigoActivacion"].Value, Contrasena.Password);
+            config.AppSettings.Settings["ContrasenaODBC"].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Contrasena.Password);
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
