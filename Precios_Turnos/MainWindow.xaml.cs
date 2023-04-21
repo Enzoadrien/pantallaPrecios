@@ -19,6 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -35,6 +36,7 @@ namespace Precios_Turnos
         public static string nombreApp = "Precios_Turnos";
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
+        private bool esAplicacion = false;
         private bool editar = false;
         private bool animaciones = false;
         private bool maximizado = false;
@@ -166,7 +168,7 @@ namespace Precios_Turnos
             if (WindowState == WindowState.Maximized && !maximizado && !editar)
             {
                 maximizado = true;
-
+                esAplicacion = true;
                 //Topmost = true;
 
                 Principal.IsHitTestVisible = false;
@@ -182,15 +184,18 @@ namespace Precios_Turnos
                 LimpiarVistaPrevia();
                 PausarVideos(true);
                 animaciones = true;
+                CargarAnimaciones();
                 Task.Run(() => AnimacionesObjetos());
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 activarTurnero = config.AppSettings.Settings["Turnero"].Value.Equals("true") ? true : false;
                 Task.Run(() => EscuhcarTurnos());
+
             }
 
             else if (WindowState == WindowState.Maximized && editar)
             {
+                maximizado = true;
                 animaciones = false;
                 ModoEdicion.Visibility = Visibility.Visible;
                 Principal.IsHitTestVisible = true;
@@ -217,6 +222,12 @@ namespace Precios_Turnos
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
                 Principal.IsHitTestVisible = true;
                 WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                if (esAplicacion)
+                {
+                    QuitarAnimaciones();
+                    esAplicacion = false;
+                }
+
                 CargarVistaPrevia();
             }
         }
@@ -226,7 +237,7 @@ namespace Precios_Turnos
             if (e.Key == Key.Escape && maximizado && !estaSaliendo)
             {
                 estaSaliendo = true;
-                SalirEdicion();
+                SalirMaximizar();
                 estaSaliendo = false;
             }
             else if ((e.Key == Key.Right || e.Key == Key.Left) && maximizado)
@@ -236,35 +247,35 @@ namespace Precios_Turnos
                 if (config.AppSettings.Settings["TeclasDemo"].Value.Equals("true"))
                 {
 
-                Random rand = new Random();
-                int turno = rand.Next(1000);
+                    Random rand = new Random();
+                    int turno = rand.Next(1000);
 
-                MostrarTurno mostrarTurno = new MostrarTurno();
-                mostrarTurno.WindowStyle = WindowStyle.None;
-                mostrarTurno.ShowInTaskbar = false;
-                mostrarTurno.NumeroTurno.Content = turno;
-                mostrarTurno.NumeroEquipo.Content = "01";
-                mostrarTurno.NumeroTurnoAnt.Content = turno-1;
-                mostrarTurno.NumeroEquipoAnt.Content = "02";
-                
-                if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
-                {
-                    mostrarTurno.NombreEquipo.Content = "VENDEDOR 1";
-                    mostrarTurno.NombreEquipoAnt.Content = "VENDEDOR 2";
-                }
-                else
-                {
-                    mostrarTurno.NombreEquipo.Content = "";
-                    mostrarTurno.NombreEquipoAnt.Content = "";
-                }
-                mostrarTurno.Show();
+                    MostrarTurno mostrarTurno = new MostrarTurno();
+                    mostrarTurno.WindowStyle = WindowStyle.None;
+                    mostrarTurno.ShowInTaskbar = false;
+                    mostrarTurno.NumeroTurno.Content = turno;
+                    mostrarTurno.NumeroEquipo.Content = "01";
+                    mostrarTurno.NumeroTurnoAnt.Content = turno - 1;
+                    mostrarTurno.NumeroEquipoAnt.Content = "02";
 
-                try
-                {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
-                    player.Play();
-                }
-                catch { }
+                    if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
+                    {
+                        mostrarTurno.NombreEquipo.Content = "VENDEDOR 1";
+                        mostrarTurno.NombreEquipoAnt.Content = "VENDEDOR 2";
+                    }
+                    else
+                    {
+                        mostrarTurno.NombreEquipo.Content = "";
+                        mostrarTurno.NombreEquipoAnt.Content = "";
+                    }
+                    mostrarTurno.Show();
+
+                    try
+                    {
+                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
+                        player.Play();
+                    }
+                    catch { }
 
                 }
             }
@@ -280,8 +291,8 @@ namespace Precios_Turnos
             EntrarDiseno dialog = new EntrarDiseno(this);
             if (dialog.ShowDialog() == true)
             {
-                WindowState = WindowState.Maximized;
                 editar = true;
+                WindowState = WindowState.Maximized;
                 Coordenadas.Visibility = Visibility.Visible;
                 ModoEdicion.Content = "Modo edición";
                 ModoEdicion.FontSize = 24;
@@ -299,6 +310,7 @@ namespace Precios_Turnos
                     {
                         var container = VisualTreeHelper.GetParent(item) as UIElement;
                         _positionInBlock = e.GetPosition(container);
+
                         _currentTT = item.RenderTransform as TranslateTransform;
                         item.CaptureMouse();
                     }
@@ -442,10 +454,10 @@ namespace Precios_Turnos
 
         private void MenuSalir_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            SalirEdicion();
+            SalirMaximizar();
         }
 
-        private void SalirEdicion()
+        private void SalirMaximizar()
         {
             PausarVideos(false);
             MediaElement control = (MediaElement)FindName("FullScreamVideo");
@@ -572,6 +584,7 @@ namespace Precios_Turnos
                 obj.Height = bitmapImage.Height;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxHeight;
+                obj.Tag = "";
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
             }
@@ -863,7 +876,7 @@ namespace Precios_Turnos
             dialog.esVideo = true;
             if (dialog.ShowDialog() == true)
             {
-                
+
                 MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText;
                 obj.Source = new Uri(dialog.ContenidoText);
@@ -1338,7 +1351,7 @@ namespace Precios_Turnos
                 {
                     Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                     dialog.lblNombre.Content = "¡Error!";
-                    dialog.lblTexto.Text = "Error al cargar la consulta: \n" + ex.Message;;
+                    dialog.lblTexto.Text = "Error al cargar la consulta: \n" + ex.Message; ;
                     dialog.ShowDialog();
                 }
                 ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2]);
@@ -1716,5 +1729,131 @@ namespace Precios_Turnos
                 catch { }
             }
         }
+
+        private void QuitarAnimaciones()
+        {
+            foreach (var item in Principal.Children)
+            {
+
+                switch (item.GetType().Name.ToString())
+                {
+                    case "Label":
+                        break;
+                    case "Image":
+                        if (SeModificaControl(((Image)item).Name))
+                        {
+                            bool seModifico = false;
+                            try
+                            {
+
+                                for (int x = 0; x < ((TransformGroup)((UIElement)item).RenderTransform).Children.Count; x++)
+                                {
+                                    switch (((TransformGroup)((UIElement)item).RenderTransform).Children[x].GetType().Name)
+                                    {
+                                        case "TranslateTransform":
+                                            ((UIElement)item).RenderTransform = (TranslateTransform)((TransformGroup)((UIElement)item).RenderTransform).Children[x];
+                                            seModifico = true;
+                                            break;
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                if (((UIElement)item).RenderTransform != null)
+                                    seModifico = true;
+                            }
+                            if (!seModifico)
+                                ((UIElement)item).RenderTransform = null;
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void CargarAnimaciones()
+        {
+            foreach (var item in Principal.Children)
+            {
+
+                switch (item.GetType().Name.ToString())
+                {
+                    case "Label":
+                        break;
+                    case "Image":
+                        if (SeModificaControl(((Image)item).Name))
+                        {
+                            Animacion(((Image)item).Name, ((Image)item).Tag.ToString());
+                        }
+                        break;
+                }
+            }
+        }
+
+        private void Animacion(string pNombreControl, string sParametros)
+        {
+            var item = FindName(pNombreControl) as UIElement;
+
+            TranslateTransform? _currentTTEscalar = new TranslateTransform();
+            try
+            {
+
+                for (int x = 0; x < ((TransformGroup)(item).RenderTransform).Children.Count; x++)
+                {
+                    switch (((TransformGroup)(item).RenderTransform).Children[x].GetType().Name)
+                    {
+                        case "TranslateTransform":
+                            item.RenderTransform = (TranslateTransform)((TransformGroup)(item).RenderTransform).Children[x];
+                            break;
+                    }
+                }
+            }
+            catch
+            {
+                if (item.RenderTransform != null)
+                    _currentTTEscalar = item.RenderTransform as TranslateTransform;
+            }
+
+            string[] datos = sParametros.Split('|');
+            if (datos.Length == 3)
+            {
+                double tamano = double.Parse(datos[1]);
+
+                Storyboard storyboard = new Storyboard();
+
+                DoubleAnimation growAnimation = new DoubleAnimation();
+                growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[2]));
+                growAnimation.From = 1;
+                growAnimation.To = 1 + tamano;
+                growAnimation.AutoReverse = true;
+                growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                storyboard.Children.Add(growAnimation);
+
+                Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
+                Storyboard.SetTarget(growAnimation, item);
+
+                DoubleAnimation growAnimation2 = new DoubleAnimation();
+                growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[2]));
+                growAnimation2.From = 1;
+                growAnimation2.To = 1 + tamano;
+                growAnimation2.AutoReverse = true;
+                growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                storyboard.Children.Add(growAnimation2);
+
+                Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
+                Storyboard.SetTarget(growAnimation2, item);
+
+                ScaleTransform scale = new ScaleTransform();
+                item.RenderTransform = scale;
+                storyboard.Begin();
+
+                TransformGroup myTransformGroup = new TransformGroup();
+                myTransformGroup.Children.Add(scale);
+                if (_currentTTEscalar != null)
+                    myTransformGroup.Children.Add(new TranslateTransform(_currentTTEscalar.X, _currentTTEscalar.Y));
+                item.RenderTransformOrigin = new Point(.5, .5);
+                item.RenderTransform = myTransformGroup;
+            }
+        }
+
     }
 }

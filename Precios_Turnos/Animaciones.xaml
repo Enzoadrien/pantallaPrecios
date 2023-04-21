@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-       Title="Animaciones" Height="300" Width="200" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed">
+       Title="Animaciones" Height="420" Width="200" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -15,6 +15,10 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -53,19 +57,39 @@
         </Button>
         <CheckBox x:Name="chkMover" Content="Mover" Grid.Row="1" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
                  VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
-        
-        <CheckBox x:Name="chkEscalar" Content="Escalar" Grid.Row="5" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
+        <CheckBox x:Name="chkHorizontal" Content="Horizontal" Grid.Row="2" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+        <Label x:Name="lblDirrecionH" Content="Dirección:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxDireccionH" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
+            <ComboBoxItem Content="Derecha" Tag="D"/>
+            <ComboBoxItem Content="Izquierda" Tag="I"/>
+        </ComboBox>
+        <Label x:Name="lblVelocidadMH" Content="Velocidad:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadMH" VerticalContentAlignment="Center" Grid.Row="4" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
+        <Label x:Name="lblSMH" Content="ms" Grid.Row="4" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkVertical" Content="Vertical" Grid.Row="5" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+        <Label x:Name="lblDirrecionV" Content="Dirección:" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxDireccionV" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
+            <ComboBoxItem Content="Arriba" Tag="A"/>
+            <ComboBoxItem Content="Abajo" Tag="B"/>
+        </ComboBox>
+        <Label x:Name="lblVelocidadMV" Content="Velocidad:" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadMV" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
+        <Label x:Name="lblSMV" Content="ms" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+
+        <CheckBox x:Name="chkEscalar" Content="Escalar" Grid.Row="8" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
                  VerticalAlignment="Center" Margin="0,0,5,0" Checked="chkEscalar_Checked" Unchecked="chkEscalar_Unchecked" HorizontalAlignment="Right"/>
-        <Label x:Name="lblTamano" Content="Tamaño:" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxTamano" Grid.Column="2"  Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamano_SelectionChanged" SelectedIndex="0">
-            <ComboBoxItem Content="1X" Tag=".1"/>
-            <ComboBoxItem Content="2X" Tag=".2"/>
-            <ComboBoxItem Content="3X" Tag=".3"/>
-            <ComboBoxItem Content="4X" Tag=".4"/>
-            <ComboBoxItem Content="5X" Tag=".5"/>
+        <Label x:Name="lblTamanoE" Content="Tamaño:" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxTamanoE" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamano_SelectionChanged" SelectedIndex="0">
+            <ComboBoxItem Content="1X" Tag="0.1"/>
+            <ComboBoxItem Content="2X" Tag="0.2"/>
+            <ComboBoxItem Content="3X" Tag="0.3"/>
+            <ComboBoxItem Content="4X" Tag="0.4"/>
+            <ComboBoxItem Content="5X" Tag="0.5"/>
          </ComboBox>
-        <Label x:Name="lblVelocidad" Content="Velocidad:" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <TextBox x:Name="Velocidad" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
-        <Label x:Name="lblS1" Content="ms" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <Label x:Name="lblVelocidadE" Content="Velocidad:" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadE" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
+        <Label x:Name="lblSE" Content="ms" Grid.Row="10" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
     </Grid>
 </Window>

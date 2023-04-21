@@ -26,6 +26,7 @@ namespace Precios_Turnos
         private MainWindow mainWindow;
         private string NombreControl;
         private TranslateTransform? _currentTT;
+        private ScaleTransform? _currentST;
         public Animaciones(MainWindow pMainWindow, string pNombreControl)
         {
             InitializeComponent();
@@ -34,7 +35,6 @@ namespace Precios_Turnos
 
             var item = mainWindow.FindName(NombreControl) as UIElement;
             _currentTT = item.RenderTransform as TranslateTransform;
-                
         }
         private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -64,16 +64,32 @@ namespace Precios_Turnos
             Escalar();
         }
 
+        private void CargarControles(string sParametros)
+        {
+            string[] datos = sParametros.Split('|');
+            if (datos.Length == 3)
+            {
+                if (datos[0].Equals("E")) {
+                    cbxTamanoE.SelectedValue = datos[1];
+                    VelocidadE.Text = datos[2];
+                    chkEscalar.IsChecked = true;
+                }
+                
+            }
+        }
+
         private void Escalar()
         {
             var item = mainWindow.FindName(NombreControl) as UIElement;
 
+            double tamano = double.Parse(((ComboBoxItem)cbxTamanoE.SelectedItem).Tag.ToString());
+
             Storyboard storyboard = new Storyboard();
 
             DoubleAnimation growAnimation = new DoubleAnimation();
-            growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(Velocidad.Text));
+            growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadE.Text));
             growAnimation.From = 1;
-            growAnimation.To = 1 + Double.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString());
+            growAnimation.To = 1 + tamano;
             growAnimation.AutoReverse = true;
             growAnimation.RepeatBehavior = RepeatBehavior.Forever;
             storyboard.Children.Add(growAnimation);
@@ -82,9 +98,9 @@ namespace Precios_Turnos
             Storyboard.SetTarget(growAnimation, item);
 
             DoubleAnimation growAnimation2 = new DoubleAnimation();
-            growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(Velocidad.Text));
+            growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadE.Text));
             growAnimation2.From = 1;
-            growAnimation2.To = 1 + Double.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString());
+            growAnimation2.To = 1 + tamano;
             growAnimation2.AutoReverse = true;
             growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
             storyboard.Children.Add(growAnimation2);
@@ -102,8 +118,21 @@ namespace Precios_Turnos
                 myTransformGroup.Children.Add(new TranslateTransform(_currentTT.X, _currentTT.Y));
             item.RenderTransformOrigin = new Point(.5, .5);
             item.RenderTransform = myTransformGroup;
+            switch (item.GetType().Name)
+            {
+                case "Label":
+                    break;
 
-        }
+                case "Image":
+                    ((Image)item).Tag = "E|"+ tamano + "|"+ VelocidadE.Text;
+                    break;
+
+                default:
+
+                    break;
+            }
+
+            }
 
 
         private void chkEscalar_Unchecked(object sender, RoutedEventArgs e)
@@ -111,6 +140,7 @@ namespace Precios_Turnos
             var item = mainWindow.FindName(NombreControl) as UIElement;
             if (_currentTT != null)
                 item.RenderTransform = new TranslateTransform(_currentTT.X, _currentTT.Y);
+            ((Image)item).Tag = "";
         }
 
         private void cbxTamano_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -124,6 +154,16 @@ namespace Precios_Turnos
             var item = mainWindow.FindName(NombreControl) as UIElement;
             if (_currentTT != null)
                 item.RenderTransform = new TranslateTransform(_currentTT.X, _currentTT.Y);
+            else
+            {
+                item.RenderTransform = null;
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl) as UIElement;
+            CargarControles(item.GetValue(TagProperty).ToString());
         }
     }
 }

@@ -68,13 +68,13 @@ namespace Precios_Turnos
                 Consulta.Text = datos[0];
                 if (datos.Length > 1)
                 {
-                    chkImagen.IsChecked = true;
-                    Imagen.Text = datos[1];
+                    chkOrganizar.IsChecked = true;
+                    Organizar.Text = datos[1];
                 }
                 else
                 {
-                    lblImagen.Visibility = Visibility.Hidden;
-                    Imagen.Visibility = Visibility.Hidden;
+                    lblOrganizar.Visibility = Visibility.Hidden;
+                    Organizar.Visibility = Visibility.Hidden;
                 }
 
             }
@@ -87,7 +87,7 @@ namespace Precios_Turnos
        
         private bool CargarTabla()
         {
-            if (chkImagen.IsChecked == false || (chkImagen.IsChecked == true && Imagen.Text.Length > 0 && Consulta.Text.Contains(Imagen.Text)))
+            if (chkOrganizar.IsChecked == false || (chkOrganizar.IsChecked == true && Organizar.Text.Length > 0 && Consulta.Text.Contains(Organizar.Text)))
             {
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -95,15 +95,15 @@ namespace Precios_Turnos
 
                 if (config.AppSettings.Settings[NombreControl] == null)
                 {
-                    if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text));
+                    if (chkOrganizar.IsChecked == true)
+                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Organizar.Text));
                     else
                         config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text));
                 }
                 else
                 {
-                    if (chkImagen.IsChecked == true)
-                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Imagen.Text);
+                    if (chkOrganizar.IsChecked == true)
+                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Organizar.Text);
                     else
                         config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text);
                 }
@@ -139,23 +139,23 @@ namespace Precios_Turnos
             {
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "El campo de la imagen no existe en la consulta.";
+                dialog.lblTexto.Text = "El campo a organizar no existe en la consulta.";
                 dialog.ShowDialog();
             }
             return false;
         }
 
-        private void chkImagen_Checked(object sender, RoutedEventArgs e)
+        private void chkOrganizar_Checked(object sender, RoutedEventArgs e)
         {
-            lblImagen.Visibility = Visibility.Visible;
-            Imagen.Visibility = Visibility.Visible;
+            lblOrganizar.Visibility = Visibility.Visible;
+            Organizar.Visibility = Visibility.Visible;
         }
 
-        private void chkImagen_Unchecked(object sender, RoutedEventArgs e)
+        private void chkOrganizar_Unchecked(object sender, RoutedEventArgs e)
         {
-            lblImagen.Visibility = Visibility.Hidden;
-            Imagen.Visibility = Visibility.Hidden;
-            Imagen.Text = "";
+            lblOrganizar.Visibility = Visibility.Hidden;
+            Organizar.Visibility = Visibility.Hidden;
+            Organizar.Text = "";
         }
         
         private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
