@@ -167,10 +167,11 @@ namespace Precios_Turnos
                                 {
 
                                     string strKey = vSeguridad.EncryptString(licencia.Codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[3])).ToShortDateString());
-                                    if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                                    if (!subs[3].Equals("0"))
                                     {
-                                        if (!subs[3].Equals("0"))
+                                        if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
                                         {
+                                        
                                             if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[4]).AddDays(7))
                                             {
 
@@ -207,17 +208,18 @@ namespace Precios_Turnos
                                         }
                                         else
                                         {
-                                            GuardarLicencia(licencia.Codigo, Correo, strKey);
-                                            DialogResult = true;
-                                            Close();
+
+                                            dialog.lblNombre.Content = "¡Error!";
+                                            dialog.lblTexto.Text = "Se requiere de una conexión a internet para poder entrar en modo edición.";
+                                            dialog.ShowDialog();
                                         }
 
                                     }
                                     else
                                     {
-                                        dialog.lblNombre.Content = "¡Error!";
-                                        dialog.lblTexto.Text = "Se requiere de una conexión a internet para poder entrar en modo edición.";
-                                        dialog.ShowDialog();
+                                        GuardarLicencia(licencia.Codigo, Correo, strKey);
+                                        DialogResult = true;
+                                        Close();
                                     }
                                 }
                                 else
@@ -244,7 +246,7 @@ namespace Precios_Turnos
                     else
                     {
                         dialog.lblNombre.Content = "¡Error!";
-                        dialog.lblTexto.Text = "La licencia no es válida";
+                        dialog.lblTexto.Text = "Debes ingresar todos los datos.";
                         dialog.ShowDialog();
                     }
                 }

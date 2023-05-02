@@ -130,6 +130,7 @@ namespace Precios_Turnos
 
         private void btnColorFuente_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Foreground as SolidColorBrush).Color);
             // get the parent container
@@ -153,6 +154,7 @@ namespace Precios_Turnos
                 ColorFuenteFondo();
                 mainWindow.ultimoColorLetra = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void ColorFuenteFondo()
@@ -198,6 +200,7 @@ namespace Precios_Turnos
 
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Background as SolidColorBrush).Color);
             // get the parent container
@@ -221,10 +224,12 @@ namespace Precios_Turnos
                 ColorFuenteFondo();
                 mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void btnColorFuente2_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Foreground as SolidColorBrush).Color);
             // get the parent container
@@ -248,10 +253,12 @@ namespace Precios_Turnos
                 ColorFuenteFondo();
                 mainWindow.ultimoColorLetra = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void btnColorFondo2_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             DataGrid control = (DataGrid)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Background as SolidColorBrush).Color);
             // get the parent container
@@ -275,6 +282,7 @@ namespace Precios_Turnos
                 ColorFuenteFondo();
                 mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
@@ -424,6 +432,7 @@ namespace Precios_Turnos
 
         private void btnContenido_Click(object sender, RoutedEventArgs e)
         {
+            Opacity = 0.5;
             ContenidoTabla dialog = new ContenidoTabla(mainWindow, NombreControl.Text);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -444,6 +453,7 @@ namespace Precios_Turnos
 
             dialog.ShowDialog();
             ColorFuenteFondo();
+            Opacity = 0.9;
         }
 
         private void cbxCBloques_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -493,7 +503,24 @@ namespace Precios_Turnos
                     }
                 };
             }
-            control.ItemsSource = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString())[0].DefaultView;
+            List<DataTable> ListTablas = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString());
+            control.ItemsSource = ListTablas[0].DefaultView;
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+            if (config.AppSettings.Settings[NombreControl.Text] != null)
+            {
+                Seguridad vSeguridad = new Seguridad();
+                string[] datos = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[NombreControl.Text].Value).Split('|');
+
+                if (datos.Length > 2)
+                {
+                    Label item = (Label)FindName(datos[2]);
+                    if (item != null)
+                        item.Content = ListTablas[0].TableName;
+                }
+            }
+
             control.UpdateLayout();
             ColorFuenteFondo();
         }

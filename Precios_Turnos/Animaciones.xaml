@@ -5,9 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-       Title="Animaciones" Height="420" Width="200" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed" Loaded="Window_Loaded">
+       Title="Animaciones" Height="330" Width="400" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
             <ColumnDefinition Width="40*"/>
             <ColumnDefinition Width="40*"/>
             <ColumnDefinition Width="40*"/>
@@ -25,15 +29,13 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="5"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
-            <Label Content="Animaciones"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+                    Background="#FF989090" Grid.ColumnSpan="8"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+            <Label Content="Animaciones"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="7" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="5" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="7" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="#FF989090"/>
@@ -55,33 +57,42 @@
                 </Style>
             </Button.Style>
         </Button>
-        <CheckBox x:Name="chkMover" Content="Mover" Grid.Row="1" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
-                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+        <CheckBox x:Name="chkMover" Content="Desplazar" Grid.Row="1" Grid.ColumnSpan="8" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="5,0,0,0" HorizontalAlignment="Left" Checked="chkMover_Checked" Unchecked="chkMover_Unchecked"/>
         <CheckBox x:Name="chkHorizontal" Content="Horizontal" Grid.Row="2" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
-                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
-        <Label x:Name="lblDirrecionH" Content="Dirección:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxDireccionH" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
+                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right" Checked="chkHorizontal_Checked" Unchecked="chkHorizontal_Unchecked"/>
+        <Label x:Name="lblDirrecionMH" Content="Dirección:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxDireccionMH" Grid.Column="2" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxDireccionMH_SelectionChanged" SelectedIndex="0">
             <ComboBoxItem Content="Derecha" Tag="D"/>
             <ComboBoxItem Content="Izquierda" Tag="I"/>
         </ComboBox>
         <Label x:Name="lblVelocidadMH" Content="Velocidad:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <TextBox x:Name="VelocidadMH" VerticalContentAlignment="Center" Grid.Row="4" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
-        <Label x:Name="lblSMH" Content="ms" Grid.Row="4" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
-        <CheckBox x:Name="chkVertical" Content="Vertical" Grid.Row="5" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
-                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right"/>
-        <Label x:Name="lblDirrecionV" Content="Dirección:" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxDireccionV" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
-            <ComboBoxItem Content="Arriba" Tag="A"/>
+        <TextBox x:Name="VelocidadMH" VerticalContentAlignment="Center" Grid.Row="4" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="5000" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadMH_TextChanged" LostFocus="VelocidadMH_LostFocus"/>
+        <Label x:Name="lblSMH" Content="ms" Grid.Row="4" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <Label x:Name="lblCantidadMH" Content="Cantidad:" Grid.Row="5" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="CantidadMH" VerticalContentAlignment="Center" Grid.Row="5" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="100" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CantidadMH_TextChanged" LostFocus="CantidadMH_LostFocus"/>
+        <Label x:Name="lblCMH" Content="px" Grid.Row="5" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkReversaMH" Content="Reversa" Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" HorizontalAlignment="Left" Checked="chkReversaM_Checked_Unchecked" Unchecked="chkReversaM_Checked_Unchecked"/>
+        <CheckBox x:Name="chkVertical" Content="Vertical" Grid.Row="2" Grid.Column="4" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right" Checked="chkVertical_Checked" Unchecked="chkVertical_Unchecked"/>
+        <Label x:Name="lblDirrecionMV" Content="Dirección:" Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxDireccionMV" Grid.Column="6" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" SelectionChanged="cbxDireccionMV_SelectionChanged" Margin="0,0,5,0" SelectedIndex="0">
             <ComboBoxItem Content="Abajo" Tag="B"/>
+            <ComboBoxItem Content="Arriba" Tag="A"/>
         </ComboBox>
-        <Label x:Name="lblVelocidadMV" Content="Velocidad:" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <TextBox x:Name="VelocidadMV" VerticalContentAlignment="Center" Grid.Row="7" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
-        <Label x:Name="lblSMV" Content="ms" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
-
-        <CheckBox x:Name="chkEscalar" Content="Escalar" Grid.Row="8" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
-                 VerticalAlignment="Center" Margin="0,0,5,0" Checked="chkEscalar_Checked" Unchecked="chkEscalar_Unchecked" HorizontalAlignment="Right"/>
+        <Label x:Name="lblVelocidadMV" Content="Velocidad:" Grid.Row="4" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadMV" VerticalContentAlignment="Center" Grid.Row="4" Grid.Column="6" FontFamily="Arial Rounded MT" FontSize="14" Text="5000" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadMV_TextChanged" LostFocus="VelocidadMV_LostFocus"/>
+        <Label x:Name="lblSMV" Content="ms" Grid.Row="4" Grid.Column="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <Label x:Name="lblCantidadMV" Content="Cantidad:" Grid.Row="5" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="CantidadMV" VerticalContentAlignment="Center" Grid.Row="5" Grid.Column="6" FontFamily="Arial Rounded MT" FontSize="14" Text="100" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CantidadMV_TextChanged" LostFocus="CantidadMV_LostFocus"/>
+        <Label x:Name="lblCMV" Content="px" Grid.Row="5" Grid.Column="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkReversaMV" Content="Reversa" Grid.Row="6" Grid.Column="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Left" Checked="chkReversaM_Checked_Unchecked" Unchecked="chkReversaM_Checked_Unchecked"/>
+        <CheckBox x:Name="chkEscalar" Content="Escalar" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkEscalar_Checked" Unchecked="chkEscalar_Unchecked" HorizontalAlignment="Left" />
         <Label x:Name="lblTamanoE" Content="Tamaño:" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxTamanoE" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamano_SelectionChanged" SelectedIndex="0">
+        <ComboBox x:Name="cbxTamanoE" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamanoE_SelectionChanged" SelectedIndex="0">
             <ComboBoxItem Content="1X" Tag="0.1"/>
             <ComboBoxItem Content="2X" Tag="0.2"/>
             <ComboBoxItem Content="3X" Tag="0.3"/>
@@ -89,7 +100,52 @@
             <ComboBoxItem Content="5X" Tag="0.5"/>
          </ComboBox>
         <Label x:Name="lblVelocidadE" Content="Velocidad:" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <TextBox x:Name="VelocidadE" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500"/>
-        <Label x:Name="lblSE" Content="ms" Grid.Row="10" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <TextBox x:Name="VelocidadE" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadE_TextChanged" LostFocus="VelocidadE_LostFocus"/>
+        <Label x:Name="lblSE" Content="ms" Grid.Row="10" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkGirar" Content="Girar" Grid.Row="8" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Checked="chkGirar_Checked" Unchecked="chkGirar_Unchecked" Margin="5,0,0,0" HorizontalAlignment="Left"/>
+        <Label x:Name="lblDirrecionG" Content="Dirección:" Grid.Row="9" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxDireccionG" Grid.Column="6" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxDireccionG_SelectionChanged" SelectedIndex="0">
+            <ComboBoxItem Content="Derecha" Tag="D"/>
+            <ComboBoxItem Content="Izquierda" Tag="I"/>
+        </ComboBox>
+        <Label x:Name="lblVelocidadG" Content="Velocidad:" Grid.Row="10" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadG" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="6" FontFamily="Arial Rounded MT" FontSize="14" Text="500" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadG_TextChanged" LostFocus="VelocidadG_LostFocus"/>
+        <Label x:Name="lblSG" Content="ms" Grid.Row="10" Grid.Column="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <StackPanel Grid.Row="11"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="0,5,5,5" Grid.Column="6" Grid.ColumnSpan="2">
+            <Button x:Name="btnBorrar"
+              Content="Eliminar"
+              IsDefault="True"
+              Width="60"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnBorrar_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

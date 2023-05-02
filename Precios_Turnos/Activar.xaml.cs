@@ -87,20 +87,34 @@ namespace Precios_Turnos
                     if (subs[0].Equals(Correo.Text) && subs[3].Equals(vSeguridad.numeroSerieHD()) && subs[4].Equals(vSeguridad.numeroSeriePlacaBase())
                         && subs[5].Equals(MainWindow.nombreApp))
                     {
-                        if (!subs[1].Equals("0"))
+                        try
                         {
-                            if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
-                            {
-                                RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
-                                string LlaveReg = key.GetValue("Key").ToString();
-                                Licencia licencia2 = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
+                            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
+                            string LlaveReg = key.GetValue("Key").ToString();
+                            Licencia licencia2 = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
 
-                                if (!licencia.Correo.Equals(licencia2.Correo) || !licencia.Codigo.Equals(licencia2.Codigo) 
-                                    || !licencia.Llave.Equals(licencia2.Llave) || !licencia.Key.Equals(licencia2.Key))
+                            if (licencia.Correo.Equals(licencia2.Correo) || licencia.Codigo.Equals(licencia2.Codigo)
+                                || licencia.Llave.Equals(licencia2.Llave) || licencia.Key.Equals(licencia2.Key))
+                            {
+                                if (!subs[1].Equals("0"))
                                 {
-                                    Llave.Text = "";
-                                    lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                    lblFecha.Content = "Licencia no válida";
+                                    if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
+                                    {
+                                        Correo.IsReadOnly = true;
+                                        Llave.IsReadOnly = true;
+                                        btnGenerar.IsEnabled = false;
+                                        btnOK.IsEnabled = false;
+                                        lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                                        lblFecha.Content = "Licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+
+                                    }
+                                    else
+                                    {
+                                        Llave.Text = "";
+                                        lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                        lblFecha.Content = "Licencia caducada: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+                                    }
+
                                 }
                                 else
                                 {
@@ -109,24 +123,21 @@ namespace Precios_Turnos
                                     btnGenerar.IsEnabled = false;
                                     btnOK.IsEnabled = false;
                                     lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                                    lblFecha.Content = "Fecha licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+                                    lblFecha.Content = "Licencia: Permanete";
                                 }
-
                             }
                             else
                             {
                                 Llave.Text = "";
                                 lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                lblFecha.Content = "Fecha licencia caducada: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+                                lblFecha.Content = "Licencia no válida";
                             }
                         }
-                        else
+                        catch
                         {
-                            Correo.IsReadOnly = true;
-                            Llave.IsReadOnly = true;
-                            btnGenerar.IsEnabled = false;
-                            lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                            lblFecha.Content = "Fecha licencia: Permanete";
+                            Llave.Text = "";
+                            lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                            lblFecha.Content = "Licencia no válida";
                         }
                     }
                 }
@@ -173,6 +184,7 @@ namespace Precios_Turnos
                                 mainWindow.Turnero.IsEnabled = true;
                                 mainWindow.EditarDiseno.IsEnabled = true;
                                 mainWindow.ResizeMode = ResizeMode.CanResize;
+                                mainWindow.CargarControles();
 
                                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
                                 dialog.lblNombre.Content = "¡Listo!";
@@ -197,6 +209,7 @@ namespace Precios_Turnos
                         mainWindow.Turnero.IsEnabled = true;
                         mainWindow.EditarDiseno.IsEnabled = true;
                         mainWindow.ResizeMode = ResizeMode.CanResize;
+                        mainWindow.CargarControles();
 
                         Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
                         dialog.lblNombre.Content = "¡Listo!";

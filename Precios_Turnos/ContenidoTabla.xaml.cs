@@ -1,6 +1,8 @@
-﻿using Precios_Turnos.Properties;
+﻿using Microsoft.Win32;
+using Precios_Turnos.Properties;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
@@ -31,7 +33,9 @@ namespace Precios_Turnos
             InitializeComponent();
             mainWindow = pMainWindow;
             NombreControl = pNombreControl;
+            CargarComboCampoMostrar();
             CargarInfo();
+            
             FocusManager.SetFocusedElement(this, Consulta);
         }
 
@@ -56,6 +60,21 @@ namespace Precios_Turnos
                     Close();
             }
         }
+        private void CargarComboCampoMostrar()
+        {
+            foreach (var itemObjets in mainWindow.Principal.Children)
+            {
+                
+                switch (itemObjets.GetType().Name)
+                {
+                    case "Label":
+                        string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                        if (mainWindow.SeModificaControl(nombreControl))
+                            cbxLabels.Items.Add(nombreControl);
+                        break;
+                }
+            }
+        }
 
         private void CargarInfo()
         {
@@ -70,6 +89,11 @@ namespace Precios_Turnos
                 {
                     chkOrganizar.IsChecked = true;
                     Organizar.Text = datos[1];
+                    if(datos.Length > 2)
+                    {
+                        chkMostrarTitulo.IsChecked = true;
+                        cbxLabels.SelectedItem = datos[2];
+                    }
                 }
                 else
                 {
@@ -93,20 +117,23 @@ namespace Precios_Turnos
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 Seguridad vSeguridad = new Seguridad();
 
-                if (config.AppSettings.Settings[NombreControl] == null)
+                string cadenaGuardar = string.Empty;
+
+                if (chkOrganizar.IsChecked == true)
                 {
-                    if (chkOrganizar.IsChecked == true)
-                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Organizar.Text));
-                    else
-                        config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text));
-                }
+                    cadenaGuardar = Consulta.Text + "|" + Organizar.Text;
+                    if(chkMostrarTitulo.IsChecked == true)
+                        cadenaGuardar += "|" + cbxLabels.SelectedItem;
+                }  
                 else
-                {
-                    if (chkOrganizar.IsChecked == true)
-                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text + "|" + Organizar.Text);
-                    else
-                        config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Consulta.Text);
-                }
+                    cadenaGuardar = Consulta.Text;
+
+
+                if (config.AppSettings.Settings[NombreControl] == null)
+                    config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, cadenaGuardar));
+                else
+                    config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, cadenaGuardar);
+
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
 
@@ -130,8 +157,20 @@ namespace Precios_Turnos
                     }
                     };
                 }
-                control.ItemsSource = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true)[0].DefaultView;
+                List<DataTable> tablas = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true);
+                control.ItemsSource = tablas[0].DefaultView;
                 control.UpdateLayout();
+                if (chkMostrarTitulo.IsChecked == true)
+                {
+                    if (cbxLabels.SelectedIndex != -1)
+                    {
+                       Label item = (Label)mainWindow.FindName(cbxLabels.SelectedItem.ToString());
+                        item.Content = tablas[0].TableName;
+                    }
+                    
+                }
+                    
+
                 mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
                 return true;
             }
@@ -149,6 +188,8 @@ namespace Precios_Turnos
         {
             lblOrganizar.Visibility = Visibility.Visible;
             Organizar.Visibility = Visibility.Visible;
+            chkMostrarTitulo.Visibility = Visibility.Visible;
+
         }
 
         private void chkOrganizar_Unchecked(object sender, RoutedEventArgs e)
@@ -156,6 +197,8 @@ namespace Precios_Turnos
             lblOrganizar.Visibility = Visibility.Hidden;
             Organizar.Visibility = Visibility.Hidden;
             Organizar.Text = "";
+            chkMostrarTitulo.IsChecked = false;
+            chkMostrarTitulo.Visibility = Visibility.Hidden;
         }
         
         private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -190,8 +233,20 @@ namespace Precios_Turnos
         private void PastingHandler(object sender, DataObjectPastingEventArgs e)
         {
             // more error handling would be needed here - this is asking for trouble!
-            String s = (String)e.DataObject.GetData(typeof(String));
+            string s = (string)e.DataObject.GetData(typeof(string));
             if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void chkMostrarTitulo_Checked(object sender, RoutedEventArgs e)
+        {
+            lblCampoTitulo.Visibility = Visibility.Visible;
+            cbxLabels.Visibility= Visibility.Visible;
+        }
+
+        private void chkMostrarTitulo_Unchecked(object sender, RoutedEventArgs e)
+        {
+            lblCampoTitulo.Visibility = Visibility.Hidden;
+            cbxLabels.Visibility = Visibility.Hidden;
         }
     }
 }

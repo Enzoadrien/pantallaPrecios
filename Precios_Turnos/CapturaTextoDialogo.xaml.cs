@@ -58,7 +58,7 @@ namespace Precios_Turnos
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            if (Char.IsDigit(NombreText.FirstOrDefault()))
+            if (char.IsDigit(NombreText.FirstOrDefault()))
             {
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
@@ -73,7 +73,7 @@ namespace Precios_Turnos
                 dialog.ShowDialog();
             }
             else { 
-            if (mainWindow.FindName(NombreText) == null)
+            if (mainWindow.FindName(NombreText.ToUpper()) == null)
             {
                 DialogResult = true;
             }
@@ -92,7 +92,7 @@ namespace Precios_Turnos
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
             if(esVideo)
-                dlg.Filter = "Todos los archivos de video|*.mp3;*.mp4;*.asf;*.mov|MP3 (*.mp3)|*.mp3|MP4 (*.mp4)|*.mp4|ASF (*.wmv;*.wma)|*.wmv;*wma|MOV (*.mov)|*.mov";
+                dlg.Filter = "Todos los archivos de video|*.wav;*.mp3;*.mp4;*.asf;*.mov|WAV (*.wav)||MP3 (*.mp3)|*.mp3|MP4 (*.mp4)|*.mp4|ASF (*.wmv;*.wma)|*.wmv;*wma|MOV (*.mov)|*.mov";
             else
                 dlg.Filter = "Todos los archivos de imagen|*.jpeg;*.jpg;*.png;*.gif|JPEG (*.jpeg;*.jpg)|*.jpeg;*.jpg|PNG (*.png)|*.png|GIF (*.gif)|*.gif";
 

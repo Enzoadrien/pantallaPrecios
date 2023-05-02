@@ -99,6 +99,7 @@ namespace Precios_Turnos
 
         private void btnColorFuente_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             Label control = (Label)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Foreground as SolidColorBrush).Color);
             // get the parent container
@@ -121,10 +122,12 @@ namespace Precios_Turnos
                 control.Foreground = new SolidColorBrush(colorPicker.SelectedColor);
                 mainWindow.ultimoColorLetra = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            Opacity = 0.5;
             Label control = (Label)mainWindow.FindName(NombreControl.Text);
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.Background as SolidColorBrush).Color);
             // get the parent container
@@ -148,6 +151,7 @@ namespace Precios_Turnos
                 control.Background = new SolidColorBrush(colorPicker.SelectedColor);
                 mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
             }
+            Opacity = 0.9;
         }
 
         private void btnBorrar_Click(object sender, RoutedEventArgs e)
@@ -250,5 +254,29 @@ namespace Precios_Turnos
             esInicio = false;
         }
 
+        private void btnAnimaciones_Click(object sender, RoutedEventArgs e)
+        {
+            Opacity = 0.5;
+            Animaciones dialog = new Animaciones(mainWindow, NombreControl.Text);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = Mouse.GetPosition(this);
+
+            // get the position within the container
+            var mousePosition = this.PointToScreen(relativeCenterParent);
+
+            if (mousePosition.Y + dialog.Height >= mainWindow.MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            if (mousePosition.X + dialog.Width >= mainWindow.MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            dialog.ShowDialog();
+            Opacity = 0.9;
+        }
     }
 }

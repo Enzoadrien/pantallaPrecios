@@ -114,7 +114,7 @@ namespace Precios_Turnos
             }
         }
 
-        private Boolean TextAllowed(String s)
+        private bool TextAllowed(string s)
         {
             foreach (Char c in s.ToCharArray())
             {
@@ -375,17 +375,20 @@ namespace Precios_Turnos
 
         private void chkMaximizar_Checked(object sender, RoutedEventArgs e)
         {
-            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            if (chkSonido.IsChecked == true)
-                ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
-            else 
-                ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
+            if (!esInicio)
+            {
+                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+                if (chkSonido.IsChecked == true)
+                    ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
+                else
+                    ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
 
 
-            Cada.Text = "900";
-            Durar.Text = "0";
-            Cada.IsEnabled = true;
-            Durar.IsEnabled = true;
+                Cada.Text = "900";
+                Durar.Text = "0";
+                Cada.IsEnabled = true;
+                Durar.IsEnabled = true;
+            }
         }
 
         private void chkMaximizar_Unchecked(object sender, RoutedEventArgs e)
@@ -404,14 +407,24 @@ namespace Precios_Turnos
         private void CadaDurante_TextChanged(object sender, TextChangedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            if(chkSonido.IsChecked == true)
-                ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
-            else
-                ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
+            if (chkMaximizar.IsChecked == true)
+            {
+                if (chkSonido.IsChecked == true)
+                    ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
+                else
+                    ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
+            }
+            else {
+                if (chkSonido.IsChecked == true)
+                    ((MediaElement)item).Tag = "S";
+                else
+                    ((MediaElement)item).Tag = "N";
+            }
         }
 
         private void btnAnimaciones_Click(object sender, RoutedEventArgs e)
         {
+            Opacity = 0.5;
             Animaciones dialog = new Animaciones(mainWindow, NombreControl.Text);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -431,6 +444,19 @@ namespace Precios_Turnos
                 dialog.Left = mousePosition.X;
 
             dialog.ShowDialog();
+            Opacity = 0.9;
+        }
+
+        private void chkOcultar_Checked(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            ((MediaElement)item).Visibility= Visibility.Hidden;
+        }
+
+        private void chkOcultar_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+            ((MediaElement)item).Visibility = Visibility.Visible;
         }
     }
 }

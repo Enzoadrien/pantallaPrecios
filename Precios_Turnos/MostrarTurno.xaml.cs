@@ -165,7 +165,47 @@ namespace Precios_Turnos
                     if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
-                        MenuItem itemCm = (MenuItem)cm.Items[9];
+
+                        Label control = (Label)FindName("NumeroTurno");
+                        if (control.Visibility == Visibility.Visible)
+                            ((MenuItem)cm.Items[2]).Header = "Ocultar turno";
+                        else 
+                            ((MenuItem)cm.Items[2]).Header = "Mostrar turno";
+
+                    control = (Label)FindName("NumeroEquipo");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[3]).Header = "Ocultar equipo";
+                    else
+                        ((MenuItem)cm.Items[3]).Header = "Mostrar equipo";
+
+                    control = (Label)FindName("NombreEquipo");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[4]).Header = "Ocultar nombre";
+                    else
+                        ((MenuItem)cm.Items[4]).Header = "Mostrar nombre";
+
+
+                    control = (Label)FindName("NumeroTurnoAnt");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[5]).Header = "Ocultar turno anterior";
+                    else
+                        ((MenuItem)cm.Items[5]).Header = "Mostrar turno anterior";
+
+                    control = (Label)FindName("NumeroEquipoAnt");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[6]).Header = "Ocultar equipo anterior";
+                    else
+                        ((MenuItem)cm.Items[6]).Header = "Mostrar equipo anterior";
+
+                    control = (Label)FindName("NombreEquipoAnt");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[7]).Header = "Ocultar nombre anterior";
+                    else
+                        ((MenuItem)cm.Items[7]).Header = "Mostrar nombre anterior";
+
+
+
+                    MenuItem itemCm = (MenuItem)cm.Items[9];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -456,8 +496,8 @@ namespace Precios_Turnos
             if (dialog.ShowDialog() == true)
             {
                 Label obj = new Label();
-                obj.Name = dialog.NombreText;
-                obj.ToolTip = dialog.NombreText;
+                obj.Name = dialog.NombreText.ToUpper();
+                obj.ToolTip = dialog.NombreText.ToUpper();
                 obj.Content = dialog.ContenidoText;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
@@ -492,8 +532,8 @@ namespace Precios_Turnos
             if (dialog.ShowDialog() == true)
             {
                 Image obj = new Image();
-                obj.Name = dialog.NombreText;
-                obj.ToolTip = dialog.NombreText;
+                obj.Name = dialog.NombreText.ToUpper();
+                obj.ToolTip = dialog.NombreText.ToUpper();
                 obj.Source = new BitmapImage(new Uri(dialog.ContenidoText));
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
@@ -708,60 +748,101 @@ namespace Precios_Turnos
 
         private void MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroTurno");
-            if (control.Visibility==Visibility.Visible)
-                control.Visibility=Visibility.Hidden;
+
+            if (control.Visibility == Visibility.Visible)
+            {
+                control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar turno";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
-
-
+                itemCm.Header = "Mostrar turno";
+            }
         }
 
         private void MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroEquipo");
             if (control.Visibility == Visibility.Visible)
+            {
                 control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar equipo";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
+                itemCm.Header = "Mostrar equipo";
+            }
         }
 
         private void MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NombreEquipo");
             if (control.Visibility == Visibility.Visible)
+            {
                 control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar nombre";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
+                itemCm.Header = "Mostrar nombre";
+            }
         }
 
         private void MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroTurnoAnt");
             if (control.Visibility == Visibility.Visible)
+            {
                 control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar turno anterior";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
+                itemCm.Header = "Mostrar turno anterior";
+            }
 
 
         }
 
         private void MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroEquipoAnt");
             if (control.Visibility == Visibility.Visible)
+            {
                 control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar equipo anterior";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
+                itemCm.Header = "Mostrar equipo anterior";
+            }
         }
 
         private void MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NombreEquipoAnt");
             if (control.Visibility == Visibility.Visible)
+            {
                 control.Visibility = Visibility.Hidden;
+                itemCm.Header = "Ocultar nombre anterior";
+            }
             else
+            {
                 control.Visibility = Visibility.Visible;
+                itemCm.Header = "Mostrar nombre anterior";
+            }
         }
     }
 }

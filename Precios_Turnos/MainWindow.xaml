@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Lista de precios 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico" MinWidth="920" MinHeight="600">
+        Title="Lista de precios 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico" MinWidth="920" MinHeight="600" Closed="Window_Closed">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video/audio" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
@@ -42,6 +42,7 @@
         </Menu>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Grid x:Name="Tabla" Panel.ZIndex="1000"/>
         <Grid x:Name="Video" Panel.ZIndex="1000"/>
         <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
     </Grid>
