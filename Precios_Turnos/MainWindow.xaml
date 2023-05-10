@@ -44,6 +44,6 @@
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="Tabla" Panel.ZIndex="1000"/>
         <Grid x:Name="Video" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="120" Width="120" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
+        <Image x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
     </Grid>
 </Window>

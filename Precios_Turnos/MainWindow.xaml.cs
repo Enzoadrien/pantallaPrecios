@@ -464,7 +464,7 @@ namespace Precios_Turnos
                 Video.Children.Remove(control);
                 NameScope.GetNameScope(this).UnregisterName(control.Name);
                 Video.Background = null;
-                Video.UpdateLayout();
+                //Video.UpdateLayout();
             }
 
 
@@ -1392,7 +1392,7 @@ namespace Precios_Turnos
                         if (esTabla)
                         {
                             ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString())[0].DefaultView;
-                            ((DataGrid)itemObjets).UpdateLayout();
+                            //((DataGrid)itemObjets).UpdateLayout();
                             ColorFuenteFondoTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString());
                         }
                     }
@@ -1457,7 +1457,7 @@ namespace Precios_Turnos
                                 List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
                                 if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                     control.ItemsSource = list[0].DefaultView;
-                                control.UpdateLayout();
+                                //control.UpdateLayout();
                                 ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                 break;
                             case "MediaElement":
@@ -1561,7 +1561,7 @@ namespace Precios_Turnos
                     }
                 };
             }
-            control.UpdateLayout();
+            //control.UpdateLayout();
         }
 
         private void SaveFrameworkElementToPng(FrameworkElement frameworkElement,
@@ -1743,7 +1743,7 @@ namespace Precios_Turnos
                         foreach (DataGridColumn column in control.Columns)
                         column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
 
-                    control.UpdateLayout();
+                    //control.UpdateLayout();
                     ColorFuenteFondoTabla(pNombre, pTag);
                 }
                 catch (Exception) { }
@@ -1781,12 +1781,12 @@ namespace Precios_Turnos
                     {
                         Video.Children.Remove(videoFull);
                         NameScope.GetNameScope(this).UnregisterName(videoFull.Name);
-                        Video.UpdateLayout();
+                        //Video.UpdateLayout();
                     }
                     Video.Background = new SolidColorBrush(Colors.Black);
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Video.Children.Add(obj);
-                    Video.UpdateLayout();
+                    //Video.UpdateLayout();
                 }
                 catch (Exception) { }
             }));
@@ -1806,7 +1806,7 @@ namespace Precios_Turnos
                         Video.Children.Remove(video);
                         NameScope.GetNameScope(this).UnregisterName(video.Name);
                         Video.Background = null;
-                        Video.UpdateLayout();
+                        //Video.UpdateLayout();
                         SilenciarVideos(false);
                     }
                 }

@@ -521,7 +521,7 @@ namespace Precios_Turnos
                 }
             }
 
-            control.UpdateLayout();
+            //control.UpdateLayout();
             ColorFuenteFondo();
         }
 

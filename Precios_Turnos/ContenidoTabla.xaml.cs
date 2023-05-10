@@ -159,7 +159,7 @@ namespace Precios_Turnos
                 }
                 List<DataTable> tablas = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true);
                 control.ItemsSource = tablas[0].DefaultView;
-                control.UpdateLayout();
+                //control.UpdateLayout();
                 if (chkMostrarTitulo.IsChecked == true)
                 {
                     if (cbxLabels.SelectedIndex != -1)
