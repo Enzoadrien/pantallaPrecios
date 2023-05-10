@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Speech.Synthesis;
 
 namespace Precios_Turnos
 {
@@ -114,6 +116,7 @@ namespace Precios_Turnos
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
             Durar.Text = config.AppSettings.Settings["DuracionTurnero"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["AudioTurnero"].Value;
+            chkVoz.IsChecked = config.AppSettings.Settings["VozTurnero"].Value.Equals("true") ? true : false;
             string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
             if(clientes[0].Length > 0)
                 foreach (string cliente in clientes)
@@ -135,6 +138,7 @@ namespace Precios_Turnos
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
             config.AppSettings.Settings["DuracionTurnero"].Value = Durar.Text;
             config.AppSettings.Settings["AudioTurnero"].Value = cbxAudio.SelectedItem.ToString();
+            config.AppSettings.Settings["VozTurnero"].Value = chkVoz.IsChecked == true ? "true" : "false";
             string clientes = string.Empty;
             foreach (string cliente in cbxTurneros.Items)
             {
@@ -174,11 +178,12 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + cbxAudio.SelectedItem.ToString());
-                    player.Play();
+                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + cbxAudio.SelectedItem.ToString());
+                        player.Play(); 
                 }
                 catch { }
             }
+            
         }
 
         private async void btnBuscar_Click(object sender, RoutedEventArgs e)
@@ -314,6 +319,43 @@ namespace Precios_Turnos
         {
             chkTeclasDemo.IsChecked = false;
             chkTeclasDemo.Visibility = Visibility.Hidden;
+        }
+
+        private void btnVoz_Click(object sender, RoutedEventArgs e)
+        {
+            Process p = Process.Start("notepad.exe", @".\vozTurnero.3k");
+            p.WaitForInputIdle();
+        }
+
+        private void chkVoz_Checked(object sender, RoutedEventArgs e)
+        {
+            btnVoz.Visibility = Visibility.Visible;
+            if (!esInicio)
+                Task.Run( () => vozDemo());
+        }
+
+        private async Task vozDemo() 
+        {
+            var synthesizer = new SpeechSynthesizer();
+            synthesizer.SetOutputToDefaultAudioDevice();
+            string line = string.Empty;
+            try
+            {
+                using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                {
+                    var sr = new StreamReader(stream);
+
+                    line = sr.ReadToEnd();
+                    stream.Close();
+                }
+            }
+            catch { }
+            synthesizer.Speak(line);
+        }
+
+        private void chkVoz_Unchecked(object sender, RoutedEventArgs e)
+        {
+            btnVoz.Visibility = Visibility.Hidden;
         }
     }
     public class ViewModelAudio

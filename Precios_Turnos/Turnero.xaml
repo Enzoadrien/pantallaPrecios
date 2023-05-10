@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-         Title="Configurar turnero" Background="#FFD2CBCB" Height="400" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" KeyDown="Window_KeyDown" Loaded="Window_Loaded">
+         Title="Configurar turnero" Background="#FFD2CBCB" Height="430" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" KeyDown="Window_KeyDown" Loaded="Window_Loaded">
     <Window.DataContext>
         <local:ViewModelAudio/>
     </Window.DataContext>
@@ -17,6 +17,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -116,7 +117,43 @@
             <TextBlock x:Name="Progress" HorizontalAlignment="Center" VerticalAlignment="Center">0/255</TextBlock>
         </Grid>
         <Label x:Name="lblEncontrados" Content="Encontrados: 0" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <CheckBox x:Name="chkVoz" Content="Voz de Windows" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,0,0" Checked="chkVoz_Checked" Unchecked="chkVoz_Unchecked"/>
         <StackPanel Grid.Row="10"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="0,5,5,5" Grid.Column="1" Grid.ColumnSpan="2">
+            <Button x:Name="btnVoz"
+              Content="Configurar voz"
+              IsDefault="True"
+              Width="120"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF0E596D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="11"
                 HorizontalAlignment="Left"
                 Orientation="Horizontal"
                 Margin="5,5,0,5" Grid.ColumnSpan="2" >
@@ -151,10 +188,10 @@
                 </Button.Style>
             </Button>
         </StackPanel>
-        <CheckBox x:Name="chkMostrarNombres" Content="Mostrar nombres" Grid.Column="1" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0"/>
-        <CheckBox x:Name="chkTeclasDemo" Content="Activar teclas demo" Grid.Row="11" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,0,0" Visibility="Hidden"/>
-        <CheckBox x:Name="chkTurnero" Content="Activar turnero" Grid.Column="1" Grid.Row="11" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0" Checked="chkTurnero_Checked" Unchecked="chkTurnero_Unchecked"/>
-        <StackPanel Grid.Row="12"
+        <CheckBox x:Name="chkMostrarNombres" Content="Mostrar nombres" Grid.Column="1" Grid.Row="11" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0"/>
+        <CheckBox x:Name="chkTeclasDemo" Content="Activar teclas demo" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,0,0" Visibility="Hidden"/>
+        <CheckBox x:Name="chkTurnero" Content="Activar turnero" Grid.Column="1" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0" Checked="chkTurnero_Checked" Unchecked="chkTurnero_Unchecked"/>
+        <StackPanel Grid.Row="13"
                 HorizontalAlignment="Left"
                 Orientation="Horizontal"
                 Margin="5,5,0,5" Grid.ColumnSpan="2" >
@@ -189,7 +226,7 @@
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="12"
+        <StackPanel Grid.Row="13"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="2" >

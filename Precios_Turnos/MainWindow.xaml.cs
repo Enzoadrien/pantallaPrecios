@@ -267,13 +267,6 @@ namespace Precios_Turnos
                     }
                     mostrarTurno.Show();
 
-                    try
-                    {
-                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
-                        player.Play();
-                    }
-                    catch { }
-
                 }
             }
         }

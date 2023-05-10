@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Speech.Synthesis;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -33,13 +35,13 @@ namespace Precios_Turnos
         private bool estaSaliendo = false;
         private bool esDiseno;
 
-        public MostrarTurno(bool pEsDiseno=false)
+        public MostrarTurno(bool pEsDiseno = false)
         {
             esDiseno = pEsDiseno;
             InitializeComponent();
             double height = SystemParameters.FullPrimaryScreenHeight;
             double width = SystemParameters.FullPrimaryScreenWidth;
-            Height = height-(height*.10);
+            Height = height - (height * .10);
             Width = width / 2;
             MaxHeight = Height;
             MaxWidth = Width;
@@ -49,9 +51,43 @@ namespace Precios_Turnos
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
             }
-                
+
         }
-        
+
+        public async Task ActivarVoz()
+        {
+            var synthesizer = new SpeechSynthesizer();
+            synthesizer.SetOutputToDefaultAudioDevice();
+
+            string line = string.Empty;
+            try
+            {
+                using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                {
+                    var sr = new StreamReader(stream);
+
+                    line = sr.ReadToEnd();
+                    stream.Close();
+                }
+            }
+            catch { }
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
+
+                line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
+
+                line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
+
+                line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
+
+                line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
+
+                line = line.Replace(@"NombreEquipoAnt", NombreEquipoAnt.Content.ToString());
+            }));
+            synthesizer.SpeakAsync(line);
+        }
+
         private void TimerTick(object sender, EventArgs e)
         {
             DispatcherTimer timer = (DispatcherTimer)sender;
@@ -70,107 +106,107 @@ namespace Precios_Turnos
             timer.Tick += TimerTick;
             timer.Start();
         }
-        
+
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-                try
+            try
+            {
+                var item = e.Source as UIElement;
+                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                 {
-                    var item = e.Source as UIElement;
-                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
-                    {
-                        var container = VisualTreeHelper.GetParent(item) as UIElement;
-                        _positionInBlock = e.GetPosition(container);
-                        _currentTT = item.RenderTransform as TranslateTransform;
-                        item.CaptureMouse();
-                    }
+                    var container = VisualTreeHelper.GetParent(item) as UIElement;
+                    _positionInBlock = e.GetPosition(container);
+                    _currentTT = item.RenderTransform as TranslateTransform;
+                    item.CaptureMouse();
                 }
-                catch (Exception) { }
+            }
+            catch (Exception) { }
 
         }
 
         private void Principal_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-                try
+            try
+            {
+                var item = e.Source as UIElement;
+
+                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                 {
-                    var item = e.Source as UIElement;
+                    _currentTT = item.RenderTransform as TranslateTransform;
+                    // release this control.
+                    item.ReleaseMouseCapture();
 
-                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
-                    {
-                        _currentTT = item.RenderTransform as TranslateTransform;
-                        // release this control.
-                        item.ReleaseMouseCapture();
-
-                    }
                 }
-                catch (Exception) { }
+            }
+            catch (Exception) { }
 
         }
 
         private void Principal_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-                try
+            try
+            {
+                var item = e.Source as UIElement;
+
+                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                 {
-                    var item = e.Source as UIElement;
-
-                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    if (item.IsMouseCaptured)
                     {
-                        if (item.IsMouseCaptured)
-                        {
-                            // get the parent container
-                            var container = VisualTreeHelper.GetParent(item) as UIElement;
+                        // get the parent container
+                        var container = VisualTreeHelper.GetParent(item) as UIElement;
 
-                            // get the position within the container
-                            var mousePosition = e.GetPosition(container);
-                            Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
+                        // get the position within the container
+                        var mousePosition = e.GetPosition(container);
+                        Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
 
-                            var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
-                            var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
+                        var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
+                        var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
 
 
-                            Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
-                            // move the usercontrol.
+                        Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
+                        // move the usercontrol.
 
-                            item.RenderTransform = new TranslateTransform(offsetX, offsetY);
-                        }
+                        item.RenderTransform = new TranslateTransform(offsetX, offsetY);
                     }
                 }
-                catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private void Principal_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-                try
+            try
+            {
+                if (e.ClickCount == 2)
                 {
-                    if (e.ClickCount == 2)
-                    {
-                        var item = e.Source as UIElement;
-                        controlClickName = item.GetValue(NameProperty).ToString();
+                    var item = e.Source as UIElement;
+                    controlClickName = item.GetValue(NameProperty).ToString();
 
-                        if (SeModificaControl(controlClickName))
-                        {
-                            mostarPropiedadesObjetos(e);
-                        }
+                    if (SeModificaControl(controlClickName))
+                    {
+                        mostarPropiedadesObjetos(e);
                     }
                 }
-                catch (Exception) { }
+            }
+            catch (Exception) { }
         }
 
         private void Principal_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-                try
+            try
+            {
+                var item = e.Source as UIElement;
+
+                if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                 {
-                    var item = e.Source as UIElement;
+                    ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
-                    if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
-                    {
-                        ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
-
-                        Label control = (Label)FindName("NumeroTurno");
-                        if (control.Visibility == Visibility.Visible)
-                            ((MenuItem)cm.Items[2]).Header = "Ocultar turno";
-                        else 
-                            ((MenuItem)cm.Items[2]).Header = "Mostrar turno";
+                    Label control = (Label)FindName("NumeroTurno");
+                    if (control.Visibility == Visibility.Visible)
+                        ((MenuItem)cm.Items[2]).Header = "Ocultar turno";
+                    else
+                        ((MenuItem)cm.Items[2]).Header = "Mostrar turno";
 
                     control = (Label)FindName("NumeroEquipo");
                     if (control.Visibility == Visibility.Visible)
@@ -206,33 +242,33 @@ namespace Precios_Turnos
 
 
                     MenuItem itemCm = (MenuItem)cm.Items[9];
-                        itemCm.Items.Clear();
-                        foreach (var itemObjets in Principal.Children)
-                        {
-                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                            if (SeModificaControl(nombreControl) && (itemObjets as UIElement).Visibility==Visibility.Visible)
-                            {
-                                MenuItem itemControl = new MenuItem();
-                                itemControl.Header = nombreControl+"-("+ (itemObjets as UIElement).GetType().Name + ")";
-                                itemControl.Tag = nombreControl;
-                                itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
-                                itemCm.Items.Add(itemControl);
-                            }
-                        }
-                        cm.PlacementTarget = sender as Button;
-                        cm.IsOpen = true;
-                    }
-                    else
+                    itemCm.Items.Clear();
+                    foreach (var itemObjets in Principal.Children)
                     {
-                        controlClickName = item.GetValue(NameProperty).ToString();
-                        ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
-                        cm.PlacementTarget = sender as Button;
-                        cm.IsOpen = true;
-
+                        string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                        if (SeModificaControl(nombreControl) && (itemObjets as UIElement).Visibility == Visibility.Visible)
+                        {
+                            MenuItem itemControl = new MenuItem();
+                            itemControl.Header = nombreControl + "-(" + (itemObjets as UIElement).GetType().Name + ")";
+                            itemControl.Tag = nombreControl;
+                            itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
+                            itemCm.Items.Add(itemControl);
+                        }
                     }
+                    cm.PlacementTarget = sender as Button;
+                    cm.IsOpen = true;
+                }
+                else
+                {
+                    controlClickName = item.GetValue(NameProperty).ToString();
+                    ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
+                    cm.PlacementTarget = sender as Button;
+                    cm.IsOpen = true;
 
                 }
-                catch (Exception) { }
+
+            }
+            catch (Exception) { }
         }
 
         private void MenuListaObjetos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -244,7 +280,7 @@ namespace Precios_Turnos
 
         private void MenuEliminar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-                BorarObjeto(controlClickName);
+            BorarObjeto(controlClickName);
         }
 
         private bool SeEliminaControl(string name)
@@ -295,7 +331,7 @@ namespace Precios_Turnos
         {
             var item = FindName(controlClickName) as UIElement;
 
-            var mousePosition = e.GetPosition(Principal); 
+            var mousePosition = e.GetPosition(Principal);
             var point = PointToScreen(mousePosition);
             switch (item.GetType().Name)
             {
@@ -367,21 +403,39 @@ namespace Precios_Turnos
                     break;
             }
         }
-        
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-                    CargarControles();
+            CargarControles();
+
+            if (!esDiseno)
+            {
+
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                try
+                {
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
+                    player.Play();
+                }
+                catch { }
+
+                if (config.AppSettings.Settings["VozTurnero"].Value.Equals("true"))
+                {
+                    Task.Run(() => ActivarVoz());
+                }
+            }
+
         }
 
         public bool BorarObjeto(string pNombre)
         {
-            if(SeEliminaControl(pNombre))
+            if (SeEliminaControl(pNombre))
             {
-                
-                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
                 dialog.lblNombre.Content = "¡Advertencia!";
                 dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto.";
-                
+
                 if (dialog.ShowDialog() == true)
                 {
                     var item = FindName(pNombre) as UIElement;
@@ -397,18 +451,18 @@ namespace Precios_Turnos
                     try
                     {
                         DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
-                    foreach (var file in info.GetFiles())
-                    {
-                        string[] nombre = file.Name.Split('-');
-                        if (nombre[1].Equals(pNombre + ".xaml"))
-                            File.Delete(file.FullName);
-                    }
+                        foreach (var file in info.GetFiles())
+                        {
+                            string[] nombre = file.Name.Split('-');
+                            if (nombre[1].Equals(pNombre + ".xaml"))
+                                File.Delete(file.FullName);
+                        }
                     }
                     catch { }
                     return true;
                 }
                 return false;
-                
+
             }
             else
             {
@@ -417,7 +471,7 @@ namespace Precios_Turnos
                 dialog.lblTexto.Text = "Este objeto no puede ser borrado.";
                 dialog.ShowDialog();
                 return false;
-            }    
+            }
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -477,7 +531,7 @@ namespace Precios_Turnos
         {
             CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
-            var  point = e.GetPosition(Principal);
+            var point = e.GetPosition(Principal);
             var mousePosition = PointToScreen(point);
 
 
@@ -558,11 +612,11 @@ namespace Precios_Turnos
 
         private void MenuPropiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-                try
-                {
-                    mostarPropiedadesObjetos(e);
-                }
-                catch (Exception) { }
+            try
+            {
+                mostarPropiedadesObjetos(e);
+            }
+            catch (Exception) { }
         }
 
         private void MenuSalir_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -602,33 +656,33 @@ namespace Precios_Turnos
                     Directory.CreateDirectory(@".\objetosTurno");
                 }
                 int x = 0;
-            DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
-            foreach (FileInfo file in di.EnumerateFiles())
-            {
-                file.Delete();
-            }
-            foreach (var itemObjets in Principal.Children)
-            {
-                bool esTabla;
-                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Borde"))
+                DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
+                foreach (FileInfo file in di.EnumerateFiles())
                 {
-                    StringBuilder outstr = new StringBuilder();
-
-                    XmlWriterSettings settings = new XmlWriterSettings();
-                    settings.Indent = true;
-                    settings.OmitXmlDeclaration = true;
-                    settings.NewLineOnAttributes = true;
-
-
-                    XamlDesignerSerializationManager dsm = new XamlDesignerSerializationManager(XmlWriter.Create(outstr, settings));
-                    dsm.XamlWriterMode = XamlWriterMode.Expression;
-
-                    XamlWriter.Save(itemObjets, dsm);
-                    string savedControls = outstr.ToString();
-                    Seguridad vSeguridad = new Seguridad();
-                    File.WriteAllText(@"objetosTurno\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(MainWindow.nombreApp, savedControls));
+                    file.Delete();
                 }
+                foreach (var itemObjets in Principal.Children)
+                {
+                    bool esTabla;
+                    string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                    if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Borde"))
+                    {
+                        StringBuilder outstr = new StringBuilder();
+
+                        XmlWriterSettings settings = new XmlWriterSettings();
+                        settings.Indent = true;
+                        settings.OmitXmlDeclaration = true;
+                        settings.NewLineOnAttributes = true;
+
+
+                        XamlDesignerSerializationManager dsm = new XamlDesignerSerializationManager(XmlWriter.Create(outstr, settings));
+                        dsm.XamlWriterMode = XamlWriterMode.Expression;
+
+                        XamlWriter.Save(itemObjets, dsm);
+                        string savedControls = outstr.ToString();
+                        Seguridad vSeguridad = new Seguridad();
+                        File.WriteAllText(@"objetosTurno\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(MainWindow.nombreApp, savedControls));
+                    }
                 }
             }
             catch (Exception) { }
