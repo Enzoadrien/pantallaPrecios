@@ -58,7 +58,6 @@ namespace Precios_Turnos
         {
             var synthesizer = new SpeechSynthesizer();
             synthesizer.SetOutputToDefaultAudioDevice();
-
             string line = string.Empty;
             try
             {

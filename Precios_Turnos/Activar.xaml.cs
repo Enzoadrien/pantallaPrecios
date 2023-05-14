@@ -161,7 +161,7 @@ namespace Precios_Turnos
                             && vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[2]).AddDays(30))
                         {
                             Licencia licencia = new Licencia();
-                            try 
+                            try
                             {
                                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Lista de precios 3K", true);
                                 string LlaveReg = key.GetValue("Key").ToString();
@@ -172,7 +172,7 @@ namespace Precios_Turnos
                             if (Correo.Text.Equals(vSeguridad.DecryptString(Codigo.Text, licencia.Correo)) && Codigo.Text.Equals(licencia.Codigo) && Llave.Text.Equals(licencia.Llave))
                             {
 
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR); 
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                                 dialog.lblNombre.Content = "¡Error!";
                                 dialog.lblTexto.Text = "Esta licencia ya se utilizó en este equipo.";
                                 dialog.ShowDialog();
@@ -219,13 +219,10 @@ namespace Precios_Turnos
                     }
                 }
             }
-            else
-            {
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Licencia no válida.";
-                dialog.ShowDialog();
-            }
+            Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
+            dialogError.lblNombre.Content = "¡Error!";
+            dialogError.lblTexto.Text = "Licencia no válida.";
+            dialogError.ShowDialog();
             return false;
         }
 
