@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+﻿
 using System;
 using System.Buffers.Text;
 using System.Collections;
@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
+using System.Speech.Synthesis;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Speech.Synthesis;
 
 namespace Precios_Turnos
 {
@@ -306,8 +306,11 @@ namespace Precios_Turnos
 
         private void btnNombresEquipos_Click(object sender, RoutedEventArgs e)
         {
-            Process p = Process.Start("notepad.exe", @".\nombreEquipos.3k");
-            p.WaitForInputIdle();
+            ConfigurarNombres dialog = new ConfigurarNombres();
+            dialog.ShowDialog();
+
+            //Process p = Process.Start("notepad.exe", @".\nombreEquipos.3k");
+            //p.WaitForInputIdle();
         }
 
         private void chkTurnero_Checked(object sender, RoutedEventArgs e)
@@ -323,8 +326,9 @@ namespace Precios_Turnos
 
         private void btnVoz_Click(object sender, RoutedEventArgs e)
         {
-            Process p = Process.Start("notepad.exe", @".\vozTurnero.3k");
-            p.WaitForInputIdle();
+
+            ConfigurarVoz dialog = new ConfigurarVoz();
+            dialog.ShowDialog();
         }
 
         private void chkVoz_Checked(object sender, RoutedEventArgs e)
@@ -337,7 +341,6 @@ namespace Precios_Turnos
         private async Task vozDemo() 
         {
             var synthesizer = new SpeechSynthesizer();
-            synthesizer.SetOutputToDefaultAudioDevice();
             string line = string.Empty;
             try
             {
@@ -350,6 +353,11 @@ namespace Precios_Turnos
                 }
             }
             catch { }
+
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            if (!config.AppSettings.Settings["TipoVozTurnero"].Value.Equals(""))
+                synthesizer.SelectVoice(config.AppSettings.Settings["TipoVozTurnero"].Value);
             synthesizer.Speak(line);
         }
 

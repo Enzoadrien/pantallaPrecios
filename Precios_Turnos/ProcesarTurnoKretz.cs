@@ -66,7 +66,7 @@ namespace Precios_Turnos
             nuevoTurno.SetCodTurnero(cmd85.Substring(0, 1));
             nuevoTurno.SetNumTurnero(cmd85.Substring(1, 2));
             nuevoTurno.SetNumEquipo(cmd85.Substring(7, 2));
-            int numTurno = CargarNumeroTurno();
+            int numTurno = new Recursos().CargarNumeroTurno();
             nuevoTurno.SetNumTurno(++numTurno);
 
             while (true)
@@ -110,7 +110,7 @@ namespace Precios_Turnos
             nuevoTurno.SetCodTurnero(cmd85.Substring(0, 1));
             nuevoTurno.SetNumTurnero(cmd85.Substring(1, 2));
             nuevoTurno.SetNumEquipo(cmd85.Substring(7, 2));
-            int numTurno = CargarNumeroTurno();
+            int numTurno = new Recursos().CargarNumeroTurno();
             if(numTurno == 0)
                 nuevoTurno.SetNumTurno(numTurno);
             else
@@ -182,131 +182,7 @@ namespace Precios_Turnos
             return nuevoTurno;
         }
 
-        internal int CargarNumeroTurno()
-        {
-            while (true)
-            {
-                try
-                {
-                    using (Stream stream = new FileStream(@".\controlTurno.3k", FileMode.Open))
-                    {
-                        var sr = new StreamReader(stream);
-
-                        string line;
-                        int numeroTurno = 0;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            numeroTurno = int.Parse(line);
-                        }
-                        stream.Close();
-                        return numeroTurno;
-                    }
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        internal void GuardarNumeroTurno(int numeroTurno)
-        {
-            while (true)
-            {
-                try
-                {
-
-                    using (Stream stream = new FileStream(@".\controlTurno.3k", FileMode.Open))
-                    {
-                        stream.SetLength(0);
-                        byte[] bytes = Encoding.UTF8.GetBytes(numeroTurno.ToString());
-                        stream.Write(bytes, 0, bytes.Length);
-                        stream.Close();
-                        break;
-                    }
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        internal void GuardarTurnoAnt(int numeroTurno, string numeroEquipo)
-        {
-            while (true)
-            {
-                try
-                {
-
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
-                    {
-                        stream.SetLength(0);
-                        byte[] bytes = Encoding.UTF8.GetBytes(numeroTurno.ToString()+'|'+ numeroEquipo);
-                        stream.Write(bytes, 0, bytes.Length);
-                        stream.Close();
-                        break;
-                    }
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        internal void MostrarTurno(int numeroTurno, string numeroEquipo, int numeroTurnoAnt, string numeroEquipoAnt)
-        {
-            try {
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    MostrarTurno mostrarTurno = new MostrarTurno();
-                    mostrarTurno.WindowStyle = WindowStyle.None;
-                    mostrarTurno.ShowInTaskbar = false;
-                    mostrarTurno.NumeroTurno.Content = numeroTurno;
-                    mostrarTurno.NumeroEquipo.Content = numeroEquipo;
-                    mostrarTurno.NumeroTurnoAnt.Content = numeroTurnoAnt == 0 ? "": numeroTurnoAnt;
-                    mostrarTurno.NumeroEquipoAnt.Content = numeroEquipoAnt;
-
-
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
-                    {
-                        try
-                        {
-                            using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
-                            {
-                                var sr = new StreamReader(stream);
-
-                                string line;
-                                while ((line = sr.ReadLine()) != null)
-                                {
-                                    string[] equipo = line.Split('=');
-                                    if(equipo.Length == 2)
-                                    {
-                                        if (equipo[0].Equals(numeroEquipo))
-                                            mostrarTurno.NombreEquipo.Content = equipo[1];
-                                        if (equipo[0].Equals(numeroEquipo))
-                                            mostrarTurno.NombreEquipoAnt.Content = equipo[1];
-                                    }
-                                                  
-                                }
-                                stream.Close();
-                            }
-                        }
-                        catch { }
-                    }
-                    else
-                    {
-                        mostrarTurno.NombreEquipo.Content = "";
-                        mostrarTurno.NombreEquipoAnt.Content = "";
-                    }
-                    mostrarTurno.Show();
-
-                    
-                }));
-            }
-            catch { }
-        }
-
-        internal string Respuesta(StateObject pvStateObject)
+        internal string Respuesta(StateObject pvStateObject)  
         {
             // Arma respuesta determinado el estado actual.
             string respuesta=string.Empty;
@@ -326,7 +202,7 @@ namespace Precios_Turnos
                 case EstadoTurno.SOLO_MOSTRAR_TURNO:
                     respuesta = "OK";
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
                     break;
 
                 case EstadoTurno.NUEVO_TURNO:
@@ -335,27 +211,27 @@ namespace Precios_Turnos
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     respuesta += "|" + pvStateObject.GetTurno().GetNumTurnoAnt() + "-" + pvStateObject.GetTurno().GetNumEquipoAnt();
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
-                    GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
                 case EstadoTurno.ANTERIOR_TURNO:
                     respuesta += TURNOSETEADO;
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(),6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
-                    GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
                 case EstadoTurno.SETEAR_TURNO:
                     respuesta += TURNOSETEADO;
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
-                    GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
             }
             return respuesta;

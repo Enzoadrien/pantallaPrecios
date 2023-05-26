@@ -14,7 +14,6 @@
     <None Remove="ColorSwatchSquare1.png" />
     <None Remove="ColorSwatchSquare2.png" />
     <None Remove="ICONO.ico" />
-    <None Remove="metin mapa.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,10 +41,15 @@
     <Resource Include="ColorSwatchSquare1.png" />
     <Resource Include="ColorSwatchSquare2.png" />
     <Resource Include="ICONO.ico" />
-    <Resource Include="metin mapa.jpg" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="ConfigurarNombres.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="ConfigurarVoz.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -67,6 +71,12 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="ConfigurarVoz.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 

@@ -237,40 +237,84 @@ namespace Precios_Turnos
                 SalirMaximizar();
                 estaSaliendo = false;
             }
-            else if ((e.Key == Key.Right || e.Key == Key.Left) && maximizado)
+            else if ((e.Key == Key.Right || e.Key == Key.Left || e.Key == Key.Down) && maximizado)
             {
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
                 if (config.AppSettings.Settings["TeclasDemo"].Value.Equals("true"))
                 {
-
-                    Random rand = new Random();
-                    int turno = rand.Next(1000);
-
-                    MostrarTurno mostrarTurno = new MostrarTurno();
-                    mostrarTurno.WindowStyle = WindowStyle.None;
-                    mostrarTurno.ShowInTaskbar = false;
-                    mostrarTurno.NumeroTurno.Content = turno;
-                    mostrarTurno.NumeroEquipo.Content = "01";
-                    mostrarTurno.NumeroTurnoAnt.Content = turno - 1;
-                    mostrarTurno.NumeroEquipoAnt.Content = "02";
-
-                    if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
-                    {
-                        mostrarTurno.NombreEquipo.Content = "VENDEDOR 1";
-                        mostrarTurno.NombreEquipoAnt.Content = "VENDEDOR 2";
-                    }
+                    if(e.Key == Key.Down)
+                        ProcesarTurnoTeclado(true ,true);
                     else
-                    {
-                        mostrarTurno.NombreEquipo.Content = "";
-                        mostrarTurno.NombreEquipoAnt.Content = "";
-                    }
-                    mostrarTurno.Show();
-
+                        ProcesarTurnoTeclado(e.Key == Key.Right);
                 }
+                    
             }
         }
 
+        private void ProcesarTurnoTeclado(bool siguiente, bool setearUno=false)
+        {
+            if (setearUno)
+            {
+                new Recursos().MostrarTurno(1, "PC", 0, string.Empty);
+                new Recursos().GuardarNumeroTurno(1);
+                new Recursos().GuardarTurnoAnt(1, "PC");
+            }
+            else
+            {
+                int turno = new Recursos().CargarNumeroTurno();
+                string equipo = "PC";
+                int turnoAnt = 0;
+                string equipoAnt = string.Empty;
+
+                while (true)
+                {
+                    try
+                    {
+                        using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                        {
+                            var sr = new StreamReader(stream);
+
+                            string line;
+                            while ((line = sr.ReadLine()) != null)
+                            {
+                                string[] turnoAntArray = line.Split('|');
+                                if (turnoAntArray.Length == 2)
+                                {
+                                    turnoAnt = int.Parse(turnoAntArray[0]);
+                                    equipoAnt = turnoAntArray[1];
+                                    break;
+                                }
+                                else
+                                    break;
+
+                            }
+                            stream.Close();
+                            break;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                if (turno >= 0)
+                {
+                    if (siguiente)
+                        ++turno;
+                    else
+                    {
+                        if (turno > 1)
+                            --turno;
+                    }
+
+                }
+
+                new Recursos().MostrarTurno(turno, equipo, turnoAnt, equipoAnt);
+                new Recursos().GuardarNumeroTurno(turno);
+                new Recursos().GuardarTurnoAnt(turno, equipo);
+            }
+          
+        }
+        
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
@@ -1879,6 +1923,7 @@ namespace Precios_Turnos
 
         private void MenuReiniciarDiseno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            List<string> objEliminar = new List<string>();
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
             dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente.";
@@ -1891,12 +1936,17 @@ namespace Precios_Turnos
                         string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
                         if (SeModificaControl(nombreControl))
                         {
-                            BorarObjeto(nombreControl, false);
+                            objEliminar.Add(nombreControl);
                         }
                         else if (nombreControl.Equals("Fondo"))
                         {
                             Fondo.Background = new SolidColorBrush(Colors.White);
                         }
+                    }
+
+                    foreach(string ob in objEliminar)
+                    {
+                        BorarObjeto(ob, false);
                     }
                 }
                 catch { }
