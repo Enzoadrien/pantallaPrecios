@@ -60,7 +60,7 @@ namespace Precios_Turnos
             esInicio = false;
         }
 
-        private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
         }
@@ -165,6 +165,16 @@ namespace Precios_Turnos
         private void btnEditar_Click(object sender, RoutedEventArgs e)
         {
             EntrarDiseno dialog = new EntrarDiseno(mainWindow);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
             if (dialog.ShowDialog() == true)
             {
                 MostrarTurno dialog2 = new MostrarTurno(true);
@@ -307,10 +317,17 @@ namespace Precios_Turnos
         private void btnNombresEquipos_Click(object sender, RoutedEventArgs e)
         {
             ConfigurarNombres dialog = new ConfigurarNombres();
-            dialog.ShowDialog();
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            //Process p = Process.Start("notepad.exe", @".\nombreEquipos.3k");
-            //p.WaitForInputIdle();
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
         }
 
         private void chkTurnero_Checked(object sender, RoutedEventArgs e)

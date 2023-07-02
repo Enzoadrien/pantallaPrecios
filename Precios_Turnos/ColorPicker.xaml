@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Precios_Turnos.ColorPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Height="330" Width="480" WindowStyle="None" KeyDown="Window_KeyDown" ResizeMode="NoResize">
+    Height="330" Width="480" WindowStyle="None" KeyDown="Window_KeyDown" ResizeMode="NoResize"  MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Window.Resources>
         <DrawingBrush x:Key="CheckerboardBrush"
         Stretch="None" TileMode="Tile" AlignmentX="Left" AlignmentY="Top"
@@ -40,7 +40,7 @@
             <RowDefinition Height="6*" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="2"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+                    Background="#FF989090" Grid.ColumnSpan="2">
             <Label Content="Selecciona la muestra" Foreground="Black" FontFamily="Arial Rounded MT" 
               FontSize="18" VerticalAlignment="Center"/>
             <Image x:Name="ImgSqaure1" Height="20" Width="20"

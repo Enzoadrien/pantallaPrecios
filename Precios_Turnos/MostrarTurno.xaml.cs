@@ -365,7 +365,7 @@ namespace Precios_Turnos
                     propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
-                case "Image":
+                case "MediaElement":
                     PropiedadesMultimediaTurno propiedadesImagen = new PropiedadesMultimediaTurno(this);
                     propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -382,16 +382,12 @@ namespace Precios_Turnos
                     propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = item.GetType().Name;
-                    propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
-                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
+                    propiedadesImagen.Ruta.Text = ((MediaElement)item).Source.ToString();
+                    propiedadesImagen.Largo.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
+                    propiedadesImagen.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
                     propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
-                    propiedadesImagen.chkSonido.IsEnabled = false;
-                    propiedadesImagen.Cada.IsEnabled = false;
-                    propiedadesImagen.Durar.IsEnabled = false;
-                    propiedadesImagen.chkMaximizar.IsEnabled = false;
                     propiedadesImagen.chkRelacion.IsChecked = true;
                     propiedadesImagen.esInicio = false;
                     propiedadesImagen.ShowDialog();
@@ -409,6 +405,8 @@ namespace Precios_Turnos
 
             if (!esDiseno)
             {
+
+                CargarAnimaciones();
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 try
@@ -456,6 +454,15 @@ namespace Precios_Turnos
                             if (nombre[1].Equals(pNombre + ".xaml"))
                                 File.Delete(file.FullName);
                         }
+
+                        info = new DirectoryInfo(@"objetosTurno\animaciones");
+
+                        foreach (var file in info.GetFiles())
+                        {
+                            if (file.Name.Equals(pNombre + ".anim"))
+                                File.Delete(file.FullName);
+                        }
+
                     }
                     catch { }
                     return true;
@@ -584,10 +591,13 @@ namespace Precios_Turnos
             dialog.ContenidoTextBox.IsEnabled = false;
             if (dialog.ShowDialog() == true)
             {
-                Image obj = new Image();
+                MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new BitmapImage(new Uri(dialog.ContenidoText));
+                obj.Source = new Uri(dialog.ContenidoText);
+                string extension = System.IO.Path.GetExtension(obj.Source.ToString()).Replace(".", "").ToLower();
+                if (extension.Equals("gif"))
+                    obj.MediaEnded += MediaElement_MediaEnded;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.Stretch = Stretch.Uniform;
@@ -646,6 +656,11 @@ namespace Precios_Turnos
             }
         }
 
+        private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            MediaElement item = (MediaElement)e.Source;
+            item.Position = TimeSpan.FromMilliseconds(1);
+        }
         private void GuardarControles()
         {
             try
@@ -896,6 +911,159 @@ namespace Precios_Turnos
                 control.Visibility = Visibility.Visible;
                 itemCm.Header = "Mostrar nombre anterior";
             }
+        }
+
+        private void CargarAnimaciones()
+        {
+            foreach (UIElement item in Principal.Children)
+            {
+                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    Animacion(item.GetValue(NameProperty).ToString());
+            }
+        }
+
+        private void Animacion(string pNombreControl)
+        {
+            var item = FindName(pNombreControl) as UIElement;
+
+            TranslateTransform? _currentTTEscalar = new TranslateTransform();
+            try
+            {
+
+                for (int x = 0; x < ((TransformGroup)item.RenderTransform).Children.Count; x++)
+                {
+                    switch (((TransformGroup)item.RenderTransform).Children[x].GetType().Name)
+                    {
+                        case "TranslateTransform":
+                            item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[x];
+                            break;
+                    }
+                }
+            }
+            catch
+            {
+                if (item.RenderTransform != null)
+                    _currentTTEscalar = item.RenderTransform as TranslateTransform;
+            }
+
+            TransformGroup myTransformGroup = new TransformGroup();
+
+            string lectura = string.Empty;
+            DirectoryInfo info = new DirectoryInfo(@"objetosTurno\animaciones");
+            foreach (var file in info.GetFiles())
+            {
+                if (@file.Name.Equals(pNombreControl + ".anim"))
+                {
+                    StreamReader sR = new StreamReader(@file.FullName);
+                    lectura = sR.ReadToEnd();
+                    sR.Close();
+                    string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('-');
+                    if (animaciones.Length > 1)
+                    {
+                        foreach (string animacion in animaciones)
+                        {
+                            string[] datos = animacion.Split('|');
+                            switch (datos[0])
+                            {
+                                case "M":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        Storyboard storyboard = new Storyboard();
+
+                                        if (datos[3].Equals("S"))
+                                        {
+                                            DoubleAnimation growAnimation = new DoubleAnimation();
+                                            growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[5]));
+                                            growAnimation.From = 0;
+                                            growAnimation.To = datos[4].Equals("D") ? double.Parse(datos[6]) : -double.Parse(datos[6]);
+                                            growAnimation.AutoReverse = datos[7].Equals("S");
+                                            growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                                            storyboard.Children.Add(growAnimation);
+
+                                            Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.X"));
+                                            Storyboard.SetTarget(growAnimation, item);
+
+                                        }
+                                        if (datos[9].Equals("S"))
+                                        {
+                                            DoubleAnimation growAnimation2 = new DoubleAnimation();
+                                            growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[11]));
+                                            growAnimation2.From = 0;
+                                            growAnimation2.To = datos[10].Equals("B") ? double.Parse(datos[12]) : -double.Parse(datos[12]);
+                                            growAnimation2.AutoReverse = datos[13].Equals("S");
+                                            growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                                            storyboard.Children.Add(growAnimation2);
+
+                                            Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.Y"));
+                                            Storyboard.SetTarget(growAnimation2, item);
+                                        }
+
+                                        TranslateTransform traslate = new TranslateTransform();
+                                        item.RenderTransform = traslate;
+                                        storyboard.Begin();
+
+                                        myTransformGroup.Children.Add(traslate);
+                                    }
+                                    break;
+                                case "E":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        Storyboard storyboard = new Storyboard();
+
+                                        DoubleAnimation growAnimation = new DoubleAnimation();
+                                        growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
+                                        growAnimation.From = 1;
+                                        growAnimation.To = 1 + double.Parse(datos[2]);
+                                        growAnimation.AutoReverse = true;
+                                        growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                                        storyboard.Children.Add(growAnimation);
+
+                                        Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
+                                        Storyboard.SetTarget(growAnimation, item);
+
+                                        DoubleAnimation growAnimation2 = new DoubleAnimation();
+                                        growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
+                                        growAnimation2.From = 1;
+                                        growAnimation2.To = 1 + double.Parse(datos[2]);
+                                        growAnimation2.AutoReverse = true;
+                                        growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                                        storyboard.Children.Add(growAnimation2);
+
+                                        Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
+                                        Storyboard.SetTarget(growAnimation2, item);
+
+                                        ScaleTransform scale = new ScaleTransform();
+                                        item.RenderTransform = scale;
+                                        storyboard.Begin();
+
+                                        myTransformGroup.Children.Add(scale);
+                                    }
+                                    break;
+                                case "G":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        RotateTransform rotate = new RotateTransform();
+
+                                        DoubleAnimation anim = new DoubleAnimation(0, datos[2].Equals("D") ? 360 : -360, TimeSpan.FromMilliseconds(int.Parse(datos[3])));
+                                        anim.RepeatBehavior = RepeatBehavior.Forever;
+                                        rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
+
+                                        item.RenderTransform = rotate;
+
+                                        myTransformGroup.Children.Add(rotate);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (_currentTTEscalar != null)
+                myTransformGroup.Children.Add(new TranslateTransform(_currentTTEscalar.X, _currentTTEscalar.Y));
+            item.RenderTransformOrigin = new Point(.5, .5);
+            item.RenderTransform = myTransformGroup;
         }
     }
 }

@@ -1,10 +1,14 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,7 +42,7 @@ namespace Precios_Turnos
             _currentTT = item.RenderTransform as TranslateTransform;
         }
 
-        private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
 
@@ -97,12 +101,8 @@ namespace Precios_Turnos
         private void chkMover_Checked(object sender, RoutedEventArgs e)
         {
             chkHorizontal.IsEnabled = true;
-            cbxDireccionMH.IsEnabled = true;
-            VelocidadMH.IsReadOnly = false;
-
             chkVertical.IsEnabled = true;
-            cbxDireccionMV.IsEnabled = true;
-            VelocidadMV.IsReadOnly = false;
+
             Animar();
         }
 
@@ -111,6 +111,7 @@ namespace Precios_Turnos
             chkHorizontal.IsEnabled = false;
             cbxDireccionMH.IsEnabled = false;
             VelocidadMH.IsReadOnly = true;
+            CantidadMH.IsReadOnly = true;
             chkHorizontal.IsChecked = false;
             chkReversaMH.IsEnabled = false;
             chkReversaMH.IsChecked = false;
@@ -118,6 +119,7 @@ namespace Precios_Turnos
             chkVertical.IsEnabled = false;
             cbxDireccionMV.IsEnabled = false;
             VelocidadMV.IsReadOnly = true;
+            CantidadMV.IsReadOnly = true;
             chkVertical.IsChecked = false;
             chkReversaMV.IsEnabled = false;
             chkReversaMV.IsChecked = false;
@@ -130,6 +132,7 @@ namespace Precios_Turnos
             cbxDireccionMH.IsEnabled = true;
             chkReversaMH.IsEnabled = true;
             VelocidadMH.IsReadOnly = false;
+            CantidadMH.IsReadOnly = false;
 
             if (chkMover.IsChecked == true)
                 Animar();
@@ -141,6 +144,7 @@ namespace Precios_Turnos
         {
             cbxDireccionMH.IsEnabled = false;
             VelocidadMH.IsReadOnly = true;
+            CantidadMH.IsReadOnly = true;
             chkReversaMH.IsEnabled = false;
             chkReversaMH.IsChecked = false;
 
@@ -152,6 +156,7 @@ namespace Precios_Turnos
         {
             cbxDireccionMV.IsEnabled = false;
             VelocidadMV.IsReadOnly = true;
+            CantidadMV.IsReadOnly = true;
             chkReversaMV.IsEnabled = false;
             chkReversaMV.IsChecked = false;
 
@@ -163,6 +168,7 @@ namespace Precios_Turnos
         {
             cbxDireccionMV.IsEnabled = true;
             VelocidadMV.IsReadOnly = false;
+            CantidadMV.IsReadOnly = false;
             chkReversaMV.IsEnabled = true;
 
             if (chkMover.IsChecked == true)
@@ -308,63 +314,68 @@ namespace Precios_Turnos
 
         private void CargarControles()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            if (config.AppSettings.Settings[NombreControl] != null)
+            string lectura = string.Empty;
+            DirectoryInfo info = new DirectoryInfo((mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosTurno") + @"\animaciones");
+            foreach (var file in info.GetFiles())
             {
-                string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[NombreControl].Value).Split('-');
-                if (animaciones.Length > 1)
+                if (@file.Name.Equals(NombreControl + ".anim"))
                 {
-                    foreach (string animacion in animaciones)
+                    StreamReader sR = new StreamReader(@file.FullName);
+                    lectura = sR.ReadToEnd();
+                    sR.Close();
+                    string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('-');
+                    if (animaciones.Length > 1)
                     {
-                        string[] datos = animacion.Split('|');
-                        switch (datos[0])
+                        foreach (string animacion in animaciones)
                         {
-                            case "M":
-                                if (datos[1].Equals("S"))
-                                {
-                                    if (datos[3].Equals("S"))
+                            string[] datos = animacion.Split('|');
+                            switch (datos[0])
+                            {
+                                case "M":
+                                    if (datos[1].Equals("S"))
                                     {
-                                        cbxDireccionMH.SelectedValue = datos[4];
-                                        VelocidadMH.Text = datos[5];
-                                        CantidadMH.Text = datos[6];
-                                        if (datos[7].Equals("S"))
-                                            chkReversaMH.IsChecked = true;
-                                        chkHorizontal.IsChecked = true;
+                                        if (datos[3].Equals("S"))
+                                        {
+                                            cbxDireccionMH.SelectedValue = datos[4];
+                                            VelocidadMH.Text = datos[5];
+                                            CantidadMH.Text = datos[6];
+                                            if (datos[7].Equals("S"))
+                                                chkReversaMH.IsChecked = true;
+                                            chkHorizontal.IsChecked = true;
 
+                                        }
+                                        if (datos[9].Equals("S"))
+                                        {
+                                            cbxDireccionMV.SelectedValue = datos[10];
+                                            VelocidadMV.Text = datos[11];
+                                            CantidadMV.Text = datos[12];
+                                            if (datos[13].Equals("S"))
+                                                chkReversaMV.IsChecked = true;
+                                            chkVertical.IsChecked = true;
+                                        }
+                                        chkMover.IsChecked = true;
                                     }
-                                    if (datos[9].Equals("S"))
+                                    break;
+                                case "E":
+                                    if (datos[1].Equals("S"))
                                     {
-                                        cbxDireccionMV.SelectedValue = datos[10];
-                                        CantidadMV.Text = datos[11];
-                                        VelocidadMV.Text = datos[12];
-                                        if (datos[13].Equals("S"))
-                                            chkReversaMV.IsChecked = true;
-                                        chkVertical.IsChecked = true;
+                                        cbxTamanoE.SelectedValue = datos[2];
+                                        VelocidadE.Text = datos[3];
+                                        chkEscalar.IsChecked = true;
                                     }
-                                    chkMover.IsChecked = true;
-                                }
-                                break;
-                            case "E":
-                                if (datos[1].Equals("S"))
-                                {
-                                    cbxTamanoE.SelectedValue = datos[2];
-                                    VelocidadE.Text = datos[3];
-                                    chkEscalar.IsChecked = true;
-                                }
-                                break;
-                            case "G":
-                                if (datos[1].Equals("S"))
-                                {
-                                    cbxDireccionG.SelectedValue = datos[2];
-                                    VelocidadG.Text = datos[3];
-                                    chkGirar.IsChecked = true;
-                                }
-                                break;
+                                    break;
+                                case "G":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        cbxDireccionG.SelectedValue = datos[2];
+                                        VelocidadG.Text = datos[3];
+                                        chkGirar.IsChecked = true;
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
-
             }
         }
 
@@ -395,15 +406,7 @@ namespace Precios_Turnos
             else
                 Animaciones += "-M|N";
 
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Seguridad vSeguridad = new Seguridad();
-            if (config.AppSettings.Settings[NombreControl] == null)
-                config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, Animaciones));
-            else
-                config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Animaciones);
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, Animaciones), NombreControl);
 
             if (chkGirar.IsChecked == true)
             {
@@ -528,6 +531,22 @@ namespace Precios_Turnos
                 chkGirar.IsChecked = false;
                 chkMover.IsChecked = false;
             }
+        }
+
+        private bool GuardarInfo(string pvStrAnimacion, string pvStrNombreObjeto)
+        {
+            try
+            {
+                using (Stream stream = new FileStream(@".\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosTurno") + @"\animaciones\" + pvStrNombreObjeto + ".anim", FileMode.Create))
+                {
+                    stream.SetLength(0);
+                    byte[] bytes = Encoding.UTF8.GetBytes(pvStrAnimacion);
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Close();
+                    return true;
+                }
+            }
+           catch { return false; }
         }
     }
 }

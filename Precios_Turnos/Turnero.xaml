@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-         Title="Configurar turnero" Background="#FFD2CBCB" Height="430" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" KeyDown="Window_KeyDown" Loaded="Window_Loaded">
+         Title="Configurar turnero" Background="#FFD2CBCB" Height="430" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" KeyDown="Window_KeyDown" Loaded="Window_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Window.DataContext>
         <local:ViewModelAudio/>
     </Window.DataContext>
@@ -32,7 +32,7 @@
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="3"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+                    Background="#FF989090" Grid.ColumnSpan="3">
             <Label x:Name="Titulo" Content="Configurar turnero"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="2" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >

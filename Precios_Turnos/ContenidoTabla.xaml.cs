@@ -7,6 +7,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace Precios_Turnos
             FocusManager.SetFocusedElement(this, Consulta);
         }
 
-        private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
 
@@ -78,29 +79,32 @@ namespace Precios_Turnos
 
         private void CargarInfo()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            if (config.AppSettings.Settings[NombreControl] != null)
+            DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+            foreach (var file in info.GetFiles())
             {
-                Seguridad vSeguridad = new Seguridad();
-                string[] datos = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[NombreControl].Value).Split('|');
-                Consulta.Text = datos[0];
-                if (datos.Length > 1)
+                if (@file.Name.Equals(NombreControl + ".sql"))
                 {
-                    chkOrganizar.IsChecked = true;
-                    Organizar.Text = datos[1];
-                    if(datos.Length > 2)
+                    StreamReader sR = new StreamReader(@file.FullName);
+                    string lectura = sR.ReadToEnd();
+                    sR.Close();
+                    string[] datos = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('|');
+                    Consulta.Text = datos[0];
+                    if (datos.Length > 1)
                     {
-                        chkMostrarTitulo.IsChecked = true;
-                        cbxLabels.SelectedItem = datos[2];
+                        chkOrganizar.IsChecked = true;
+                        Organizar.Text = datos[1];
+                        if (datos.Length > 2)
+                        {
+                            chkMostrarTitulo.IsChecked = true;
+                            cbxLabels.SelectedItem = datos[2];
+                        }
+                    }
+                    else
+                    {
+                        lblOrganizar.Visibility = Visibility.Hidden;
+                        Organizar.Visibility = Visibility.Hidden;
                     }
                 }
-                else
-                {
-                    lblOrganizar.Visibility = Visibility.Hidden;
-                    Organizar.Visibility = Visibility.Hidden;
-                }
-
             }
         }
 
@@ -114,7 +118,6 @@ namespace Precios_Turnos
             if (chkOrganizar.IsChecked == false || (chkOrganizar.IsChecked == true && Organizar.Text.Length > 0 && Consulta.Text.Contains(Organizar.Text)))
             {
 
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 Seguridad vSeguridad = new Seguridad();
 
                 string cadenaGuardar = string.Empty;
@@ -129,13 +132,8 @@ namespace Precios_Turnos
                     cadenaGuardar = Consulta.Text;
 
 
-                if (config.AppSettings.Settings[NombreControl] == null)
-                    config.AppSettings.Settings.Add(NombreControl, vSeguridad.EncryptString(MainWindow.nombreApp, cadenaGuardar));
-                else
-                    config.AppSettings.Settings[NombreControl].Value = vSeguridad.EncryptString(MainWindow.nombreApp, cadenaGuardar);
+                GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, cadenaGuardar), NombreControl);
 
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
 
                 DataGrid control = (DataGrid)mainWindow.FindName(NombreControl);
                 string[] datos = control.Tag.ToString().Split('|');
@@ -182,6 +180,22 @@ namespace Precios_Turnos
                 dialog.ShowDialog();
             }
             return false;
+        }
+
+        private bool GuardarInfo(string pvStrConsulta, string pvStrNombreObjeto)
+        {
+            try
+            {
+                using (Stream stream = new FileStream(@".\objetos\consultasSQL\" + pvStrNombreObjeto + ".sql", FileMode.Create))
+                {
+                    stream.SetLength(0);
+                    byte[] bytes = Encoding.UTF8.GetBytes(pvStrConsulta);
+                    stream.Write(bytes, 0, bytes.Length);
+                    stream.Close();
+                    return true;
+                }
+            }
+            catch { return false; }
         }
 
         private void chkOrganizar_Checked(object sender, RoutedEventArgs e)

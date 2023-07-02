@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="220" Width="600" WindowStyle="None" KeyDown="Window_KeyDown" AllowsTransparency="True" ResizeMode="NoResize">
+        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="220" Width="600" WindowStyle="None" KeyDown="Window_KeyDown" AllowsTransparency="True" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -22,7 +22,7 @@
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="3"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+                    Background="#FF989090" Grid.ColumnSpan="3">
             <Label x:Name="Titulo" Content="Contenido consulta SQL"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="2" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >

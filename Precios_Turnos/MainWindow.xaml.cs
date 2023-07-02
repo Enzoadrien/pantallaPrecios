@@ -49,6 +49,7 @@ namespace Precios_Turnos
         public MainWindow()
         {
             InitializeComponent();
+            crearDirectorios();
             Coordenadas.Visibility = Visibility.Hidden;
             CargarVistaPrevia();
 
@@ -242,16 +243,16 @@ namespace Precios_Turnos
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 if (config.AppSettings.Settings["TeclasDemo"].Value.Equals("true"))
                 {
-                    if(e.Key == Key.Down)
-                        ProcesarTurnoTeclado(true ,true);
+                    if (e.Key == Key.Down)
+                        ProcesarTurnoTeclado(true, true);
                     else
                         ProcesarTurnoTeclado(e.Key == Key.Right);
                 }
-                    
+
             }
         }
 
-        private void ProcesarTurnoTeclado(bool siguiente, bool setearUno=false)
+        private void ProcesarTurnoTeclado(bool siguiente, bool setearUno = false)
         {
             if (setearUno)
             {
@@ -312,9 +313,9 @@ namespace Precios_Turnos
                 new Recursos().GuardarNumeroTurno(turno);
                 new Recursos().GuardarTurnoAnt(turno, equipo);
             }
-          
+
         }
-        
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
@@ -323,6 +324,16 @@ namespace Precios_Turnos
         private void EditarDiseno_Click(object sender, RoutedEventArgs e)
         {
             EntrarDiseno dialog = new EntrarDiseno(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
             if (dialog.ShowDialog() == true)
             {
                 editar = true;
@@ -603,20 +614,16 @@ namespace Precios_Turnos
             dialog.ContenidoTextBox.IsEnabled = false;
             if (dialog.ShowDialog() == true)
             {
-                Image obj = new Image();
+                MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-
-                BitmapImage bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.UriSource = new Uri(dialog.ContenidoText);
-                bitmapImage.EndInit();
-
-                obj.Source = bitmapImage;
+                obj.Source = new Uri(dialog.ContenidoText);
+                string extension = System.IO.Path.GetExtension(obj.Source.ToString()).Replace(".", "").ToLower();
+                if (extension.Equals("gif"))
+                    obj.MediaEnded += MediaElement_MediaEnded;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.Stretch = Stretch.Uniform;
-                obj.Height = bitmapImage.Height;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxHeight;
                 obj.Tag = "";
@@ -681,97 +688,68 @@ namespace Precios_Turnos
                     propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
-                case "Image":
-                    PropiedadesMultimedia propiedadesImagen = new PropiedadesMultimedia(this);
-                    propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
-
-                    if (point.X + propiedadesImagen.Width >= MaxWidth)
-                        propiedadesImagen.Left = point.X - propiedadesImagen.Width;
-                    else
-                        propiedadesImagen.Left = point.X;
-
-                    if (point.Y + propiedadesImagen.Height >= MaxHeight)
-                        propiedadesImagen.Top = point.Y - propiedadesImagen.Height;
-                    else
-                        propiedadesImagen.Top = point.Y;
-
-                    propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
-                    propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesImagen.TipoControl.Text = item.GetType().Name;
-                    propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
-                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
-                    propiedadesImagen.Opacidad.Value = item.Opacity;
-                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
-                    propiedadesImagen.chkSonido.IsEnabled = false;
-                    propiedadesImagen.Cada.IsEnabled = false;
-                    propiedadesImagen.Durar.IsEnabled = false;
-                    propiedadesImagen.chkMaximizar.IsEnabled = false;
-                    propiedadesImagen.chkRelacion.IsChecked = true;
-                    propiedadesImagen.chkOcultar.IsEnabled = false;
-                    propiedadesImagen.esInicio = false;
-                    propiedadesImagen.ShowDialog();
-                    break;
                 case "MediaElement":
-                    PropiedadesMultimedia propiedadesVideo = new PropiedadesMultimedia(this);
-                    propiedadesVideo.WindowStartupLocation = WindowStartupLocation.Manual;
+                    PropiedadesMultimedia propiedadesMultimedia = new PropiedadesMultimedia(this);
+                    propiedadesMultimedia.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (point.X + propiedadesVideo.Width >= MaxWidth)
-                        propiedadesVideo.Left = point.X - propiedadesVideo.Width;
+                    if (point.X + propiedadesMultimedia.Width >= MaxWidth)
+                        propiedadesMultimedia.Left = point.X - propiedadesMultimedia.Width;
                     else
-                        propiedadesVideo.Left = point.X;
+                        propiedadesMultimedia.Left = point.X;
 
-                    if (point.Y + propiedadesVideo.Height >= MaxHeight)
-                        propiedadesVideo.Top = point.Y - propiedadesVideo.Height;
+                    if (point.Y + propiedadesMultimedia.Height >= MaxHeight)
+                        propiedadesMultimedia.Top = point.Y - propiedadesMultimedia.Height;
                     else
-                        propiedadesVideo.Top = point.Y;
+                        propiedadesMultimedia.Top = point.Y;
 
-                    propiedadesVideo.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
-                    propiedadesVideo.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesVideo.TipoControl.Text = item.GetType().Name;
-                    propiedadesVideo.Ruta.Text = ((MediaElement)item).Source.ToString();
+                    propiedadesMultimedia.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                    propiedadesMultimedia.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesMultimedia.TipoControl.Text = item.GetType().Name;
+                    propiedadesMultimedia.Ruta.Text = ((MediaElement)item).Source.ToString();
 
                     string extension = System.IO.Path.GetExtension(((MediaElement)item).Source.ToString()).Replace(".", "").ToLower();
-                    bool esAudio = false;
                     if (extension.Equals("wav") || extension.Equals("mp3"))
-                        esAudio = true;
-                    if (esAudio)
-                    {
-                        propiedadesVideo.chkRelacion.IsEnabled = false;
-                        propiedadesVideo.Largo.IsEnabled = false;
-                        propiedadesVideo.Ancho.IsEnabled = false;
-                        propiedadesVideo.Opacidad.IsEnabled = false;
-                        propiedadesVideo.chkSonido.IsEnabled = false;
-                        propiedadesVideo.chkMaximizar.IsEnabled = false;
-                        propiedadesVideo.chkOcultar.IsEnabled = false;
+                    { 
+                        propiedadesMultimedia.chkRelacion.IsEnabled = false;
+                        propiedadesMultimedia.Largo.IsEnabled = false;
+                        propiedadesMultimedia.Ancho.IsEnabled = false;
+                        propiedadesMultimedia.Opacidad.IsEnabled = false;
+                        propiedadesMultimedia.chkSonido.IsEnabled = false;
+                        propiedadesMultimedia.chkMaximizar.IsEnabled = false;
+                        propiedadesMultimedia.chkOcultar.IsEnabled = false;
                     }
-                        
+                    else if (extension.Equals("jpeg") || extension.Equals("jpg") || extension.Equals("png") || extension.Equals("gif"))
+                    {
+                        propiedadesMultimedia.chkSonido.IsEnabled = false;
+                        propiedadesMultimedia.chkMaximizar.IsEnabled = false;
+                    }
 
-                    propiedadesVideo.chkRelacion.IsChecked = true;
-                    propiedadesVideo.Largo.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
-                    propiedadesVideo.Ancho.Text = Convert.ToInt32(((MediaElement)item).ActualWidth).ToString();
-                    propiedadesVideo.Opacidad.Value = item.Opacity;
-                    propiedadesVideo.chkSonido.IsChecked = ((MediaElement)item).Volume == 1 ? true : false;
-                    propiedadesVideo.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesVideo.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+
+                    propiedadesMultimedia.chkRelacion.IsChecked = true;
+                    propiedadesMultimedia.Largo.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
+                    propiedadesMultimedia.Ancho.Text = Convert.ToInt32(((MediaElement)item).ActualWidth).ToString();
+                    propiedadesMultimedia.Opacidad.Value = item.Opacity;
+                    
+                    propiedadesMultimedia.chkSonido.IsChecked = ((MediaElement)item).Volume == 1 ? true : false;
+                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     string[] datosTag = ((MediaElement)item).Tag.ToString().Split('|');
                     if (datosTag.Length > 2)
                     {
-                        propiedadesVideo.chkMaximizar.IsChecked = true;
-                        propiedadesVideo.Cada.Text = datosTag[2];
-                        propiedadesVideo.Durar.Text = datosTag[3];
+                        propiedadesMultimedia.chkMaximizar.IsChecked = true;
+                        propiedadesMultimedia.Cada.Text = datosTag[2];
+                        propiedadesMultimedia.Durar.Text = datosTag[3];
                     }
                     else
                     {
-                        propiedadesVideo.chkMaximizar.IsChecked = false;
-                        propiedadesVideo.Cada.IsEnabled = false;
-                        propiedadesVideo.Durar.IsEnabled = false;
+                        propiedadesMultimedia.chkMaximizar.IsChecked = false;
+                        propiedadesMultimedia.Cada.IsEnabled = false;
+                        propiedadesMultimedia.Durar.IsEnabled = false;
                     }
-                    propiedadesVideo.chkOcultar.IsChecked = ((MediaElement)item).Visibility == Visibility.Hidden;
+                    propiedadesMultimedia.chkOcultar.IsChecked = ((MediaElement)item).Visibility == Visibility.Hidden;
 
-                    propiedadesVideo.esInicio = false;
-                    propiedadesVideo.ShowDialog();
+                    propiedadesMultimedia.esInicio = false;
+                    propiedadesMultimedia.ShowDialog();
                     break;
                 case "DataGrid":
                     PropiedadesTabla propiedadesTabla = new PropiedadesTabla(this);
@@ -855,7 +833,7 @@ namespace Precios_Turnos
                     seBorra = true;
 
             }
-            
+
             if (seBorra || !pMuestraMensaje)
             {
                 var item = FindName(pNombre) as UIElement;
@@ -877,6 +855,15 @@ namespace Precios_Turnos
                     {
                         string[] nombre = file.Name.Split('-');
                         if (nombre[1].Equals(pNombre + ".xaml"))
+                            File.Delete(file.FullName);
+                    }
+
+                    info = new DirectoryInfo(@"objetos\animaciones");
+
+
+                    foreach (var file in info.GetFiles())
+                    {
+                        if (file.Name.Equals(pNombre + ".anim"))
                             File.Delete(file.FullName);
                     }
                 }
@@ -947,7 +934,6 @@ namespace Precios_Turnos
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.Stretch = Stretch.Uniform;
-                //obj.Height = obj.NaturalVideoHeight;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxHeight;
                 obj.Volume = 1;
@@ -1009,21 +995,14 @@ namespace Precios_Turnos
             }
         }
 
-        public List<DataTable> LlenarListaTablas(int bloques, int cantFilas, DataTable dt, string orientacion, string pNombreControl)
+        public List<DataTable> LlenarListaTablas(int bloques, int cantFilas, DataTable dt, string orientacion, string pNombreControl, string pNombreIndex = "")
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            int index=0;
+            int index = 0;
             bool tieneCampoOrganizar = false;
-            if (config.AppSettings.Settings[pNombreControl] != null)
+            if (pNombreIndex.Length > 0)
             {
-                Seguridad vSeguridad = new Seguridad();
-                string[] datos = vSeguridad.DecryptString(nombreApp, config.AppSettings.Settings[pNombreControl].Value).Split('|');
-                if (datos.Length > 1)
-                {
-                    index = dt.Columns.IndexOf(datos[1]);
+                    index = dt.Columns.IndexOf(pNombreIndex);
                     tieneCampoOrganizar = true;
-                }
             }
             List<DataTable> ListTablas = new List<DataTable>();
             int x = 1;
@@ -1172,22 +1151,22 @@ namespace Precios_Turnos
                             {
                                 cambioCampoOrganizar = true;
                                 if (!seAgrego)
-                                    {
+                                {
                                     dtFinal.Rows.Add(arrayResult);
                                     arrayTemp = new object[0];
                                     x++;
                                     rowCont = 0;
                                 }
-                                    
+
                             }
-                                
+
                         }
                         catch { }
                     }
 
                     if (x == cantFilas + 1 || rowContTotal == dt.Rows.Count || cambioCampoOrganizar)
                     {
-                        while(x < cantFilas + 1)
+                        while (x < cantFilas + 1)
                         {
                             dtFinal.Rows.Add();
                             x++;
@@ -1280,12 +1259,12 @@ namespace Precios_Turnos
                         }
                         if (orientacion.Equals("V"))
                         {
-                            
+
                             ListTablas.Add(PivotTable(dtFinal));
                         }
                         else
                         {
-                            
+
                             ListTablas.Add(dtFinal);
                         }
                         dtFinal = new DataTable();
@@ -1384,10 +1363,6 @@ namespace Precios_Turnos
         {
             try
             {
-                if (!Directory.Exists(@".\objetos"))
-                {
-                    Directory.CreateDirectory(@".\objetos");
-                }
                 DirectoryInfo di = new DirectoryInfo(@".\objetos");
                 foreach (FileInfo file in di.EnumerateFiles())
                 {
@@ -1498,8 +1473,8 @@ namespace Precios_Turnos
                                 ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                 break;
                             case "MediaElement":
-                                MediaElement video = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
-                                video.MediaEnded += MediaElement_MediaEnded;
+                                MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
+                                media.MediaEnded += MediaElement_MediaEnded;
                                 break;
                         }
                     }
@@ -1511,7 +1486,7 @@ namespace Precios_Turnos
         public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false)
         {
             string[] datos = pTag.Split('|');
-            List<DataTable> ListaTablas;
+            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre); 
             try
             {
                 Seguridad vSeguridad = new Seguridad();
@@ -1521,33 +1496,37 @@ namespace Precios_Turnos
                 string usuario = config.AppSettings.Settings["UsuarioODBC"].Value;
                 string contrasena = vSeguridad.DecryptString(nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
                 string consulta = string.Empty;
+                string nombreIndex = string.Empty;
 
-                if (config.AppSettings.Settings[pNombre] != null)
+                DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+
+                foreach (var file in info.GetFiles())
                 {
-                    string[] datosC = vSeguridad.DecryptString(nombreApp, config.AppSettings.Settings[pNombre].Value).Split('|');
-                    consulta = datosC[0];
-
-                    OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-
-                    connection.Open();
-                    OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
-                    OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                    if (MyDataReader.HasRows)
+                    if (@file.Name.Equals(pNombre + ".sql"))
                     {
-                        DataTable dt = new DataTable();
-                        dt.Load(MyDataReader);
-                        ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre);
+                        StreamReader sR = new StreamReader(@file.FullName);
+                        string lectura = sR.ReadToEnd();
+                        sR.Close();
+                        string[] datosC = vSeguridad.DecryptString(nombreApp, lectura).Split('|');
+                        consulta = datosC[0];
+                        if (datosC.Length > 1)
+                            nombreIndex = datosC[1];
 
+                          OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                        connection.Open();
+                        OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                        OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                        if (MyDataReader.HasRows)
+                        {
+                            DataTable dt = new DataTable();
+                            dt.Load(MyDataReader);
+                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre,nombreIndex);
+
+                        }
+                        connection.Close();
+                        break;
                     }
-                    else
-                    {
-                        ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
-                    }
-                    connection.Close();
-                }
-                else
-                {
-                    ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
                 }
             }
             catch (Exception ex)
@@ -1761,23 +1740,27 @@ namespace Precios_Turnos
                     else
                         control.ItemsSource = null;
 
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-                    if (config.AppSettings.Settings[pNombre] != null)
+                    DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+
+                    foreach (var file in info.GetFiles())
                     {
-                        Seguridad vSeguridad = new Seguridad();
-                        string[] datos = vSeguridad.DecryptString(nombreApp, config.AppSettings.Settings[pNombre].Value).Split('|');
-                        
+                        if (@file.Name.Equals(pNombre + ".sql"))
+                        {
+                            StreamReader sR = new StreamReader(@file.FullName);
+                            string lectura = sR.ReadToEnd();
+                            sR.Close();
+                            string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
                             if (datos.Length > 2)
                             {
-                            Label item = (Label)FindName(datos[2]);
-                            if(item!=null)
-                                item.Content = pLisTablas[x].TableName;
+                                Label item = (Label)FindName(datos[2]);
+                                if (item != null)
+                                    item.Content = pLisTablas[x].TableName;
                             }
+                            break;
                         }
-
-
-                        foreach (DataGridColumn column in control.Columns)
+                    }
+                    foreach (DataGridColumn column in control.Columns)
                         column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
 
                     //control.UpdateLayout();
@@ -1917,8 +1900,17 @@ namespace Precios_Turnos
 
         private void Turnero_Click(object sender, RoutedEventArgs e)
         {
-            Turnero turnero = new Turnero(this);
-            turnero.ShowDialog();
+            Turnero dialog = new Turnero(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+            dialog.ShowDialog();
         }
 
         private void MenuReiniciarDiseno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1944,7 +1936,7 @@ namespace Precios_Turnos
                         }
                     }
 
-                    foreach(string ob in objEliminar)
+                    foreach (string ob in objEliminar)
                     {
                         BorarObjeto(ob, false);
                     }
@@ -2010,111 +2002,117 @@ namespace Precios_Turnos
                     _currentTTEscalar = item.RenderTransform as TranslateTransform;
             }
 
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             TransformGroup myTransformGroup = new TransformGroup();
 
-            if (config.AppSettings.Settings[pNombreControl] != null)
+            string lectura = string.Empty;
+            DirectoryInfo info = new DirectoryInfo(@"objetos\animaciones");
+            foreach (var file in info.GetFiles())
             {
-                string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[pNombreControl].Value).Split('-');
-                if (animaciones.Length > 1)
+                if (@file.Name.Equals(pNombreControl + ".anim"))
                 {
-
-
-                    foreach (string animacion in animaciones)
+                    StreamReader sR = new StreamReader(@file.FullName);
+                    lectura = sR.ReadToEnd();
+                    sR.Close();
+                    string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('-');
+                    if (animaciones.Length > 1)
                     {
-                        string[] datos = animacion.Split('|');
-                        switch (datos[0])
+                        foreach (string animacion in animaciones)
                         {
-                            case "M":
-                                if (datos[1].Equals("S"))
-                                {
-                                    Storyboard storyboard = new Storyboard();
-
-                                    if (datos[3].Equals("S"))
+                            string[] datos = animacion.Split('|');
+                            switch (datos[0])
+                            {
+                                case "M":
+                                    if (datos[1].Equals("S"))
                                     {
+                                        Storyboard storyboard = new Storyboard();
+
+                                        if (datos[3].Equals("S"))
+                                        {
+                                            DoubleAnimation growAnimation = new DoubleAnimation();
+                                            growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[5]));
+                                            growAnimation.From = 0;
+                                            growAnimation.To = datos[4].Equals("D") ? double.Parse(datos[6]) : -double.Parse(datos[6]);
+                                            growAnimation.AutoReverse = datos[7].Equals("S");
+                                            growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                                            storyboard.Children.Add(growAnimation);
+
+                                            Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.X"));
+                                            Storyboard.SetTarget(growAnimation, item);
+
+                                        }
+                                        if (datos[9].Equals("S"))
+                                        {
+                                            DoubleAnimation growAnimation2 = new DoubleAnimation();
+                                            growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[11]));
+                                            growAnimation2.From = 0;
+                                            growAnimation2.To = datos[10].Equals("B") ? double.Parse(datos[12]) : -double.Parse(datos[12]);
+                                            growAnimation2.AutoReverse = datos[13].Equals("S");
+                                            growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                                            storyboard.Children.Add(growAnimation2);
+
+                                            Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.Y"));
+                                            Storyboard.SetTarget(growAnimation2, item);
+                                        }
+
+                                        TranslateTransform traslate = new TranslateTransform();
+                                        item.RenderTransform = traslate;
+                                        storyboard.Begin();
+
+                                        myTransformGroup.Children.Add(traslate);
+                                    }
+                                    break;
+                                case "E":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        Storyboard storyboard = new Storyboard();
+
                                         DoubleAnimation growAnimation = new DoubleAnimation();
-                                        growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[5]));
-                                        growAnimation.From = 0;
-                                        growAnimation.To = datos[4].Equals("D") ? double.Parse(datos[6]) : -double.Parse(datos[6]);
-                                        growAnimation.AutoReverse = datos[7].Equals("S");
+                                        growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
+                                        growAnimation.From = 1;
+                                        growAnimation.To = 1 + double.Parse(datos[2]);
+                                        growAnimation.AutoReverse = true;
                                         growAnimation.RepeatBehavior = RepeatBehavior.Forever;
                                         storyboard.Children.Add(growAnimation);
 
-                                        Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.X"));
+                                        Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
                                         Storyboard.SetTarget(growAnimation, item);
 
-                                    }
-                                    if (datos[9].Equals("S"))
-                                    {
                                         DoubleAnimation growAnimation2 = new DoubleAnimation();
-                                        growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[11]));
-                                        growAnimation2.From = 0;
-                                        growAnimation2.To = datos[10].Equals("B") ? double.Parse(datos[12]) : -double.Parse(datos[12]);
-                                        growAnimation2.AutoReverse = datos[13].Equals("S");
+                                        growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
+                                        growAnimation2.From = 1;
+                                        growAnimation2.To = 1 + double.Parse(datos[2]);
+                                        growAnimation2.AutoReverse = true;
                                         growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
                                         storyboard.Children.Add(growAnimation2);
 
-                                        Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.Y"));
+                                        Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
                                         Storyboard.SetTarget(growAnimation2, item);
+
+                                        ScaleTransform scale = new ScaleTransform();
+                                        item.RenderTransform = scale;
+                                        storyboard.Begin();
+
+                                        myTransformGroup.Children.Add(scale);
                                     }
+                                    break;
+                                case "G":
+                                    if (datos[1].Equals("S"))
+                                    {
+                                        RotateTransform rotate = new RotateTransform();
 
-                                    TranslateTransform traslate = new TranslateTransform();
-                                    item.RenderTransform = traslate;
-                                    storyboard.Begin();
+                                        DoubleAnimation anim = new DoubleAnimation(0, datos[2].Equals("D") ? 360 : -360, TimeSpan.FromMilliseconds(int.Parse(datos[3])));
+                                        anim.RepeatBehavior = RepeatBehavior.Forever;
+                                        rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
 
-                                    myTransformGroup.Children.Add(traslate);
-                                }
-                                break;
-                            case "E":
-                                if (datos[1].Equals("S"))
-                                {
-                                    Storyboard storyboard = new Storyboard();
+                                        item.RenderTransform = rotate;
 
-                                    DoubleAnimation growAnimation = new DoubleAnimation();
-                                    growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
-                                    growAnimation.From = 1;
-                                    growAnimation.To = 1 + double.Parse(datos[2]);
-                                    growAnimation.AutoReverse = true;
-                                    growAnimation.RepeatBehavior = RepeatBehavior.Forever;
-                                    storyboard.Children.Add(growAnimation);
-
-                                    Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
-                                    Storyboard.SetTarget(growAnimation, item);
-
-                                    DoubleAnimation growAnimation2 = new DoubleAnimation();
-                                    growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
-                                    growAnimation2.From = 1;
-                                    growAnimation2.To = 1 + double.Parse(datos[2]);
-                                    growAnimation2.AutoReverse = true;
-                                    growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
-                                    storyboard.Children.Add(growAnimation2);
-
-                                    Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
-                                    Storyboard.SetTarget(growAnimation2, item);
-
-                                    ScaleTransform scale = new ScaleTransform();
-                                    item.RenderTransform = scale;
-                                    storyboard.Begin();
-
-                                    myTransformGroup.Children.Add(scale);
-                                }
-                                break;
-                            case "G":
-                                if (datos[1].Equals("S"))
-                                {
-                                    RotateTransform rotate = new RotateTransform();
-
-                                    DoubleAnimation anim = new DoubleAnimation(0, datos[2].Equals("D") ? 360 : -360, TimeSpan.FromMilliseconds(int.Parse(datos[3])));
-                                    anim.RepeatBehavior = RepeatBehavior.Forever;
-                                    rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
-
-                                    item.RenderTransform = rotate;
-
-                                    myTransformGroup.Children.Add(rotate);
-                                }
-                                break;
+                                        myTransformGroup.Children.Add(rotate);
+                                    }
+                                    break;
+                            }
                         }
                     }
+                    break;
                 }
             }
 
@@ -2127,6 +2125,26 @@ namespace Precios_Turnos
         private void Window_Closed(object sender, EventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        public static void crearDirectorios()
+        {
+            //Carpetas de animaciones
+            if (!Directory.Exists(@".\objetos\animaciones"))
+            {
+                Directory.CreateDirectory(@".\objetos\animaciones");
+            }
+
+            if (!Directory.Exists(@".\objetosTurno\animaciones"))
+            {
+                Directory.CreateDirectory(@".\objetosTurno\animaciones");
+            }
+
+            //Carpetas de consultas sql
+            if (!Directory.Exists(@".\objetos\consultasSQL"))
+            {
+                Directory.CreateDirectory(@".\objetos\consultasSQL");
+            }
         }
     }
 }

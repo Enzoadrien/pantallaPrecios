@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Propiedades" Height="420" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" Loaded="Window_Loaded" ResizeMode="NoResize" >
+        Title="Propiedades" Height="360" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" Loaded="Window_Loaded" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -27,13 +27,10 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="5"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
+                    Background="#FF989090" Grid.ColumnSpan="5">
             <Label x:Name="Titulo" Content="Propiedades"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="5" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
@@ -74,20 +71,12 @@
         <Label x:Name="lblLargoPX" Content="px" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblAnchoPX" Content="px" Grid.Row="8" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
         <CheckBox x:Name="chkRelacion" Content="Relación de aspecto" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-        <CheckBox x:Name="chkMaximizar" Content="Maximizar" Grid.Column="2" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="chkMaximizar_Checked" Unchecked="chkMaximizar_Unchecked"/>
-        <Label x:Name="lblCada" Content="Cada:" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Cada" Grid.Row="10" Text="" Grid.Column="2"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CadaDurante_TextChanged"/>
-        <Label x:Name="lblS1" Content="s" Grid.Row="10" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblDurar" Content="Durar:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Durar" Grid.Row="11" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CadaDurante_TextChanged"/>
-        <Label x:Name="lblS2" Content="s" Grid.Row="11" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <CheckBox x:Name="chkSonido" Content="Sonido" Grid.Column="3" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="chkSonido_Checked" Unchecked="chkSonido_Unchecked"/>
-        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="14"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
-        <TextBox x:Name="CoordenadaX"  Grid.Row="14" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
-        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="14" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
-        <TextBox x:Name="CoordenadaY" Grid.Row="14" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
-        <StackPanel Grid.Row="15"
+        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="11"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaX"  Grid.Row="11" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
+        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="11" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaY" Grid.Row="11" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged" IsReadOnly="True"/>
+        <StackPanel Grid.Row="12"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="5,5,5,5" Grid.ColumnSpan="2">
@@ -122,7 +111,7 @@
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="15"
+        <StackPanel Grid.Row="12"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2">
@@ -157,5 +146,6 @@
                 </Button.Style>
             </Button>
         </StackPanel>
+        <CheckBox x:Name="chkOcultar" Content="Ocultar" Grid.Column="3" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="chkOcultar_Checked" Unchecked="chkOcultar_Unchecked" Margin="18,0,0,0"/>
     </Grid>
 </Window>

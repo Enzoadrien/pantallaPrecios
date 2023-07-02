@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-       Title="Configurar conexión" Background="#FFD2CBCB" Height="150" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" KeyDown="Window_KeyDown">
+       Title="Configurar conexión" Background="#FFD2CBCB" Height="150" Width="300" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Window.DataContext>
         <local:ViewModel/>
     </Window.DataContext>
@@ -23,8 +23,8 @@
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-                    Background="#FF989090" Grid.ColumnSpan="3"  MouseLeftButtonDown="StackPanel_MouseLeftButtonDown">
-            <Label x:Name="Titulo" Content="Configurar conexión"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+                    Background="#FF989090" Grid.ColumnSpan="3">
+            <Label x:Name="Titulo" Content="Configurar conexión" VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="2" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>

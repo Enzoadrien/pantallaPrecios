@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Collections;
+using System.IO;
 
 namespace Precios_Turnos
 {
@@ -33,7 +34,7 @@ namespace Precios_Turnos
             FocusManager.SetFocusedElement(this, btnContenido);
         }
 
-        private void StackPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
 
@@ -506,21 +507,24 @@ namespace Precios_Turnos
             List<DataTable> ListTablas = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString());
             control.ItemsSource = ListTablas[0].DefaultView;
 
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            if (config.AppSettings.Settings[NombreControl.Text] != null)
+            DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+            foreach (var file in info.GetFiles())
             {
-                Seguridad vSeguridad = new Seguridad();
-                string[] datos = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings[NombreControl.Text].Value).Split('|');
-
-                if (datos.Length > 2)
+                if (@file.Name.Equals(NombreControl + ".sql"))
                 {
-                    Label item = (Label)FindName(datos[2]);
-                    if (item != null)
-                        item.Content = ListTablas[0].TableName;
+                    StreamReader sR = new StreamReader(@file.FullName);
+                    string lectura = sR.ReadToEnd();
+                    sR.Close();
+                    string[] datos = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('|');
+
+                    if (datos.Length > 2)
+                    {
+                        Label item = (Label)FindName(datos[2]);
+                        if (item != null)
+                            item.Content = ListTablas[0].TableName;
+                    }
                 }
             }
-
             //control.UpdateLayout();
             ColorFuenteFondo();
         }
