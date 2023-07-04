@@ -230,6 +230,41 @@
         <StackPanel Grid.Row="18"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
+                Margin="5,5,5,5" Grid.ColumnSpan="2">
+            <Button x:Name="btnAnimaciones"
+              Content="Animaciones"
+              IsDefault="True"
+              Width="100"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnAnimaciones_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF1E6D0E"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="18"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2">
             <Button x:Name="btnBorrar"
               Content="Eliminar"

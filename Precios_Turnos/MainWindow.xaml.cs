@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.Web.WebView2.Wpf;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -468,7 +469,7 @@ namespace Precios_Turnos
                     if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
-                        MenuItem itemCm = (MenuItem)cm.Items[5];
+                        MenuItem itemCm = (MenuItem)cm.Items[6];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -614,21 +615,90 @@ namespace Precios_Turnos
             dialog.ContenidoTextBox.IsEnabled = false;
             if (dialog.ShowDialog() == true)
             {
-                MediaElement obj = new MediaElement();
+                string extension = System.IO.Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
+                if (extension.Equals("gif"))
+                {
+                    MediaElement obj = new MediaElement();
+                    obj.Name = dialog.NombreText.ToUpper();
+                    obj.ToolTip = dialog.NombreText.ToUpper();
+                    obj.Source = new Uri(dialog.ContenidoText);
+                    obj.MediaEnded += MediaElement_MediaEnded;
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.Stretch = Stretch.Uniform;
+                    obj.MaxHeight = MaxHeight;
+                    obj.MaxWidth = MaxHeight;
+                    obj.Tag = "";
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                }
+                else
+                {
+                    Image obj = new Image();
+                    obj.Name = dialog.NombreText.ToUpper();
+                    obj.ToolTip = dialog.NombreText.ToUpper();
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.EndInit();
+
+                    obj.Source = bitmapImage;
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.Stretch = Stretch.Uniform;
+                    obj.MaxHeight = MaxHeight;
+                    obj.MaxWidth = MaxHeight;
+                    obj.Height = bitmapImage.Height;
+                    obj.Tag = "";
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+
+                }
+                
+            }
+        }
+
+
+        private void MenuAgregarWEB_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var mousePosition = e.GetPosition(Principal);
+
+
+            if (mousePosition.X + dialog.Width >= MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            if (mousePosition.Y + dialog.Height >= MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            dialog.lblTexto.Content = "Abrir";
+            dialog.Titulo.Content = "Agregar web";
+            dialog.btnAbrir.Visibility = Visibility.Hidden;
+            if (dialog.ShowDialog() == true)
+            {
+
+                WebView2 obj = new WebView2();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
                 obj.Source = new Uri(dialog.ContenidoText);
-                string extension = System.IO.Path.GetExtension(obj.Source.ToString()).Replace(".", "").ToLower();
-                if (extension.Equals("gif"))
-                    obj.MediaEnded += MediaElement_MediaEnded;
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.Stretch = Stretch.Uniform;
+                obj.HorizontalAlignment = HorizontalAlignment.Left;
+                obj.VerticalAlignment = VerticalAlignment.Top;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxHeight;
+                obj.Height = 400;
+                obj.Width = 400;
                 obj.Tag = "";
+                obj.Margin = new Thickness(10, 10, 10, 10);
+
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
+
             }
         }
 
@@ -688,6 +758,37 @@ namespace Precios_Turnos
                     propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
+                case "Image":
+                    PropiedadesMultimedia propiedadesImagen = new PropiedadesMultimedia(this);
+                    propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
+
+                    if (point.X + propiedadesImagen.Width >= MaxWidth)
+                        propiedadesImagen.Left = point.X - propiedadesImagen.Width;
+                    else
+                        propiedadesImagen.Left = point.X;
+
+                    if (point.Y + propiedadesImagen.Height >= MaxHeight)
+                        propiedadesImagen.Top = point.Y - propiedadesImagen.Height;
+                    else
+                        propiedadesImagen.Top = point.Y;
+
+                    propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                    propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesImagen.TipoControl.Text = item.GetType().Name;
+                    propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
+                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
+                    propiedadesImagen.Opacidad.Value = item.Opacity;
+                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesImagen.chkSonido.IsEnabled = false;
+                    propiedadesImagen.Cada.IsEnabled = false;
+                    propiedadesImagen.Durar.IsEnabled = false;
+                    propiedadesImagen.chkMaximizar.IsEnabled = false;
+                    propiedadesImagen.chkRelacion.IsChecked = true;
+                    propiedadesImagen.esInicio = false;
+                    propiedadesImagen.ShowDialog();
+                    break;
                 case "MediaElement":
                     PropiedadesMultimedia propiedadesMultimedia = new PropiedadesMultimedia(this);
                     propiedadesMultimedia.WindowStartupLocation = WindowStartupLocation.Manual;
@@ -718,7 +819,7 @@ namespace Precios_Turnos
                         propiedadesMultimedia.chkMaximizar.IsEnabled = false;
                         propiedadesMultimedia.chkOcultar.IsEnabled = false;
                     }
-                    else if (extension.Equals("jpeg") || extension.Equals("jpg") || extension.Equals("png") || extension.Equals("gif"))
+                    else if (extension.Equals("gif"))
                     {
                         propiedadesMultimedia.chkSonido.IsEnabled = false;
                         propiedadesMultimedia.chkMaximizar.IsEnabled = false;
@@ -750,6 +851,36 @@ namespace Precios_Turnos
 
                     propiedadesMultimedia.esInicio = false;
                     propiedadesMultimedia.ShowDialog();
+                    break;
+                case "WebView2":
+                    PropiedadesWEB propiedadesWebView2 = new PropiedadesWEB(this);
+                    propiedadesWebView2.WindowStartupLocation = WindowStartupLocation.Manual;
+
+                    if (point.X + propiedadesWebView2.Width >= MaxWidth)
+                        propiedadesWebView2.Left = point.X - propiedadesWebView2.Width;
+                    else
+                        propiedadesWebView2.Left = point.X;
+
+                    if (point.Y + propiedadesWebView2.Height >= MaxHeight)
+                        propiedadesWebView2.Top = point.Y - propiedadesWebView2.Height;
+                    else
+                        propiedadesWebView2.Top = point.Y;
+
+                    propiedadesWebView2.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                    propiedadesWebView2.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesWebView2.TipoControl.Text = item.GetType().Name;
+                    propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
+                    propiedadesWebView2.Largo.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
+                    propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
+                    propiedadesWebView2.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                    propiedadesWebView2.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesWebView2.chkSonido.IsEnabled = false;
+                    propiedadesWebView2.Cada.IsEnabled = false;
+                    propiedadesWebView2.Durar.IsEnabled = false;
+                    propiedadesWebView2.chkMaximizar.IsEnabled = false;
+                    propiedadesWebView2.chkRelacion.IsChecked = true;
+                    propiedadesWebView2.esInicio = false;
+                    propiedadesWebView2.ShowDialog();
                     break;
                 case "DataGrid":
                     PropiedadesTabla propiedadesTabla = new PropiedadesTabla(this);
@@ -840,12 +971,6 @@ namespace Precios_Turnos
                 Principal.Children.Remove(item);
                 NameScope.GetNameScope(this).UnregisterName(pNombre);
 
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings[pNombre] != null)
-                    config.AppSettings.Settings.Remove(pNombre);
-
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
                 try
                 {
                     DirectoryInfo info = new DirectoryInfo(@"objetos\");
@@ -864,6 +989,15 @@ namespace Precios_Turnos
                     foreach (var file in info.GetFiles())
                     {
                         if (file.Name.Equals(pNombre + ".anim"))
+                            File.Delete(file.FullName);
+                    }
+
+                    info = new DirectoryInfo(@"objetos\consultasSQL");
+
+
+                    foreach (var file in info.GetFiles())
+                    {
+                        if (file.Name.Equals(pNombre + ".sql"))
                             File.Delete(file.FullName);
                     }
                 }
@@ -2140,10 +2274,16 @@ namespace Precios_Turnos
                 Directory.CreateDirectory(@".\objetosTurno\animaciones");
             }
 
-            //Carpetas de consultas sql
+            //Carpeta de consultas sql
             if (!Directory.Exists(@".\objetos\consultasSQL"))
             {
                 Directory.CreateDirectory(@".\objetos\consultasSQL");
+            }
+
+            //Carpeta multimedia
+            if (!Directory.Exists(@".\multimedia"))
+            {
+                Directory.CreateDirectory(@".\multimedia");
             }
         }
     }

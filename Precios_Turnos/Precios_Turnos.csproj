@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32" />
     <PackageReference Include="System.Data.Odbc" Version="7.0.0" />
     <PackageReference Include="System.Management" Version="7.0.0" />
     <PackageReference Include="System.Speech" Version="7.0.0" />
@@ -59,6 +60,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="PropiedadesLabelTurno.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="PropiedadesWEB.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="PropiedadesMultimediaTurno.xaml.cs">

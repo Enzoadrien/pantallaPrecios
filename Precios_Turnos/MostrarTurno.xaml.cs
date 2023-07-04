@@ -365,7 +365,7 @@ namespace Precios_Turnos
                     propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
-                case "MediaElement":
+                case "Image":
                     PropiedadesMultimediaTurno propiedadesImagen = new PropiedadesMultimediaTurno(this);
                     propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -382,15 +382,43 @@ namespace Precios_Turnos
                     propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = item.GetType().Name;
-                    propiedadesImagen.Ruta.Text = ((MediaElement)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
-                    propiedadesImagen.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
+                    propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
+                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
                     propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
                     propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
                     propiedadesImagen.chkRelacion.IsChecked = true;
                     propiedadesImagen.esInicio = false;
                     propiedadesImagen.ShowDialog();
+                    break;
+
+                case "MediaElement":
+                    PropiedadesMultimediaTurno propiedadesMultimedia = new PropiedadesMultimediaTurno(this);
+                    propiedadesMultimedia.WindowStartupLocation = WindowStartupLocation.Manual;
+
+                    if (point.X + propiedadesMultimedia.Width >= MaxWidth)
+                        propiedadesMultimedia.Left = point.X - propiedadesMultimedia.Width;
+                    else
+                        propiedadesMultimedia.Left = point.X;
+
+                    if (point.Y + propiedadesMultimedia.Height >= MaxHeight)
+                        propiedadesMultimedia.Top = point.Y - propiedadesMultimedia.Height;
+                    else
+                        propiedadesMultimedia.Top = point.Y;
+
+                    propiedadesMultimedia.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                    propiedadesMultimedia.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesMultimedia.TipoControl.Text = item.GetType().Name;
+                    propiedadesMultimedia.Ruta.Text = ((MediaElement)item).Source.ToString();
+                    propiedadesMultimedia.Largo.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
+                    propiedadesMultimedia.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
+                    propiedadesMultimedia.Opacidad.Value = item.Opacity;
+                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesMultimedia.chkRelacion.IsChecked = true;
+                    propiedadesMultimedia.esInicio = false;
+                    propiedadesMultimedia.ShowDialog();
                     break;
 
                 default:
@@ -591,21 +619,45 @@ namespace Precios_Turnos
             dialog.ContenidoTextBox.IsEnabled = false;
             if (dialog.ShowDialog() == true)
             {
-                MediaElement obj = new MediaElement();
-                obj.Name = dialog.NombreText.ToUpper();
-                obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new Uri(dialog.ContenidoText);
-                string extension = System.IO.Path.GetExtension(obj.Source.ToString()).Replace(".", "").ToLower();
+                string extension = System.IO.Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
                 if (extension.Equals("gif"))
+                {
+                    MediaElement obj = new MediaElement();
+                    obj.Name = dialog.NombreText.ToUpper();
+                    obj.ToolTip = dialog.NombreText.ToUpper();
+                    obj.Source = new Uri(dialog.ContenidoText);
                     obj.MediaEnded += MediaElement_MediaEnded;
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.Stretch = Stretch.Uniform;
-                obj.Height = 800;
-                obj.MaxHeight = MaxHeight;
-                obj.MaxWidth = MaxHeight;
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.Stretch = Stretch.Uniform;
+                    obj.MaxHeight = MaxHeight;
+                    obj.MaxWidth = MaxHeight;
+                    obj.Tag = "";
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                }
+                else
+                {
+                    Image obj = new Image();
+                    obj.Name = dialog.NombreText.ToUpper();
+                    obj.ToolTip = dialog.NombreText.ToUpper();
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.EndInit();
+
+                    obj.Source = bitmapImage;
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.Stretch = Stretch.Uniform;
+                    obj.MaxHeight = MaxHeight;
+                    obj.MaxWidth = MaxHeight;
+                    obj.Tag = "";
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+
+                }
             }
         }
 

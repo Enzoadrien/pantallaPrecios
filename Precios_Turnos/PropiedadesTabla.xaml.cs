@@ -540,5 +540,30 @@ namespace Precios_Turnos
                    (chkDoble.IsChecked == true ? "|" + btnColorFuente.Fill + "|" + btnColorFondo.Fill + "|" + btnColorFuente2.Fill + "|" + btnColorFondo2.Fill : "");
             }
         }
+
+        private void btnAnimaciones_Click(object sender, RoutedEventArgs e)
+        {
+            Opacity = 0.5;
+            Animaciones dialog = new Animaciones(mainWindow, NombreControl.Text);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = Mouse.GetPosition(this);
+
+            // get the position within the container
+            var mousePosition = this.PointToScreen(relativeCenterParent);
+
+            if (mousePosition.Y + dialog.Height >= mainWindow.MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            if (mousePosition.X + dialog.Width >= mainWindow.MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            dialog.ShowDialog();
+            Opacity = 0.9;
+        }
     }
 }

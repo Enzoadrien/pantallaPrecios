@@ -81,14 +81,35 @@ namespace Precios_Turnos
         {
             var item = e.Source as UIElement;
             TextBox cajaTexto = (TextBox)item;
-            if (cajaTexto.Text.Length == 0)
+            if (cajaTexto.Text.Length == 0 || cajaTexto.Text.Equals("0"))
             {
                 esCambio = false;
-                MediaElement item2 = (MediaElement)mainWindow.FindName(NombreControl.Text);
-                if (cajaTexto.Name.CompareTo("Ancho") == 0)
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(item2.ActualWidth)).ToString();
+                var itemP = mainWindow.FindName(NombreControl.Text);
+                if (cajaTexto.Name.Equals("Ancho"))
+                {
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((Image)itemP).ActualWidth)).ToString();
+                            break;
+                        case "MediaElement":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualWidth)).ToString();
+                            break;
+                    }
+                }
                 else
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(item2.ActualHeight)).ToString();
+                {
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((Image)itemP).ActualHeight)).ToString();
+                            break;
+                        case "MediaElement":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualHeight)).ToString();
+                            break;
+                    }
+                }
+
                 esCambio = true;
             }
         }
@@ -138,9 +159,16 @@ namespace Precios_Turnos
 
                         mainWindow.Principal.Children.Remove(item);
                         NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
-
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "Image":
+                                ((Image)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                break;
+                            case "MediaElement":
                                 ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
-      
+                                break;
+                            default: break;
+                        }
 
                         NameScope.GetNameScope(mainWindow).RegisterName(NombreControl.Text, item);
                         mainWindow.Principal.Children.Add(item);
@@ -159,9 +187,16 @@ namespace Precios_Turnos
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-     
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).SizeChanged += item_SizeChanged;
+                    break;
+                case "MediaElement":
                     ((MediaElement)item).SizeChanged += item_SizeChanged;
-
+                    break;
+                default: break;
+            }
 
         }
 
@@ -174,8 +209,42 @@ namespace Precios_Turnos
                     var item = e.Source as UIElement;
                     var itemP = mainWindow.FindName(NombreControl.Text) as UIElement;
 
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            Image image = (Image)itemP;
 
-  
+                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Height = int.Parse(Largo.Text);
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                                esCambio = true;
+                            }
+                            else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Width = int.Parse(Ancho.Text);
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                            }
+                            break;
+                        case "MediaElement":
                             MediaElement mediaElement = (MediaElement)itemP;
 
                             if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
@@ -207,6 +276,9 @@ namespace Precios_Turnos
                                     mediaElement.Height = int.Parse(Ancho.Text);
                                 }
                             }
+                            break;
+                        default: break;
+                    }
                 }
             }
         }
@@ -219,10 +291,18 @@ namespace Precios_Turnos
                 {
                     esCambio = false;
                     var item = e.Source;
-
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
+                            Largo.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
+                            break;
+                        case "MediaElement":
                             Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
                             Largo.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
-
+                            break;
+                        default: break;
+                    }
                     esCambio = true;
                 }
             }
@@ -257,13 +337,32 @@ namespace Precios_Turnos
         private void chkOcultar_Checked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Visibility = Visibility.Hidden;
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).Visibility = Visibility.Hidden;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).Visibility = Visibility.Hidden;
+                    break;
+                default: break;
+            }
         }
 
         private void chkOcultar_Unchecked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Visibility = Visibility.Visible;
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).Visibility = Visibility.Visible;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).Visibility = Visibility.Visible;
+                    break;
+                default: break;
+            }
         }
     }
 }
+

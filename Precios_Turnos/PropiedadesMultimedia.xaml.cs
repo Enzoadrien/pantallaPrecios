@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Web.WebView2.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
@@ -86,10 +87,30 @@ namespace Precios_Turnos
                 esCambio = false;
                 var itemP = mainWindow.FindName(NombreControl.Text);
                 if (cajaTexto.Name.Equals("Ancho"))
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualWidth)).ToString();  
+                {
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((Image)itemP).ActualWidth)).ToString();
+                            break;
+                        case "MediaElement":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualWidth)).ToString();
+                            break;
+                    }
+                }
                 else
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualHeight)).ToString();
-                    
+                {
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((Image)itemP).ActualHeight)).ToString();
+                            break;
+                        case "MediaElement":
+                            cajaTexto.Text = Convert.ToInt32(Math.Round(((MediaElement)itemP).ActualHeight)).ToString();
+                            break;
+                    }
+                }
+
                 esCambio = true;
             }
         }
@@ -139,8 +160,16 @@ namespace Precios_Turnos
 
                         mainWindow.Principal.Children.Remove(item);
                         NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
-                        ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
-
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "Image":
+                                ((Image)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                break;
+                            case "MediaElement":
+                                ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                break;
+                            default: break;
+                        }
 
                         NameScope.GetNameScope(mainWindow).RegisterName(NombreControl.Text, item);
                         mainWindow.Principal.Children.Add(item);
@@ -159,7 +188,16 @@ namespace Precios_Turnos
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).SizeChanged += item_SizeChanged;
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).SizeChanged += item_SizeChanged;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).SizeChanged += item_SizeChanged;
+                    break;
+                default: break;
+            }
 
         }
 
@@ -172,6 +210,54 @@ namespace Precios_Turnos
                 {
                     var itemP = mainWindow.FindName(NombreControl.Text) as UIElement;
 
+                    switch (itemP.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            Image image = (Image)itemP;
+
+                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Height = int.Parse(Largo.Text);
+                                    if (image.ActualHeight != image.Height)
+                                    {
+                                        esCambio = false;
+                                        Largo.Text = Convert.ToInt32(Math.Round(image.ActualHeight)).ToString();
+                                        esCambio = true;
+                                    }
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                                esCambio = true;
+                            }
+                            else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
+                            {
+                                if ((bool)chkRelacion.IsChecked)
+                                {
+                                    image.Stretch = Stretch.Uniform;
+                                    image.Width = int.Parse(Ancho.Text);
+                                    if (image.ActualWidth != image.Width)
+                                    {
+                                        esCambio = false;
+                                        Ancho.Text = Convert.ToInt32(Math.Round(image.ActualWidth)).ToString();
+                                        esCambio = true;
+                                    }
+                                }
+                                else
+                                {
+                                    image.Stretch = Stretch.Fill;
+                                    image.Width = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Ancho.Text);
+                                }
+                            }
+                            break;
+                        case "MediaElement":
                             MediaElement mediaElement = (MediaElement)itemP;
 
                             if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
@@ -186,7 +272,7 @@ namespace Precios_Turnos
                                         Largo.Text = Convert.ToInt32(Math.Round(mediaElement.ActualHeight)).ToString();
                                         esCambio = true;
                                     }
-                                        
+
                                 }
                                 else
                                 {
@@ -216,6 +302,9 @@ namespace Precios_Turnos
                                     mediaElement.Height = int.Parse(Ancho.Text);
                                 }
                             }
+                            break;
+                        default: break;
+                    }
                 }
                  ((TextBox)item).CaretIndex = ((TextBox)item).Text.Length;
             }
@@ -229,11 +318,22 @@ namespace Precios_Turnos
                 {
                     esCambio = false;
                     var item = e.Source;
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString()))
+                                Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
+                            if (!Largo.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString()))
+                                Largo.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
+                            break;
+                        case "MediaElement":
                             if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString()))
                                 Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
                             if (!Largo.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString()))
                                 Largo.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
-                
+                            break;
+                        default: break;
+                    }
                     esCambio = true;
                 }
             }
@@ -244,25 +344,34 @@ namespace Precios_Turnos
             if (!esInicio)
             {
                 var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-
-                    ((MediaElement)item).Volume = 1;
+                switch (item.GetType().Name.ToString())
+                {
+                    case "MediaElement":
+                        ((MediaElement)item).Volume = 1;
                         if (chkMaximizar.IsChecked == true)
                             ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
                         else
                             ((MediaElement)item).Tag = "S";
-
+                        break;
+                    default: break;
+                }
             }
         }
 
         private void chkSonido_Unchecked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-
+            switch (item.GetType().Name.ToString())
+            {
+                case "MediaElement":
                     ((MediaElement)item).Volume = 0;
                     if (chkMaximizar.IsChecked == true)
                         ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
                     else
                         ((MediaElement)item).Tag = "N";
+                    break;
+                default: break;
+            }
         }
 
         private void chkMaximizar_Checked(object sender, RoutedEventArgs e)
@@ -306,7 +415,8 @@ namespace Precios_Turnos
                 else
                     ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
             }
-            else {
+            else
+            {
                 if (chkSonido.IsChecked == true)
                     ((MediaElement)item).Tag = "S";
                 else
@@ -342,13 +452,31 @@ namespace Precios_Turnos
         private void chkOcultar_Checked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Visibility= Visibility.Hidden;
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).Visibility = Visibility.Hidden;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).Visibility = Visibility.Hidden;
+                    break;
+                default: break;
+            }
         }
 
         private void chkOcultar_Unchecked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((MediaElement)item).Visibility = Visibility.Visible;
+            switch (item.GetType().Name.ToString())
+            {
+                case "Image":
+                    ((Image)item).Visibility = Visibility.Visible;
+                    break;
+                case "MediaElement":
+                    ((MediaElement)item).Visibility = Visibility.Visible;
+                    break;
+                default: break;
+            }
         }
     }
 }
