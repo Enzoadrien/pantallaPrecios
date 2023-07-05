@@ -627,7 +627,15 @@ namespace Precios_Turnos
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.MaxHeight = MaxHeight;
-                    obj.MaxWidth = MaxHeight;
+                    obj.MaxWidth = MaxWidth;
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.EndInit();
+
+                    obj.Height = bitmapImage.Height;
+
                     obj.Tag = "";
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
@@ -648,7 +656,7 @@ namespace Precios_Turnos
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.MaxHeight = MaxHeight;
-                    obj.MaxWidth = MaxHeight;
+                    obj.MaxWidth = MaxWidth;
                     obj.Height = bitmapImage.Height;
                     obj.Tag = "";
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
@@ -658,7 +666,6 @@ namespace Precios_Turnos
                 
             }
         }
-
 
         private void MenuAgregarWEB_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -690,7 +697,7 @@ namespace Precios_Turnos
                 obj.HorizontalAlignment = HorizontalAlignment.Left;
                 obj.VerticalAlignment = VerticalAlignment.Top;
                 obj.MaxHeight = MaxHeight;
-                obj.MaxWidth = MaxHeight;
+                obj.MaxWidth = MaxWidth;
                 obj.Height = 400;
                 obj.Width = 400;
                 obj.Tag = "";
@@ -754,8 +761,12 @@ namespace Precios_Turnos
                     propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
                     propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
                     propiedadesLabel.Opacidad.Value = item.Opacity;
-                    propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+
+                    Point pointLabel = item.TransformToAncestor(this).Transform(new Point(0, 0));
+
+                    propiedadesLabel.CoordenadaX.Text = pointLabel.X.ToString();
+                    propiedadesLabel.CoordenadaY.Text = pointLabel.Y.ToString();
+
                     propiedadesLabel.ShowDialog();
                     break;
                 case "Image":
@@ -776,11 +787,15 @@ namespace Precios_Turnos
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = item.GetType().Name;
                     propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                    propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
-                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+
+                    Point pointImage = item.TransformToAncestor(this).Transform(new Point(0, 0));
+
+                    propiedadesImagen.CoordenadaX.Text = pointImage.X.ToString();
+                    propiedadesImagen.CoordenadaY.Text = pointImage.Y.ToString();
+
                     propiedadesImagen.chkSonido.IsEnabled = false;
                     propiedadesImagen.Cada.IsEnabled = false;
                     propiedadesImagen.Durar.IsEnabled = false;
@@ -812,7 +827,7 @@ namespace Precios_Turnos
                     if (extension.Equals("wav") || extension.Equals("mp3"))
                     { 
                         propiedadesMultimedia.chkRelacion.IsEnabled = false;
-                        propiedadesMultimedia.Largo.IsEnabled = false;
+                        propiedadesMultimedia.Alto.IsEnabled = false;
                         propiedadesMultimedia.Ancho.IsEnabled = false;
                         propiedadesMultimedia.Opacidad.IsEnabled = false;
                         propiedadesMultimedia.chkSonido.IsEnabled = false;
@@ -827,13 +842,17 @@ namespace Precios_Turnos
 
 
                     propiedadesMultimedia.chkRelacion.IsChecked = true;
-                    propiedadesMultimedia.Largo.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
+                    propiedadesMultimedia.Alto.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
                     propiedadesMultimedia.Ancho.Text = Convert.ToInt32(((MediaElement)item).ActualWidth).ToString();
                     propiedadesMultimedia.Opacidad.Value = item.Opacity;
                     
                     propiedadesMultimedia.chkSonido.IsChecked = ((MediaElement)item).Volume == 1 ? true : false;
-                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+
+                    Point pointMediaElement = item.TransformToAncestor(this).Transform(new Point(0, 0));
+
+                    propiedadesMultimedia.CoordenadaX.Text = pointMediaElement.X.ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = pointMediaElement.Y.ToString();
+
                     string[] datosTag = ((MediaElement)item).Tag.ToString().Split('|');
                     if (datosTag.Length > 2)
                     {
@@ -870,15 +889,17 @@ namespace Precios_Turnos
                     propiedadesWebView2.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesWebView2.TipoControl.Text = item.GetType().Name;
                     propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
-                    propiedadesWebView2.Largo.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
+                    propiedadesWebView2.Alto.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
                     propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
-                    propiedadesWebView2.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesWebView2.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
-                    propiedadesWebView2.chkSonido.IsEnabled = false;
-                    propiedadesWebView2.Cada.IsEnabled = false;
-                    propiedadesWebView2.Durar.IsEnabled = false;
-                    propiedadesWebView2.chkMaximizar.IsEnabled = false;
-                    propiedadesWebView2.chkRelacion.IsChecked = true;
+
+                    Point pointWebView2 = item.TransformToAncestor(this).Transform(new Point(0, 0));
+
+                    propiedadesWebView2.CoordenadaX.Text = pointWebView2.X.ToString();
+                    propiedadesWebView2.CoordenadaY.Text = pointWebView2.Y.ToString();
+
+                    propiedadesWebView2.Cada.IsEnabled = true;
+                    propiedadesWebView2.Durar.IsEnabled = true;
+                    propiedadesWebView2.chkMaximizar.IsEnabled = true;
                     propiedadesWebView2.esInicio = false;
                     propiedadesWebView2.ShowDialog();
                     break;
@@ -936,8 +957,12 @@ namespace Precios_Turnos
                     }
 
                     propiedadesTabla.Opacidad.Value = item.Opacity;
-                    propiedadesTabla.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesTabla.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+
+                    Point pointDataGrid = item.TransformToAncestor(this).Transform(new Point(0, 0));
+
+                    propiedadesTabla.CoordenadaX.Text = pointDataGrid.X.ToString();
+                    propiedadesTabla.CoordenadaY.Text = pointDataGrid.Y.ToString();
+
                     propiedadesTabla.ShowDialog();
                     break;
 

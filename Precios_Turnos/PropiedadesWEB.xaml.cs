@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Precios_Turnos
 {
@@ -151,47 +152,39 @@ namespace Precios_Turnos
 
                     WebView2 webView2 = (WebView2)itemP;
 
-                    if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                    if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                     {
-                        if ((bool)chkRelacion.IsChecked)
+                        if (webView2.MaxHeight >= int.Parse(Alto.Text))
                         {
-                            //webView2.Stretch = Stretch.Uniform;
-                            webView2.Height = int.Parse(Largo.Text);
-                            if (webView2.ActualHeight != webView2.Height)
-                            {
-                                esCambio = false;
-                                Largo.Text = Convert.ToInt32(Math.Round(webView2.ActualHeight)).ToString();
-                                esCambio = true;
-                            }
-
+                            webView2.Width = int.Parse(Ancho.Text);
+                            webView2.Height = int.Parse(Alto.Text);
                         }
                         else
                         {
-                            //webView2.Stretch = Stretch.Fill;
-                            webView2.Width = int.Parse(Largo.Text);
-                            webView2.Height = int.Parse(Ancho.Text);
+                            webView2.Width = int.Parse(Ancho.Text);
+                            webView2.Height = webView2.MaxHeight;
+                            esCambio = false;
+                            Alto.Text = webView2.MaxHeight.ToString();
+                            esCambio = true;
                         }
-                        esCambio = true;
                     }
                     else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
                     {
-                        if ((bool)chkRelacion.IsChecked)
+
+                        if (webView2.MaxWidth >= int.Parse(Ancho.Text))
                         {
-                            //webView2.Stretch = Stretch.Uniform;
                             webView2.Width = int.Parse(Ancho.Text);
-                            if (webView2.ActualWidth != webView2.Width)
-                            {
-                                esCambio = false;
-                                Ancho.Text = Convert.ToInt32(Math.Round(webView2.ActualWidth)).ToString();
-                                esCambio = true;
-                            }
+                            webView2.Height = int.Parse(Alto.Text);
                         }
                         else
                         {
-                            //webView2.Stretch = Stretch.Fill;
-                            webView2.Width = int.Parse(Largo.Text);
-                            webView2.Height = int.Parse(Ancho.Text);
+                            webView2.Width = webView2.MaxWidth;
+                            webView2.Height = int.Parse(Alto.Text);
+                            esCambio = false;
+                            Ancho.Text = webView2.MaxWidth.ToString();
+                            esCambio = true;
                         }
+
                     }
                 }
                  ((TextBox)item).CaretIndex = ((TextBox)item).Text.Length;
@@ -202,53 +195,14 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
-                if ((bool)chkRelacion.IsChecked)
-                {
-                    esCambio = false;
-                    var item = e.Source;
+                esCambio = false;
+                var item = e.Source;
 
-                    if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString()))
-                        Ancho.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString();
-                    if (!Largo.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString()))
-                        Largo.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString();
-
-                    esCambio = true;
-                }
-            }
-        }
-
-        private void chkSonido_Checked(object sender, RoutedEventArgs e)
-        {
-            if (!esInicio)
-            {
-                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-                switch (item.GetType().Name.ToString())
-                {
-                    case "MediaElement":
-                        ((MediaElement)item).Volume = 1;
-                        if (chkMaximizar.IsChecked == true)
-                            ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
-                        else
-                            ((MediaElement)item).Tag = "S";
-                        break;
-                    default: break;
-                }
-            }
-        }
-
-        private void chkSonido_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            switch (item.GetType().Name.ToString())
-            {
-                case "MediaElement":
-                    ((MediaElement)item).Volume = 0;
-                    if (chkMaximizar.IsChecked == true)
-                        ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
-                    else
-                        ((MediaElement)item).Tag = "N";
-                    break;
-                default: break;
+                if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString()))
+                    Ancho.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString();
+                if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString()))
+                    Alto.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString();
+                esCambio = true;
             }
         }
 
@@ -257,10 +211,7 @@ namespace Precios_Turnos
             if (!esInicio)
             {
                 var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-                if (chkSonido.IsChecked == true)
-                    ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
-                else
-                    ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
+                ((WebView2)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
 
 
                 Cada.Text = "900";
@@ -273,10 +224,7 @@ namespace Precios_Turnos
         private void chkMaximizar_Unchecked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            if (chkSonido.IsChecked == true)
-                ((MediaElement)item).Tag = "S";
-            else
-                ((MediaElement)item).Tag = "N";
+            ((WebView2)item).Tag = "";
             Cada.Text = "";
             Durar.Text = "";
             Cada.IsEnabled = false;
@@ -288,17 +236,11 @@ namespace Precios_Turnos
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
             if (chkMaximizar.IsChecked == true)
             {
-                if (chkSonido.IsChecked == true)
-                    ((MediaElement)item).Tag = "S|M|" + Cada.Text + "|" + Durar.Text;
-                else
-                    ((MediaElement)item).Tag = "N|M|" + Cada.Text + "|" + Durar.Text;
+                ((WebView2)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
             }
             else
             {
-                if (chkSonido.IsChecked == true)
-                    ((MediaElement)item).Tag = "S";
-                else
-                    ((MediaElement)item).Tag = "N";
+                ((WebView2)item).Tag = "";
             }
         }
 

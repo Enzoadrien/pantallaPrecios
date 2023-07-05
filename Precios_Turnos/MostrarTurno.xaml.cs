@@ -383,7 +383,7 @@ namespace Precios_Turnos
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = item.GetType().Name;
                     propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
-                    propiedadesImagen.Largo.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                    propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
                     propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
@@ -411,7 +411,7 @@ namespace Precios_Turnos
                     propiedadesMultimedia.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesMultimedia.TipoControl.Text = item.GetType().Name;
                     propiedadesMultimedia.Ruta.Text = ((MediaElement)item).Source.ToString();
-                    propiedadesMultimedia.Largo.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
+                    propiedadesMultimedia.Alto.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
                     propiedadesMultimedia.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
                     propiedadesMultimedia.Opacidad.Value = item.Opacity;
                     propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
@@ -631,7 +631,15 @@ namespace Precios_Turnos
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.MaxHeight = MaxHeight;
-                    obj.MaxWidth = MaxHeight;
+                    obj.MaxWidth = MaxWidth;
+
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.EndInit();
+
+                    obj.Height = bitmapImage.Height;
+
                     obj.Tag = "";
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
@@ -652,7 +660,7 @@ namespace Precios_Turnos
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.MaxHeight = MaxHeight;
-                    obj.MaxWidth = MaxHeight;
+                    obj.MaxWidth = MaxWidth;
                     obj.Tag = "";
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);

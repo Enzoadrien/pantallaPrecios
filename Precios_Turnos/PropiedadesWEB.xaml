@@ -65,11 +65,10 @@
         <Label x:Name="lblRuta" Content="Ruta:" Grid.Row="3" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Ruta" Grid.Row="3" Grid.ColumnSpan="4" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0"/>
         <Label x:Name="lblTamano" Content="Tamaño" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <CheckBox x:Name="chkRelacion" Content="Relación de aspecto" Grid.Column="2" Grid.Row="6" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <Label x:Name="lblAncho" Content="Ancho:" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Ancho" Grid.Row="7" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
-        <Label x:Name="lblLargo" Content="Largo:" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Largo" Grid.Row="8" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <Label x:Name="lblAlto" Content="Alto:" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Alto" Grid.Row="8" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
         <Label x:Name="lblLargoPX" Content="px" Grid.Row="7" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblAnchoPX" Content="px" Grid.Row="8" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
         <CheckBox x:Name="chkMaximizar" Content="Maximizar" Grid.Column="2" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="chkMaximizar_Checked" Unchecked="chkMaximizar_Unchecked"/>
@@ -79,7 +78,6 @@
         <Label x:Name="lblDurar" Content="Durar:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Durar" Grid.Row="11" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="CadaDurante_TextChanged"/>
         <Label x:Name="lblS2" Content="s" Grid.Row="11" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <CheckBox x:Name="chkSonido" Content="Sonido" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="chkSonido_Checked" Unchecked="chkSonido_Unchecked"/>
         <CheckBox x:Name="chkOcultar" Content="Ocultar" Grid.Column="3" Grid.Row="12" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="chkOcultar_Checked" Unchecked="chkOcultar_Unchecked"/>
         <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="14"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>

@@ -158,21 +158,40 @@ namespace Precios_Turnos
                     if (CoordenadaX.Text.Length > 0 && CoordenadaY.Text.Length > 0)
                     {
 
-                        mainWindow.Principal.Children.Remove(item);
-                        NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
+                        Point point = item.TransformToAncestor(mainWindow).Transform(new Point(0, 0));
+
                         switch (item.GetType().Name.ToString())
                         {
                             case "Image":
-                                ((Image)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
+                                double x = 0;
+                                double y = 0;
+                                if(point.X < double.Parse(CoordenadaX.Text))
+                                {
+                                    x = (point.X - double.Parse(CoordenadaX.Text)) * -1;
+                                }
+                                else
+                                {
+                                    x = double.Parse(CoordenadaX.Text) - point.X;
+                                }
+
+                                if (point.Y < double.Parse(CoordenadaY.Text))
+                                {
+                                    y = (point.Y - double.Parse(CoordenadaY.Text)) * -1;
+                                }
+                                else
+                                {
+                                    y = double.Parse(CoordenadaY.Text) - point.Y;
+                                }
+
+                                item.RenderTransformOrigin = new Point(0, 0);
+                                item.RenderTransform = new TranslateTransform(-point.X, -point.Y);
                                 break;
                             case "MediaElement":
-                                ((MediaElement)item).Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
                                 break;
                             default: break;
                         }
 
-                        NameScope.GetNameScope(mainWindow).RegisterName(NombreControl.Text, item);
-                        mainWindow.Principal.Children.Add(item);
+                        
                     }
                 }
                 catch (Exception) { }
@@ -215,26 +234,37 @@ namespace Precios_Turnos
                         case "Image":
                             Image image = (Image)itemP;
 
-                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                           if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                             {
                                 if ((bool)chkRelacion.IsChecked)
                                 {
                                     image.Stretch = Stretch.Uniform;
-                                    image.Height = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Alto.Text);
                                     if (image.ActualHeight != image.Height)
                                     {
                                         esCambio = false;
-                                        Largo.Text = Convert.ToInt32(Math.Round(image.ActualHeight)).ToString();
+                                        Alto.Text = Convert.ToInt32(Math.Round(image.ActualHeight)).ToString();
                                         esCambio = true;
                                     }
                                 }
                                 else
                                 {
                                     image.Stretch = Stretch.Fill;
-                                    image.Width = int.Parse(Largo.Text);
-                                    image.Height = int.Parse(Ancho.Text);
+                                    if(image.MaxHeight >= int.Parse(Alto.Text))
+                                    {
+                                        image.Width = int.Parse(Ancho.Text);
+                                        image.Height = int.Parse(Alto.Text);
+                                    }
+                                    else{
+                                        image.Width = int.Parse(Ancho.Text); 
+                                        image.Height = image.MaxHeight;
+                                        esCambio = false;
+                                        Alto.Text = image.MaxHeight.ToString();
+                                        esCambio = true;
+                                    }
+
                                 }
-                                esCambio = true;
+                                
                             }
                             else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
                             {
@@ -252,24 +282,35 @@ namespace Precios_Turnos
                                 else
                                 {
                                     image.Stretch = Stretch.Fill;
-                                    image.Width = int.Parse(Largo.Text);
-                                    image.Height = int.Parse(Ancho.Text);
+                                    if (image.MaxWidth >= int.Parse(Ancho.Text))
+                                    {
+                                        image.Width = int.Parse(Ancho.Text);
+                                        image.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        image.Width = image.MaxWidth;
+                                        image.Height = int.Parse(Alto.Text);
+                                        esCambio = false;
+                                        Ancho.Text = image.MaxWidth.ToString();
+                                        esCambio = true;
+                                    }
                                 }
                             }
                             break;
                         case "MediaElement":
                             MediaElement mediaElement = (MediaElement)itemP;
 
-                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                             {
                                 if ((bool)chkRelacion.IsChecked)
                                 {
                                     mediaElement.Stretch = Stretch.Uniform;
-                                    mediaElement.Height = int.Parse(Largo.Text);
+                                    mediaElement.Height = int.Parse(Alto.Text);
                                     if (mediaElement.ActualHeight != mediaElement.Height)
                                     {
                                         esCambio = false;
-                                        Largo.Text = Convert.ToInt32(Math.Round(mediaElement.ActualHeight)).ToString();
+                                        Alto.Text = Convert.ToInt32(Math.Round(mediaElement.ActualHeight)).ToString();
                                         esCambio = true;
                                     }
 
@@ -277,10 +318,20 @@ namespace Precios_Turnos
                                 else
                                 {
                                     mediaElement.Stretch = Stretch.Fill;
-                                    mediaElement.Width = int.Parse(Largo.Text);
-                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                    if (mediaElement.MaxHeight >= int.Parse(Alto.Text))
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = mediaElement.MaxHeight;
+                                        esCambio = false;
+                                        Alto.Text = mediaElement.MaxHeight.ToString();
+                                        esCambio = true;
+                                    }
                                 }
-                                esCambio = true;
                             }
                             else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
                             {
@@ -298,8 +349,19 @@ namespace Precios_Turnos
                                 else
                                 {
                                     mediaElement.Stretch = Stretch.Fill;
-                                    mediaElement.Width = int.Parse(Largo.Text);
-                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                    if (mediaElement.MaxWidth >= int.Parse(Ancho.Text))
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        mediaElement.Width = mediaElement.MaxWidth;
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                        esCambio = false;
+                                        Ancho.Text = mediaElement.MaxWidth.ToString();
+                                        esCambio = true;
+                                    }
                                 }
                             }
                             break;
@@ -323,14 +385,14 @@ namespace Precios_Turnos
                         case "Image":
                             if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString()))
                                 Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
-                            if (!Largo.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString()))
-                                Largo.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
+                            if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString()))
+                                Alto.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
                             break;
                         case "MediaElement":
                             if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString()))
                                 Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
-                            if (!Largo.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString()))
-                                Largo.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
+                            if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString()))
+                                Alto.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
                             break;
                         default: break;
                     }

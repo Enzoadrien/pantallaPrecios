@@ -204,9 +204,9 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
+                var item = e.Source as UIElement;
                 if (esCambio)
                 {
-                    var item = e.Source as UIElement;
                     var itemP = mainWindow.FindName(NombreControl.Text) as UIElement;
 
                     switch (itemP.GetType().Name.ToString())
@@ -214,20 +214,38 @@ namespace Precios_Turnos
                         case "Image":
                             Image image = (Image)itemP;
 
-                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                             {
                                 if ((bool)chkRelacion.IsChecked)
                                 {
                                     image.Stretch = Stretch.Uniform;
-                                    image.Height = int.Parse(Largo.Text);
+                                    image.Height = int.Parse(Alto.Text);
+                                    if (image.ActualHeight != image.Height)
+                                    {
+                                        esCambio = false;
+                                        Alto.Text = Convert.ToInt32(Math.Round(image.ActualHeight)).ToString();
+                                        esCambio = true;
+                                    }
                                 }
                                 else
                                 {
                                     image.Stretch = Stretch.Fill;
-                                    image.Width = int.Parse(Largo.Text);
-                                    image.Height = int.Parse(Ancho.Text);
+                                    if (image.MaxHeight >= int.Parse(Alto.Text))
+                                    {
+                                        image.Width = int.Parse(Ancho.Text);
+                                        image.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        image.Width = int.Parse(Ancho.Text);
+                                        image.Height = image.MaxHeight;
+                                        esCambio = false;
+                                        Alto.Text = image.MaxHeight.ToString();
+                                        esCambio = true;
+                                    }
+
                                 }
-                                esCambio = true;
+
                             }
                             else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
                             {
@@ -235,32 +253,66 @@ namespace Precios_Turnos
                                 {
                                     image.Stretch = Stretch.Uniform;
                                     image.Width = int.Parse(Ancho.Text);
+                                    if (image.ActualWidth != image.Width)
+                                    {
+                                        esCambio = false;
+                                        Ancho.Text = Convert.ToInt32(Math.Round(image.ActualWidth)).ToString();
+                                        esCambio = true;
+                                    }
                                 }
                                 else
                                 {
                                     image.Stretch = Stretch.Fill;
-                                    image.Width = int.Parse(Largo.Text);
-                                    image.Height = int.Parse(Ancho.Text);
+                                    if (image.MaxWidth >= int.Parse(Ancho.Text))
+                                    {
+                                        image.Width = int.Parse(Ancho.Text);
+                                        image.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        image.Width = image.MaxWidth;
+                                        image.Height = int.Parse(Alto.Text);
+                                        esCambio = false;
+                                        Ancho.Text = image.MaxWidth.ToString();
+                                        esCambio = true;
+                                    }
                                 }
                             }
                             break;
                         case "MediaElement":
                             MediaElement mediaElement = (MediaElement)itemP;
 
-                            if (Largo.Text.Length > 0 && int.Parse(Largo.Text) > 0 && ((TextBox)item).Name.CompareTo("Largo") == 0)
+                            if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                             {
                                 if ((bool)chkRelacion.IsChecked)
                                 {
                                     mediaElement.Stretch = Stretch.Uniform;
-                                    mediaElement.Height = int.Parse(Largo.Text);
+                                    mediaElement.Height = int.Parse(Alto.Text);
+                                    if (mediaElement.ActualHeight != mediaElement.Height)
+                                    {
+                                        esCambio = false;
+                                        Alto.Text = Convert.ToInt32(Math.Round(mediaElement.ActualHeight)).ToString();
+                                        esCambio = true;
+                                    }
+
                                 }
                                 else
                                 {
                                     mediaElement.Stretch = Stretch.Fill;
-                                    mediaElement.Width = int.Parse(Largo.Text);
-                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                    if (mediaElement.MaxHeight >= int.Parse(Alto.Text))
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = mediaElement.MaxHeight;
+                                        esCambio = false;
+                                        Alto.Text = mediaElement.MaxHeight.ToString();
+                                        esCambio = true;
+                                    }
                                 }
-                                esCambio = true;
                             }
                             else if (Ancho.Text.Length > 0 && int.Parse(Ancho.Text) > 0 && ((TextBox)item).Name.CompareTo("Ancho") == 0)
                             {
@@ -268,18 +320,36 @@ namespace Precios_Turnos
                                 {
                                     mediaElement.Stretch = Stretch.Uniform;
                                     mediaElement.Width = int.Parse(Ancho.Text);
+                                    if (mediaElement.ActualWidth != mediaElement.Width)
+                                    {
+                                        esCambio = false;
+                                        Ancho.Text = Convert.ToInt32(Math.Round(mediaElement.ActualWidth)).ToString();
+                                        esCambio = true;
+                                    }
                                 }
                                 else
                                 {
                                     mediaElement.Stretch = Stretch.Fill;
-                                    mediaElement.Width = int.Parse(Largo.Text);
-                                    mediaElement.Height = int.Parse(Ancho.Text);
+                                    if (mediaElement.MaxWidth >= int.Parse(Ancho.Text))
+                                    {
+                                        mediaElement.Width = int.Parse(Ancho.Text);
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                    }
+                                    else
+                                    {
+                                        mediaElement.Width = mediaElement.MaxWidth;
+                                        mediaElement.Height = int.Parse(Alto.Text);
+                                        esCambio = false;
+                                        Ancho.Text = mediaElement.MaxWidth.ToString();
+                                        esCambio = true;
+                                    }
                                 }
                             }
                             break;
                         default: break;
                     }
                 }
+                 ((TextBox)item).CaretIndex = ((TextBox)item).Text.Length;
             }
         }
 
@@ -294,12 +364,16 @@ namespace Precios_Turnos
                     switch (item.GetType().Name.ToString())
                     {
                         case "Image":
-                            Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
-                            Largo.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
+                            if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString()))
+                                Ancho.Text = Convert.ToInt32(Math.Round(((Image)item).ActualWidth)).ToString();
+                            if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString()))
+                                Alto.Text = Convert.ToInt32(Math.Round(((Image)item).ActualHeight)).ToString();
                             break;
                         case "MediaElement":
-                            Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
-                            Largo.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
+                            if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString()))
+                                Ancho.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualWidth)).ToString();
+                            if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString()))
+                                Alto.Text = Convert.ToInt32(Math.Round(((MediaElement)item).ActualHeight)).ToString();
                             break;
                         default: break;
                     }
