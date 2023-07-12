@@ -22,6 +22,7 @@ namespace Precios_Turnos
     {
         private MostrarTurno mainWindow;
         bool esInicio = true;
+        private bool esCambio = true;
 
         public PropiedadesLabelTurno(MostrarTurno pMainWindow)
         {
@@ -166,7 +167,14 @@ namespace Precios_Turnos
             TextBox cajaTexto = (TextBox)item;
             if (cajaTexto.Text.Length == 0)
             {
-                cajaTexto.Text = "0";
+                Point point = item.TransformToAncestor(mainWindow.Principal).Transform(new Point(0, 0));
+                double pX = Math.Round(point.X);
+                double pY = Math.Round(point.Y);
+
+                if (cajaTexto.Name.Equals("CoordenadaX"))
+                    cajaTexto.Text = Convert.ToInt32(pX).ToString();
+                else
+                    cajaTexto.Text = Convert.ToInt32(pY).ToString();
             }
         }
 
@@ -183,7 +191,12 @@ namespace Precios_Turnos
         private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
 
-            e.Handled = !TextAllowed(e.Text);
+            var item = e.Source as UIElement;
+            if ((((TextBox)item).Name.CompareTo("CoordenadaX") == 0 || ((TextBox)item).Name.CompareTo("CoordenadaY") == 0)
+                && e.Text.Equals("-") && !((TextBox)item).Text.Contains('-') && ((TextBox)item).CaretIndex == 0)
+                e.Handled = false;
+            else
+                e.Handled = !TextAllowed(e.Text);
 
         }
        
@@ -221,19 +234,61 @@ namespace Precios_Turnos
 
         private void Coordenada_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!esInicio) {
-                Label control = (Label)mainWindow.FindName(NombreControl.Text);
-                try {
-                    if(CoordenadaX.Text.Length > 0 && CoordenadaY.Text.Length > 0) {
+            if (!esInicio)
+            {
+                if (esCambio)
+                {
+                    var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+                    try
+                    {
+                        if (CoordenadaX.Text.Length > 0 && CoordenadaY.Text.Length > 0)
+                        {
 
-                        mainWindow.Principal.Children.Remove(control);
-                        NameScope.GetNameScope(mainWindow).UnregisterName(NombreControl.Text);
-                        control.Margin = new Thickness(int.Parse(CoordenadaX.Text), int.Parse(CoordenadaY.Text), 0, 0);
-                        NameScope.GetNameScope(mainWindow).RegisterName(control.Name, control);
-                        mainWindow.Principal.Children.Add(control);
+                            Point point = item.TransformToAncestor(mainWindow.Principal).Transform(new Point(0, 0));
+                            double pX = Math.Round(point.X);
+                            double pY = Math.Round(point.Y);
+
+                            double currentX = 0;
+                            double currentY = 0;
+                            try
+                            {
+                                TranslateTransform _currentTT = item.RenderTransform as TranslateTransform;
+                                currentX = Math.Round(_currentTT.X);
+                                currentY = Math.Round(_currentTT.Y);
+                            }
+                            catch { }
+
+                            double x = double.Parse(CoordenadaX.Text);
+                            double y = double.Parse(CoordenadaY.Text);
+                            double movX = 0;
+                            double movY = 0;
+
+                            if (pX != x && currentX == 0)
+                                movX = -pX + x;
+                            else if (pX == x)
+                                movX = currentX;
+                            else
+                                movX = currentX - pX + x;
+
+                            if (pY != y && currentY == 0)
+                                movY = -pY + y;
+                            else if (pY == y)
+                                movY = currentY;
+                            else
+                                movY = currentY - pY + y;
+
+                            item.RenderTransform = new TranslateTransform(movX, movY);
+                        }
+
                     }
+                    catch (Exception) { }
+                    esCambio = false;
+                    if (CoordenadaX.Text.Length > 0)
+                        CoordenadaX.Text = Convert.ToInt32(CoordenadaX.Text).ToString();
+                    if (CoordenadaY.Text.Length > 0)
+                        CoordenadaY.Text = Convert.ToInt32(CoordenadaY.Text).ToString();
+                    esCambio = true;
                 }
-                catch(Exception) { }
             }
         }
 

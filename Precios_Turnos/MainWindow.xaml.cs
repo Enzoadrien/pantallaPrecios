@@ -693,15 +693,19 @@ namespace Precios_Turnos
                 WebView2 obj = new WebView2();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new Uri(dialog.ContenidoText);
-                obj.HorizontalAlignment = HorizontalAlignment.Left;
-                obj.VerticalAlignment = VerticalAlignment.Top;
+                try
+                {
+                    obj.Source = new Uri(dialog.ContenidoText);
+                }
+                catch { }
+                
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxWidth;
-                obj.Height = 400;
+                obj.Height = 600;
                 obj.Width = 400;
                 obj.Tag = "";
-                obj.Margin = new Thickness(10, 10, 10, 10);
 
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
@@ -764,8 +768,8 @@ namespace Precios_Turnos
 
                     Point pointLabel = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    propiedadesLabel.CoordenadaX.Text = pointLabel.X.ToString();
-                    propiedadesLabel.CoordenadaY.Text = pointLabel.Y.ToString();
+                    propiedadesLabel.CoordenadaX.Text = Math.Round(pointLabel.X).ToString();
+                    propiedadesLabel.CoordenadaY.Text = Math.Round(pointLabel.Y).ToString();
 
                     propiedadesLabel.ShowDialog();
                     break;
@@ -793,8 +797,8 @@ namespace Precios_Turnos
 
                     Point pointImage = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    propiedadesImagen.CoordenadaX.Text = pointImage.X.ToString();
-                    propiedadesImagen.CoordenadaY.Text = pointImage.Y.ToString();
+                    propiedadesImagen.CoordenadaX.Text = Math.Round(pointImage.X).ToString();
+                    propiedadesImagen.CoordenadaY.Text = Math.Round(pointImage.Y).ToString();
 
                     propiedadesImagen.chkSonido.IsEnabled = false;
                     propiedadesImagen.Cada.IsEnabled = false;
@@ -850,8 +854,8 @@ namespace Precios_Turnos
 
                     Point pointMediaElement = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    propiedadesMultimedia.CoordenadaX.Text = pointMediaElement.X.ToString();
-                    propiedadesMultimedia.CoordenadaY.Text = pointMediaElement.Y.ToString();
+                    propiedadesMultimedia.CoordenadaX.Text = Math.Round(pointMediaElement.X).ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = Math.Round(pointMediaElement.Y).ToString();
 
                     string[] datosTag = ((MediaElement)item).Tag.ToString().Split('|');
                     if (datosTag.Length > 2)
@@ -888,14 +892,19 @@ namespace Precios_Turnos
                     propiedadesWebView2.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesWebView2.NombreControl.Text = item.GetValue(NameProperty).ToString();
                     propiedadesWebView2.TipoControl.Text = item.GetType().Name;
-                    propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
+                    try
+                    {
+                        propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
+                    }
+                    catch { }
+                    
                     propiedadesWebView2.Alto.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
                     propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
 
                     Point pointWebView2 = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    propiedadesWebView2.CoordenadaX.Text = pointWebView2.X.ToString();
-                    propiedadesWebView2.CoordenadaY.Text = pointWebView2.Y.ToString();
+                    propiedadesWebView2.CoordenadaX.Text = Math.Round(pointWebView2.X).ToString();
+                    propiedadesWebView2.CoordenadaY.Text = Math.Round(pointWebView2.Y).ToString();
 
                     propiedadesWebView2.Cada.IsEnabled = true;
                     propiedadesWebView2.Durar.IsEnabled = true;
@@ -960,8 +969,8 @@ namespace Precios_Turnos
 
                     Point pointDataGrid = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    propiedadesTabla.CoordenadaX.Text = pointDataGrid.X.ToString();
-                    propiedadesTabla.CoordenadaY.Text = pointDataGrid.Y.ToString();
+                    propiedadesTabla.CoordenadaX.Text = Math.Round(pointDataGrid.X).ToString();
+                    propiedadesTabla.CoordenadaY.Text = Math.Round(pointDataGrid.Y).ToString();
 
                     propiedadesTabla.ShowDialog();
                     break;
