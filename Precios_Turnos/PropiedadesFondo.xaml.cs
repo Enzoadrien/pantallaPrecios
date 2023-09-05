@@ -98,8 +98,12 @@ namespace Precios_Turnos
                 ContenidoTextBox.Text = dlg.FileName;
                 btnColorFondo.Fill = new SolidColorBrush(Colors.White);
                 ImageBrush myBrush = new ImageBrush();
-                myBrush.ImageSource =
-                    new BitmapImage(new Uri(dlg.FileName));
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(@dlg.FileName, UriKind.Relative);
+                image.EndInit();
+                myBrush.ImageSource = image;
                 mainWindow.Fondo.Background = myBrush;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;
@@ -110,8 +114,12 @@ namespace Precios_Turnos
         private void Opacidad_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             ImageBrush myBrush = new ImageBrush();
-            myBrush.ImageSource =
-                new BitmapImage(new Uri(ContenidoTextBox.Text));
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(@ContenidoTextBox.Text, UriKind.Relative);
+            image.EndInit();
+            myBrush.ImageSource = image;;
             myBrush.Opacity = Opacidad.Value;
             mainWindow.Fondo.Background = myBrush;
         }

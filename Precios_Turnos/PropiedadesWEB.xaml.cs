@@ -321,5 +321,25 @@ namespace Precios_Turnos
 
             ((WebView2)item).Visibility = Visibility.Visible;
         }
+
+        private void Ruta_KeyDown(object sender, KeyEventArgs e)
+        {
+            /*try
+            {
+                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+                ((WebView2)item).Source = new Uri(Ruta.Text);
+            }
+            catch { }*/
+        }
+
+        private void Ruta_LostFocus(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
+                ((WebView2)item).Source = new Uri(Ruta.Text);
+            }
+            catch { }
+        }
     }
 }

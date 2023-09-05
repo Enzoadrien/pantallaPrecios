@@ -466,13 +466,6 @@ namespace Precios_Turnos
                     var item = FindName(pNombre) as UIElement;
                     Principal.Children.Remove(item);
                     NameScope.GetNameScope(this).UnregisterName(pNombre);
-
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (config.AppSettings.Settings[pNombre] != null)
-                        config.AppSettings.Settings.Remove(pNombre);
-
-                    config.Save(ConfigurationSaveMode.Modified);
-                    ConfigurationManager.RefreshSection("appSettings");
                     try
                     {
                         DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
@@ -770,84 +763,87 @@ namespace Precios_Turnos
                 foreach (var file in info.GetFiles())
                 {
 
-                    StreamReader sR = new StreamReader(@file.FullName);
-                    string text = sR.ReadToEnd();
-                    sR.Close();
-                    Seguridad vSeguridad = new Seguridad();
-                    StringReader stringReader = new StringReader(vSeguridad.DecryptString(MainWindow.nombreApp, text));
-                    XmlReader xmlReader = XmlReader.Create(stringReader);
-
-                    object ob = System.Windows.Markup.XamlReader.Load(xmlReader);
-                    var item = ob as UIElement;
-                    if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
+                    try
                     {
-                        Fondo.Background = ((Grid)item).Background;
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("Borde"))
-                    {
-                        Principal.Children.Remove(Borde);
-                        NameScope.GetNameScope(this).UnregisterName(Borde.Name);
-
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno"))
-                    {
-                        Principal.Children.Remove(NumeroTurno);
-                        NameScope.GetNameScope(this).UnregisterName(NumeroTurno.Name);
-                        ((Label)item).Content = NumeroTurno.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipo"))
-                    {
-                        Principal.Children.Remove(NumeroEquipo);
-                        NameScope.GetNameScope(this).UnregisterName(NumeroEquipo.Name);
-                        ((Label)item).Content = NumeroEquipo.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipo"))
-                    {
-                        Principal.Children.Remove(NombreEquipo);
-                        NameScope.GetNameScope(this).UnregisterName(NombreEquipo.Name);
-                        ((Label)item).Content = NombreEquipo.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt"))
-                    {
-                        Principal.Children.Remove(NumeroTurnoAnt);
-                        NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
-                        ((Label)item).Content = NumeroTurnoAnt.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt"))
-                    {
-                        Principal.Children.Remove(NumeroEquipoAnt);
-                        NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
-                        ((Label)item).Content = NumeroEquipoAnt.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
-                    {
-                        Principal.Children.Remove(NombreEquipoAnt);
-                        NameScope.GetNameScope(this).UnregisterName(NombreEquipoAnt.Name);
-                        ((Label)item).Content = NombreEquipoAnt.Content;
-                        NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                        Principal.Children.Add(item);
-                    }
-                    else
-                    {
-                        try
+                        StreamReader sR = new StreamReader(@file.FullName);
+                        string text = sR.ReadToEnd();
+                        sR.Close();
+                        Seguridad vSeguridad = new Seguridad();
+                        StringReader stringReader = new StringReader(vSeguridad.DecryptString(MainWindow.nombreApp, text));
+                        XmlReader xmlReader = XmlReader.Create(stringReader);
+                        object ob = System.Windows.Markup.XamlReader.Load(xmlReader);
+                        var item = ob as UIElement;
+                        if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
                         {
+                            Fondo.Background = ((Grid)item).Background;
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("Borde"))
+                        {
+                            Principal.Children.Remove(Borde);
+                            NameScope.GetNameScope(this).UnregisterName(Borde.Name);
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
-                        catch (Exception) { }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno"))
+                        {
+                            Principal.Children.Remove(NumeroTurno);
+                            NameScope.GetNameScope(this).UnregisterName(NumeroTurno.Name);
+                            ((Label)item).Content = NumeroTurno.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipo"))
+                        {
+                            Principal.Children.Remove(NumeroEquipo);
+                            NameScope.GetNameScope(this).UnregisterName(NumeroEquipo.Name);
+                            ((Label)item).Content = NumeroEquipo.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipo"))
+                        {
+                            Principal.Children.Remove(NombreEquipo);
+                            NameScope.GetNameScope(this).UnregisterName(NombreEquipo.Name);
+                            ((Label)item).Content = NombreEquipo.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt"))
+                        {
+                            Principal.Children.Remove(NumeroTurnoAnt);
+                            NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
+                            ((Label)item).Content = NumeroTurnoAnt.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt"))
+                        {
+                            Principal.Children.Remove(NumeroEquipoAnt);
+                            NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
+                            ((Label)item).Content = NumeroEquipoAnt.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
+                        {
+                            Principal.Children.Remove(NombreEquipoAnt);
+                            NameScope.GetNameScope(this).UnregisterName(NombreEquipoAnt.Name);
+                            ((Label)item).Content = NombreEquipoAnt.Content;
+                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                            Principal.Children.Add(item);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
+                                Principal.Children.Add(item);
+                            }
+                            catch (Exception) { }
+                        }
                     }
+                    catch (Exception) { }
                 }
             }
             catch (Exception) { }

@@ -296,7 +296,7 @@ namespace Precios_Turnos
             {
                 IP.IsEnabled = true;
                 string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
-                if (ip.Length > 0)
+                if (ip.Length == 4)
                 {
                     IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
                 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.WebView2.Wpf;
+﻿using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,9 @@ using System.Configuration;
 using System.Data;
 using System.Data.Odbc;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -22,7 +25,6 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Linq;
@@ -345,6 +347,150 @@ namespace Precios_Turnos
             }
         }
 
+        private void ImportarDiseno_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Archivos de diseño  (.zip)|*.zip";
+            bool? checarOK = openFileDialog.ShowDialog();
+            if (checarOK == true)
+            {
+
+                List<string> objEliminar = new List<string>();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                dialog.lblNombre.Content = "¡Advertencia!";
+                dialog.lblTexto.Text = "Se reemplazará el diseño actual, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                if (dialog.ShowDialog() == true)
+                {
+                    try
+                    {
+                        foreach (var itemObjets in Principal.Children)
+                        {
+                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                            if (SeModificaControl(nombreControl))
+                            {
+                                objEliminar.Add(nombreControl);
+                            }
+                            else if (nombreControl.Equals("Fondo"))
+                            {
+                                Fondo.Background = new SolidColorBrush(Colors.White);
+                            }
+                        }
+
+                        foreach (string ob in objEliminar)
+                        {
+                            BorarObjeto(ob, false);
+                        }
+                    
+
+                    using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
+                    {
+                        if (Directory.Exists(@".\objetos"))
+                            Directory.Delete(@".\objetos", true);
+
+                        if (Directory.Exists(@".\objetosTurno"))
+                            Directory.Delete(@".\objetosTurno", true);
+
+                        if (Directory.Exists(@".\multimedia"))
+                            Directory.Delete(@".\multimedia", true);
+
+                        if (File.Exists(@"./Principal.png"))
+                            File.Delete(@"./Principal.png");
+
+                        archive.ExtractToDirectory(@".\");
+                    }
+                        CargarControles();
+                        LimpiarVistaPrevia();
+                        CargarVistaPrevia();
+                    }
+                    catch (Exception ex)
+                    {
+                        Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                        dialog2.lblNombre.Content = "¡Error!";
+                        dialog2.lblTexto.Text = "Error al importar el diseño: \n" + ex.Message; ;
+                        dialog2.ShowDialog();
+                    }
+                }
+            }
+        }
+        private void ExportarDiseno_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.FileName = "Dieseño (" + MaxWidth + "x" + MaxHeight + ")"; // Default file name
+                dlg.DefaultExt = ".zip"; // Default file extension
+                dlg.Filter = "Archivos de diseño  (.zip)|*.zip"; // Filter files by extension
+
+                // Show save file dialog box
+                Nullable<bool> result = dlg.ShowDialog();
+
+                // Process save file dialog box results
+                if (result == true)
+                {
+
+                    Directory.CreateDirectory(@".\temp\objetos");
+                    Directory.CreateDirectory(@".\temp\objetosTurno");
+                    Directory.CreateDirectory(@".\multimedia");
+
+                    CopyDirectory(@".\objetos", @".\temp\objetos", true);
+                    CopyDirectory(@".\objetosTurno", @".\temp\objetosTurno", true);
+                    CopyDirectory(@".\multimedia", @".\temp\multimedia", true);
+
+                    FileInfo fi = new FileInfo(@"./Principal.png");
+                    fi.CopyTo(@".\temp\Principal.png", true);
+
+                    if (File.Exists(dlg.FileName))
+                        File.Delete(dlg.FileName);
+
+
+                    ZipFile.CreateFromDirectory(@".\temp", dlg.FileName, CompressionLevel.Fastest, false);
+
+                    if (Directory.Exists(@".\temp"))
+                        Directory.Delete(@".\temp", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error al exportar el diseño: \n" + ex.Message; ;
+                dialog.ShowDialog();
+            }
+        }
+
+        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+            // Cache directories before we start copying
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath);
+            }
+
+            // If recursive and copying subdirectories, recursively call this method
+            if (recursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, true);
+                }
+            }
+        }
+
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
 
@@ -543,10 +689,11 @@ namespace Precios_Turnos
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(@"./Principal.png", UriKind.Relative);
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.UriSource = new Uri(@"./Principal.png", UriKind.RelativeOrAbsolute);
                 image.EndInit();
                 myBrush.ImageSource = image;
-
+                myBrush.Stretch = Stretch.Fill;
                 VistaPrevia.Background = myBrush;
             }
             catch (Exception) { VistaPrevia.Background = null; }
@@ -631,6 +778,7 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(dialog.ContenidoText);
                     bitmapImage.EndInit();
 
@@ -648,6 +796,7 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(dialog.ContenidoText);
                     bitmapImage.EndInit();
 
@@ -663,7 +812,7 @@ namespace Precios_Turnos
                     Principal.Children.Add(obj);
 
                 }
-                
+
             }
         }
 
@@ -686,6 +835,7 @@ namespace Precios_Turnos
 
             dialog.lblTexto.Content = "Abrir";
             dialog.Titulo.Content = "Agregar web";
+            dialog.ContenidoText = "https://www.google.com.mx/";
             dialog.btnAbrir.Visibility = Visibility.Hidden;
             if (dialog.ShowDialog() == true)
             {
@@ -698,7 +848,7 @@ namespace Precios_Turnos
                     obj.Source = new Uri(dialog.ContenidoText);
                 }
                 catch { }
-                
+
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.MaxHeight = MaxHeight;
@@ -706,7 +856,6 @@ namespace Precios_Turnos
                 obj.Height = 600;
                 obj.Width = 400;
                 obj.Tag = "";
-
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
 
@@ -829,7 +978,7 @@ namespace Precios_Turnos
 
                     string extension = System.IO.Path.GetExtension(((MediaElement)item).Source.ToString()).Replace(".", "").ToLower();
                     if (extension.Equals("wav") || extension.Equals("mp3"))
-                    { 
+                    {
                         propiedadesMultimedia.chkRelacion.IsEnabled = false;
                         propiedadesMultimedia.Alto.IsEnabled = false;
                         propiedadesMultimedia.Ancho.IsEnabled = false;
@@ -849,7 +998,7 @@ namespace Precios_Turnos
                     propiedadesMultimedia.Alto.Text = Convert.ToInt32(((MediaElement)item).ActualHeight).ToString();
                     propiedadesMultimedia.Ancho.Text = Convert.ToInt32(((MediaElement)item).ActualWidth).ToString();
                     propiedadesMultimedia.Opacidad.Value = item.Opacity;
-                    
+
                     propiedadesMultimedia.chkSonido.IsChecked = ((MediaElement)item).Volume == 1 ? true : false;
 
                     Point pointMediaElement = item.TransformToAncestor(this).Transform(new Point(0, 0));
@@ -897,7 +1046,7 @@ namespace Precios_Turnos
                         propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
                     }
                     catch { }
-                    
+
                     propiedadesWebView2.Alto.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
                     propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
 
@@ -1169,8 +1318,8 @@ namespace Precios_Turnos
             bool tieneCampoOrganizar = false;
             if (pNombreIndex.Length > 0)
             {
-                    index = dt.Columns.IndexOf(pNombreIndex);
-                    tieneCampoOrganizar = true;
+                index = dt.Columns.IndexOf(pNombreIndex);
+                tieneCampoOrganizar = true;
             }
             List<DataTable> ListTablas = new List<DataTable>();
             int x = 1;
@@ -1588,64 +1737,65 @@ namespace Precios_Turnos
                 DirectoryInfo info = new DirectoryInfo(@"objetos\");
                 foreach (var file in info.GetFiles())
                 {
-
-                    StreamReader sR = new StreamReader(@file.FullName);
-                    string text = sR.ReadToEnd();
-                    sR.Close();
-                    Seguridad vSeguridad = new Seguridad();
-                    StringReader stringReader = new StringReader(vSeguridad.DecryptString(nombreApp, text));
-                    XmlReader xmlReader = XmlReader.Create(stringReader);
-
-                    object ob = System.Windows.Markup.XamlReader.Load(xmlReader);
-                    var item = ob as UIElement;
-                    if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
+                    try
                     {
-                        Fondo.Background = ((Grid)item).Background;
-                    }
-                    else
-                    {
-                        try
+                        StreamReader sR = new StreamReader(@file.FullName);
+                        string text = sR.ReadToEnd();
+                        sR.Close();
+                        Seguridad vSeguridad = new Seguridad();
+                        StringReader stringReader = new StringReader(vSeguridad.DecryptString(nombreApp, text));
+                        XmlReader xmlReader = XmlReader.Create(stringReader);
+
+
+                        object ob = System.Windows.Markup.XamlReader.Load(xmlReader);
+                        var item = ob as UIElement;
+
+                        if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
+                        {
+                            Fondo.Background = ((Grid)item).Background;
+                        }
+                        else
                         {
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
-                        }
-                        catch (Exception) { }
 
-                        switch (item.GetType().Name.ToString())
-                        {
-                            case "DataGrid":
-                                string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
-                                DataGrid control = (DataGrid)FindName(item.GetValue(NameProperty).ToString());
-                                if (datos[2].Equals("V"))
-                                {
-                                    control.CellStyle = new Style(typeof(DataGridCell))
+                            switch (item.GetType().Name.ToString())
+                            {
+                                case "DataGrid":
+                                    string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                                    DataGrid control = (DataGrid)FindName(item.GetValue(NameProperty).ToString());
+                                    if (datos[2].Equals("V"))
                                     {
-                                        Setters = {
+                                        control.CellStyle = new Style(typeof(DataGridCell))
+                                        {
+                                            Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
                     }
-                                    };
-                                }
-                                else
-                                {
-                                    control.CellStyle = new Style(typeof(DataGridCell))
+                                        };
+                                    }
+                                    else
                                     {
-                                        Setters = {
+                                        control.CellStyle = new Style(typeof(DataGridCell))
+                                        {
+                                            Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
                     }
-                                    };
-                                }
-                                List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
-                                if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
-                                    control.ItemsSource = list[0].DefaultView;
-                                //control.UpdateLayout();
-                                ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
-                                break;
-                            case "MediaElement":
-                                MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
-                                media.MediaEnded += MediaElement_MediaEnded;
-                                break;
+                                        };
+                                    }
+                                    List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
+                                    if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
+                                        control.ItemsSource = list[0].DefaultView;
+                                    //control.UpdateLayout();
+                                    ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
+                                    break;
+                                case "MediaElement":
+                                    MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
+                                    media.MediaEnded += MediaElement_MediaEnded;
+                                    break;
+                            }
                         }
                     }
+                    catch (Exception) { }
                 }
             }
             catch (Exception) { }
@@ -1654,7 +1804,7 @@ namespace Precios_Turnos
         public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false)
         {
             string[] datos = pTag.Split('|');
-            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre); 
+            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
             try
             {
                 Seguridad vSeguridad = new Seguridad();
@@ -1680,7 +1830,7 @@ namespace Precios_Turnos
                         if (datosC.Length > 1)
                             nombreIndex = datosC[1];
 
-                          OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+                        OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
 
                         connection.Open();
                         OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
@@ -1689,7 +1839,7 @@ namespace Precios_Turnos
                         {
                             DataTable dt = new DataTable();
                             dt.Load(MyDataReader);
-                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre,nombreIndex);
+                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
 
                         }
                         connection.Close();
