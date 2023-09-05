@@ -350,7 +350,7 @@ namespace Precios_Turnos
         private void ImportarDiseno_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Archivos de diseño  (.zip)|*.zip";
+            openFileDialog.Filter = "Archivos de diseño  (.3kzip)|*.3kzip";
             bool? checarOK = openFileDialog.ShowDialog();
             if (checarOK == true)
             {
@@ -412,6 +412,7 @@ namespace Precios_Turnos
                 }
             }
         }
+        
         private void ExportarDiseno_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -419,7 +420,7 @@ namespace Precios_Turnos
                 SaveFileDialog dlg = new SaveFileDialog();
                 dlg.FileName = "Dieseño (" + MaxWidth + "x" + MaxHeight + ")"; // Default file name
                 dlg.DefaultExt = ".zip"; // Default file extension
-                dlg.Filter = "Archivos de diseño  (.zip)|*.zip"; // Filter files by extension
+                dlg.Filter = "Archivos de diseño  (.3kzip)|*.3kzip"; // Filter files by extension
 
                 // Show save file dialog box
                 Nullable<bool> result = dlg.ShowDialog();
