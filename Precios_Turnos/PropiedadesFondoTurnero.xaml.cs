@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -94,12 +95,38 @@ namespace Precios_Turnos
             // Get the selected file name and display in a TextBox 
             if (result == true)
             {
+                FileInfo fi = new FileInfo(dlg.FileName);
+                try
+                {
+                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
+                    if (File.Exists(@".\objetosTurno\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    {
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        dialogMsg.lblNombre.Content = "¡Advertencia!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        if (dialogMsg.ShowDialog() == true)
+                        {
+                            fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                        }
+                    }
+                    else
+                        fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                }
+                catch
+                {
+                }
+                FileInfo Img = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                 // Open document 
-                ContenidoTextBox.Text = dlg.FileName;
+                ContenidoTextBox.Text = Img.FullName;
                 btnColorFondo.Fill = new SolidColorBrush(Colors.White);
                 ImageBrush myBrush = new ImageBrush();
-                myBrush.ImageSource =
-                    new BitmapImage(new Uri(dlg.FileName));
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(@Img.FullName, UriKind.Relative);
+                image.EndInit();
+                myBrush.ImageSource = image;
                 mainWindow.Fondo.Background = myBrush;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;

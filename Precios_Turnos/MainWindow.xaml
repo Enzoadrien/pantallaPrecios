@@ -12,7 +12,7 @@
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video/audio" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web (experimental)" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -33,15 +33,19 @@
         <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000">
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
-                <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
-                <Separator />
-                <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
                 <Separator />
                 <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="EditarDisenoTurnero" Header="Editar diseño turnero" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
+                <Separator />
                 <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
+            </MenuItem>
+            <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="100">
+                <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
+                <Separator />
+                <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
             </MenuItem>
         </Menu>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>

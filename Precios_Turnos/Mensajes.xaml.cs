@@ -55,6 +55,11 @@ namespace Precios_Turnos
                 DialogResult = false;
                 Close();
             }
+            else if(e.Key == Key.Enter)
+            {
+                DialogResult = true;
+                Close();
+            }
         }
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {

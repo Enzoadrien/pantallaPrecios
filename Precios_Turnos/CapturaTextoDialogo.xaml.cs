@@ -103,8 +103,9 @@ namespace Precios_Turnos
             // Get the selected file name and display in a TextBox 
             if (result == true)
             {
-                // Open document 
+                // Open document
                 ContenidoTextBox.Text = dlg.FileName;
+
             }
 
         }

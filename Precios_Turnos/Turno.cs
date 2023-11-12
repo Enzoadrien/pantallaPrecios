@@ -14,8 +14,7 @@ namespace Precios_Turnos
         private static string CodEquipo = "C";
         private string NumEquipo;
         private int NumTurno;
-        private string NumEquipoAnt;
-        private int NumTurnoAnt;
+        private List<string> TurnosAnt;
 
         internal string GetCodTurnero()
         {
@@ -59,23 +58,16 @@ namespace Precios_Turnos
             return NumTurno;
         }
 
-        internal void SetNumEquipoAnt(string pvStrNumEquipoAnt)
+        internal void SetTurnosAnt(string pvStrTurnosAnt)
         {
-            NumEquipoAnt = pvStrNumEquipoAnt;
+            TurnosAnt.Add(pvStrTurnosAnt);
         }
-        internal string GetNumEquipoAnt()
+        internal List<string> GetTurnosAnt()
         {
-            return NumEquipoAnt;
+            return TurnosAnt;
         }
 
-        internal void SetNumTurnoAnt(int pvIntNumTurnoAnt)
-        {
-            NumTurnoAnt = pvIntNumTurnoAnt;
-        }
-        internal int GetNumTurnoAnt()
-        {
-            return NumTurnoAnt;
-        }
+
 
     }
 }

@@ -8,9 +8,12 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Data.Odbc;
+using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
@@ -48,7 +51,8 @@ namespace Precios_Turnos
         private bool estaSaliendo = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
-        private string controlClickName;
+        private string? controlClickName;
+        Dictionary<long, Dictionary<bool, string>> listaTurnos = new Dictionary<long, Dictionary<bool, string>>();
         public MainWindow()
         {
             InitializeComponent();
@@ -68,6 +72,16 @@ namespace Precios_Turnos
                 }
             }
             catch (Exception) { }
+        }
+
+        private void CenterWindowOnScreen()
+        {
+            double screenWidth = System.Windows.SystemParameters.VirtualScreenWidth;
+            double screenHeight = System.Windows.SystemParameters.VirtualScreenHeight;
+            double windowWidth = this.Width;
+            double windowHeight = this.Height;
+            this.Left = (screenWidth / 2) - (windowWidth / 2);
+            this.Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
         private bool ValidarActivar()
@@ -127,7 +141,10 @@ namespace Precios_Turnos
                                     {
                                         Conexion.IsEnabled = true;
                                         Turnero.IsEnabled = true;
+                                        ImportarDiseno.IsEnabled = true;
+                                        ExportarDiseno.IsEnabled = true;
                                         EditarDiseno.IsEnabled = true;
+                                        EditarDisenoTurnero.IsEnabled = true;
                                         return true;
                                     }
                                     dialog.lblTexto.Text = "La licencia ha caducado.";
@@ -137,7 +154,10 @@ namespace Precios_Turnos
                                 {
                                     Conexion.IsEnabled = true;
                                     Turnero.IsEnabled = true;
+                                    ImportarDiseno.IsEnabled = true;
+                                    ExportarDiseno.IsEnabled = true;
                                     EditarDiseno.IsEnabled = true;
+                                    EditarDisenoTurnero.IsEnabled = true;
                                     return true;
                                 }
                             }
@@ -158,7 +178,10 @@ namespace Precios_Turnos
 
             Conexion.IsEnabled = false;
             Turnero.IsEnabled = false;
+            ImportarDiseno.IsEnabled = false;
+            ExportarDiseno.IsEnabled = false;
             EditarDiseno.IsEnabled = false;
+            EditarDisenoTurnero.IsEnabled = false;
             ResizeMode = ResizeMode.NoResize;
 
             return false;
@@ -190,7 +213,7 @@ namespace Precios_Turnos
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 activarTurnero = config.AppSettings.Settings["Turnero"].Value.Equals("true") ? true : false;
-                Task.Run(() => EscuhcarTurnos());
+                EscuhcarTurnos();
 
             }
 
@@ -222,7 +245,9 @@ namespace Precios_Turnos
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
                 Principal.IsHitTestVisible = true;
-                WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                CenterWindowOnScreen();
+
+
                 if (esAplicacion)
                 {
                     QuitarAnimaciones();
@@ -233,7 +258,7 @@ namespace Precios_Turnos
             }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private async void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && maximizado && !estaSaliendo)
             {
@@ -241,82 +266,141 @@ namespace Precios_Turnos
                 SalirMaximizar();
                 estaSaliendo = false;
             }
-            else if ((e.Key == Key.Right || e.Key == Key.Left || e.Key == Key.Down) && maximizado)
-            {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings["TeclasDemo"].Value.Equals("true"))
-                {
-                    if (e.Key == Key.Down)
-                        ProcesarTurnoTeclado(true, true);
-                    else
-                        ProcesarTurnoTeclado(e.Key == Key.Right);
-                }
-
-            }
+            else if (maximizado)
+                await Task.Run(() => ProcesarTecla(e));
         }
 
-        private void ProcesarTurnoTeclado(bool siguiente, bool setearUno = false)
+        private void ProcesarTecla(KeyEventArgs e)
         {
-            if (setearUno)
-            {
-                new Recursos().MostrarTurno(1, "PC", 0, string.Empty);
-                new Recursos().GuardarNumeroTurno(1);
-                new Recursos().GuardarTurnoAnt(1, "PC");
-            }
-            else
-            {
-                int turno = new Recursos().CargarNumeroTurno();
-                string equipo = "PC";
-                int turnoAnt = 0;
-                string equipoAnt = string.Empty;
 
-                while (true)
+            try
+            {
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    try
+                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    if (config.AppSettings.Settings["TeclasDemo"].Value.Equals("true"))
                     {
-                        using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                        switch (e.Key)
                         {
-                            var sr = new StreamReader(stream);
-
-                            string line;
-                            while ((line = sr.ReadLine()) != null)
-                            {
-                                string[] turnoAntArray = line.Split('|');
-                                if (turnoAntArray.Length == 2)
+                            case Key.Left:
+                                listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
+                                //ProcesarTurnoTeclado(false, "00");
+                                break;
+                            case Key.Right:
+                                listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
+                                //ProcesarTurnoTeclado(true, "00");
+                                break;
+                            case Key.Down:
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                                dialog.lblNombre.Content = "¡Advertencia!";
+                                dialog.lblTexto.Text = "Se reinicia el turno al numero 1, ¿Está seguro que desea continuar?.";
+                                dialog.btnCancelar.Visibility = Visibility.Visible;
+                                new Recursos().ventanaMensajesGrande800x600(dialog);
+                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                if (dialog.ShowDialog() == true)
                                 {
-                                    turnoAnt = int.Parse(turnoAntArray[0]);
-                                    equipoAnt = turnoAntArray[1];
-                                    break;
+                                    SetearNumeroTurno(0);
+                                    File.WriteAllText(@".\turnoAnt.3k", string.Empty);
                                 }
-                                else
-                                    break;
+                                break;
+                            case Key.Up:
+                                CapturaTexto dialog2 = new CapturaTexto(this);
+                                dialog2.lblNombre.Content = "¡Seteo de turno!";
+                                new Recursos().ventanaCapturaTextoGrande800x600(dialog2);
+                                dialog2.lblNombre.FontSize = 80;
+                                dialog2.Texto.FontSize = 200;
+                                dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                if (dialog2.ShowDialog() == true)
+                                    try
+                                    {
+                                        SetearNumeroTurno(int.Parse(dialog2.Texto.Text));
+                                    }
+                                    catch (Exception)
+                                    {
+                                        Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                                        dialog3.lblNombre.Content = "¡Error!";
+                                        dialog3.lblTexto.Text = "No se pudo setear el turno, el valor introducido no es correcto. ¡Intente nuevamente!";
+                                        new Recursos().ventanaMensajesGrande800x600(dialog3);
+                                        dialog3.ShowDialog();
+                                    }
+                                break;
 
-                            }
-                            stream.Close();
-                            break;
+                            default:
+                                if (new Recursos().NumericKeys.ContainsKey(e.Key))
+                                    listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
+                                //await Task.Run(() => ProcesarTurnoTeclado(true, "0" + new Recursos().NumericKeys[e.Key]));
+                                break;
                         }
                     }
-                    catch
-                    {
-                    }
-                }
-                if (turno >= 0)
+                }));
+            }
+            catch (Exception) { }
+        }
+
+        public void SetearNumeroTurno(int numeroTurno)
+        {
+            new Recursos().GuardarNumeroTurno(numeroTurno);
+        }
+
+        private void ProcesarTurno(bool siguiente, string pvSrtrEquipo)
+        {
+            int turno = new Recursos().CargarNumeroTurno();
+            string equipo = pvSrtrEquipo;
+            List<string>? turnosAnteriores = new List<string>();
+
+            while (true)
+            {
+                try
                 {
-                    if (siguiente)
-                        ++turno;
-                    else
+                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
                     {
-                        if (turno > 1)
-                            --turno;
+                        var sr = new StreamReader(stream);
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            turnosAnteriores.Add(line);
+                        }
+                        stream.Close();
+                        break;
                     }
-
                 }
-
-                new Recursos().MostrarTurno(turno, equipo, turnoAnt, equipoAnt);
-                new Recursos().GuardarNumeroTurno(turno);
-                new Recursos().GuardarTurnoAnt(turno, equipo);
+                catch
+                {
+                }
+            }
+            if (turno >= 0)
+            {
+                if (siguiente)
+                    ++turno;
+                else
+                {
+                    if (turno > 1)
+                        --turno;
+                }
             }
 
+            new Recursos().GuardarNumeroTurno(turno);
+            new Recursos().GuardarTurnoAnt(turno, equipo);
+            new Recursos().MostrarTurno(turno, equipo, turnosAnteriores, this);
+        }
+
+        private void ProcesarListadoTurnos()
+        {
+            while (animaciones)
+            {
+                try
+                {
+                    if (!MostrarTurno.estaAbierto)
+                    {
+
+                        var first = listaTurnos.First();
+                        ProcesarTurno(first.Value.First().Key, first.Value.First().Value);
+                        listaTurnos.Remove(first.Key);
+                    }
+
+                }
+                catch (Exception) { }
+            }
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -380,24 +464,21 @@ namespace Precios_Turnos
                         {
                             BorarObjeto(ob, false);
                         }
-                    
 
-                    using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
-                    {
-                        if (Directory.Exists(@".\objetos"))
-                            Directory.Delete(@".\objetos", true);
 
-                        if (Directory.Exists(@".\objetosTurno"))
-                            Directory.Delete(@".\objetosTurno", true);
+                        using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
+                        {
+                            if (Directory.Exists(@".\objetos"))
+                                Directory.Delete(@".\objetos", true);
 
-                        if (Directory.Exists(@".\multimedia"))
-                            Directory.Delete(@".\multimedia", true);
+                            if (Directory.Exists(@".\objetosTurno"))
+                                Directory.Delete(@".\objetosTurno", true);
 
-                        if (File.Exists(@"./Principal.png"))
-                            File.Delete(@"./Principal.png");
+                            if (File.Exists(@"./Principal.png"))
+                                File.Delete(@"./Principal.png");
 
-                        archive.ExtractToDirectory(@".\");
-                    }
+                            archive.ExtractToDirectory(@".\");
+                        }
                         CargarControles();
                         LimpiarVistaPrevia();
                         CargarVistaPrevia();
@@ -412,13 +493,13 @@ namespace Precios_Turnos
                 }
             }
         }
-        
+
         private void ExportarDiseno_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 SaveFileDialog dlg = new SaveFileDialog();
-                dlg.FileName = "Dieseño (" + MaxWidth + "x" + MaxHeight + ")"; // Default file name
+                dlg.FileName = "Diseño 3K (" + MaxWidth + "x" + MaxHeight + ")"; // Default file name
                 dlg.DefaultExt = ".zip"; // Default file extension
                 dlg.Filter = "Archivos de diseño  (.3kzip)|*.3kzip"; // Filter files by extension
 
@@ -431,11 +512,9 @@ namespace Precios_Turnos
 
                     Directory.CreateDirectory(@".\temp\objetos");
                     Directory.CreateDirectory(@".\temp\objetosTurno");
-                    Directory.CreateDirectory(@".\multimedia");
 
                     CopyDirectory(@".\objetos", @".\temp\objetos", true);
                     CopyDirectory(@".\objetosTurno", @".\temp\objetosTurno", true);
-                    CopyDirectory(@".\multimedia", @".\temp\multimedia", true);
 
                     FileInfo fi = new FileInfo(@"./Principal.png");
                     fi.CopyTo(@".\temp\Principal.png", true);
@@ -456,6 +535,8 @@ namespace Precios_Turnos
                 dialog.lblNombre.Content = "¡Error!";
                 dialog.lblTexto.Text = "Error al exportar el diseño: \n" + ex.Message; ;
                 dialog.ShowDialog();
+                if (Directory.Exists(@".\temp"))
+                    Directory.Delete(@".\temp", true);
             }
         }
 
@@ -503,7 +584,6 @@ namespace Precios_Turnos
                     {
                         var container = VisualTreeHelper.GetParent(item) as UIElement;
                         _positionInBlock = e.GetPosition(container);
-
                         _currentTT = item.RenderTransform as TranslateTransform;
                         item.CaptureMouse();
                     }
@@ -763,13 +843,73 @@ namespace Precios_Turnos
             dialog.ContenidoTextBox.IsEnabled = false;
             if (dialog.ShowDialog() == true)
             {
-                string extension = System.IO.Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
+                string extension = Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
+
+                FileInfo fi = new FileInfo(dialog.ContenidoText);
+                try
+                {
+                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
+                    if (File.Exists(@".\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    {
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        dialogMsg.lblNombre.Content = "¡Advertencia!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        if (dialogMsg.ShowDialog() == true)
+                        {
+                            fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                            foreach (var itemObjets in Principal.Children)
+                            {
+                                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo"))
+                                {
+                                    switch (itemObjets.GetType().Name.ToString())
+                                    {
+                                        case "Image":
+                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.LocalPath.Equals(fileImg.FullName))
+                                            {
+                                                BitmapImage bitmapImage = new BitmapImage();
+                                                bitmapImage.BeginInit();
+                                                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                                bitmapImage.UriSource = new Uri(fileImg.FullName);
+                                                bitmapImage.EndInit();
+
+                                                ((Image)itemObjets).Source = bitmapImage;
+                                            }
+                                            break;
+                                        case "MediaElement":
+                                            if (((MediaElement)itemObjets).Source.LocalPath.Equals(fileImg.FullName))
+                                            {
+                                                Application.Current.Dispatcher.Invoke(new Action(async () =>
+                                                {
+                                                    ((MediaElement)itemObjets).Source = null;
+                                                    await Task.Delay(100);
+                                                    ((MediaElement)itemObjets).Source = new Uri(fileImg.FullName);
+                                                }));
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                        fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                }
+                catch
+                {
+                }
+
                 if (extension.Equals("gif"))
                 {
+                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
+
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(dialog.ContenidoText);
+                    obj.Source = new Uri(fileImg.FullName);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -779,8 +919,9 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.UriSource = new Uri(fileImg.FullName);
                     bitmapImage.EndInit();
 
                     obj.Height = bitmapImage.Height;
@@ -797,8 +938,10 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
+                    bitmapImage.UriSource = new Uri(fileImg.FullName);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -813,7 +956,6 @@ namespace Precios_Turnos
                     Principal.Children.Add(obj);
 
                 }
-
             }
         }
 
@@ -1152,6 +1294,7 @@ namespace Precios_Turnos
             if (seBorra || !pMuestraMensaje)
             {
                 var item = FindName(pNombre) as UIElement;
+
                 Principal.Children.Remove(item);
                 NameScope.GetNameScope(this).UnregisterName(pNombre);
 
@@ -1183,6 +1326,19 @@ namespace Precios_Turnos
                     {
                         if (file.Name.Equals(pNombre + ".sql"))
                             File.Delete(file.FullName);
+                    }
+
+
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "Image":
+                            File.Delete(new Uri(((Image)item).Source.ToString()).AbsolutePath);
+                            break;
+                        case "MediaElement":
+                            File.Delete(new Uri(((MediaElement)item).Source.ToString()).AbsolutePath);
+                            break;
+                        default:
+                            break;
                     }
                 }
 
@@ -1242,11 +1398,59 @@ namespace Precios_Turnos
             dialog.esVideo = true;
             if (dialog.ShowDialog() == true)
             {
+                string extension = Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
+
+                FileInfo fi = new FileInfo(dialog.ContenidoText);
+                try
+                {
+                    FileInfo fileVid = new FileInfo(@".\objetos\multimedia\" + fi.Name);
+                    if (File.Exists(@".\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileVid.FullName))
+                    {
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        dialogMsg.lblNombre.Content = "¡Advertencia!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        if (dialogMsg.ShowDialog() == true)
+                        {
+                            fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                            foreach (var itemObjets in Principal.Children)
+                            {
+                                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo"))
+                                {
+                                    switch (itemObjets.GetType().Name.ToString())
+                                    {
+
+                                        case "MediaElement":
+                                            if (((MediaElement)itemObjets).Source.LocalPath.Equals(fileVid.FullName))
+                                            {
+                                                Application.Current.Dispatcher.Invoke(new Action(async () =>
+                                                {
+                                                    ((MediaElement)itemObjets).Stop();
+                                                    ((MediaElement)itemObjets).Source = null;
+                                                    await Task.Delay(100);
+                                                    ((MediaElement)itemObjets).Source = new Uri(fileVid.FullName);
+                                                }));
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                        fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                }
+                catch
+                {
+                }
+                FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
 
                 MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new Uri(dialog.ContenidoText);
+                obj.Source = new Uri(fileImg.FullName);
                 obj.LoadedBehavior = MediaState.Play;
                 obj.MediaEnded += MediaElement_MediaEnded;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
@@ -1256,8 +1460,10 @@ namespace Precios_Turnos
                 obj.MaxWidth = MaxHeight;
                 obj.Volume = 1;
                 obj.Tag = "";
+
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
+
             }
         }
 
@@ -1964,14 +2170,14 @@ namespace Precios_Turnos
             catch { }
         }
 
-        private async Task iniciarComportamientoTabla(string pNombre, string pTag)
+        private void iniciarComportamientoTabla(string pNombre, string pTag)
         {
-            string[] datos = pTag.Split('|');
-            int x = 0;
-            int tamano;
-            while (animaciones && maximizado && !editar)
+            try
             {
-                try
+                string[] datos = pTag.Split('|');
+                int x = 0;
+                int tamano;
+                while (animaciones && maximizado && !editar)
                 {
                     List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag);
                     tamano = LisTablas.Count;
@@ -1984,119 +2190,127 @@ namespace Precios_Turnos
                     }
                     Task.Delay(int.Parse(datos[3]) * 1000).Wait();
                 }
-                catch (Exception) { }
+
             }
+            catch { }
         }
 
         private async Task iniciarVideoFullScream(string pNombre, string pTag)
         {
-            string[] datos = pTag.Split('|');
-            if (datos.Length > 2)
-                while (animaciones && maximizado && !editar)
-                {
-                    try
+            try
+            {
+                string[] datos = pTag.Split('|');
+                if (datos.Length > 2)
+                    while (animaciones && maximizado && !editar)
                     {
                         Task.Delay(int.Parse(datos[2]) * 1000).Wait();
                         if (animaciones && maximizado && !editar)
                         {
                             int duracion = await Task.Run(() => MostrarVideoFullScream(pNombre, pTag));
                             Task.Delay(duracion).Wait();
-                            await Task.Run(() => EliminarVideoFullScream(pNombre, pTag));
+                            await Task.Run(() => EliminarVideoFullScream(pNombre));
                         }
-
                     }
-                    catch (Exception) { }
-                }
+            }
+            catch { }
         }
 
-        private async Task ComportamientoObjetos()
+        private void ComportamientoObjetos()
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                foreach (var itemObjets in Principal.Children)
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    switch (itemObjets.GetType().Name.ToString())
+                    foreach (var itemObjets in Principal.Children)
                     {
-                        case "DataGrid":
-                            string nombreGrid = ((DataGrid)itemObjets).Name;
-                            string tagGrid = ((DataGrid)itemObjets).Tag.ToString();
-                            Task.Run(() => iniciarComportamientoTabla(nombreGrid, tagGrid));
-                            break;
-                        case "MediaElement":
-                            string nombreVideo = ((MediaElement)itemObjets).Name;
-                            string tagVideo = ((MediaElement)itemObjets).Tag.ToString();
-                            if (tagVideo.Length > 0)
-                                Task.Run(() => iniciarVideoFullScream(nombreVideo, tagVideo));
-                            break;
-                        default:
-                            break;
+                        switch (itemObjets.GetType().Name.ToString())
+                        {
+                            case "DataGrid":
+                                string nombreGrid = ((DataGrid)itemObjets).Name;
+                                string tagGrid = ((DataGrid)itemObjets).Tag.ToString();
+                                Task.Run(() => iniciarComportamientoTabla(nombreGrid, tagGrid));
+                                break;
+                            case "MediaElement":
+                                string nombreVideo = ((MediaElement)itemObjets).Name;
+                                string tagVideo = ((MediaElement)itemObjets).Tag.ToString();
+                                if (tagVideo.Length > 0)
+                                    Task.Run(() => iniciarVideoFullScream(nombreVideo, tagVideo));
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
-            }));
+                    Focus();
+                }));
+            }
+            catch { }
         }
 
-        private async Task EscuhcarTurnos()
+        private void EscuhcarTurnos()
         {
             if (activarTurnero)
             {
                 try
                 {
-                    AsynchronousSocketListener.StartListening();
+
+                    Task.Run(() => ProcesarListadoTurnos());
+                    Task.Run(() => AsynchronousSocketListener.StartListening());
                 }
-                catch (Exception) { }
+                catch { }
             }
         }
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                try
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+
+                DataGrid control = (DataGrid)FindName(pNombre);
+                if (!pLisTablas[x].Rows[0][0].ToString().Equals("Sin datos"))
+                    control.ItemsSource = pLisTablas[x].DefaultView;
+                else
+                    control.ItemsSource = null;
+
+
+                DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+
+                foreach (var file in info.GetFiles())
                 {
-                    DataGrid control = (DataGrid)FindName(pNombre);
-                    if (!pLisTablas[x].Rows[0][0].ToString().Equals("Sin datos"))
-                        control.ItemsSource = pLisTablas[x].DefaultView;
-                    else
-                        control.ItemsSource = null;
-
-
-                    DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
-
-                    foreach (var file in info.GetFiles())
+                    if (@file.Name.Equals(pNombre + ".sql"))
                     {
-                        if (@file.Name.Equals(pNombre + ".sql"))
+                        StreamReader sR = new StreamReader(@file.FullName);
+                        string lectura = sR.ReadToEnd();
+                        sR.Close();
+                        string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
+                        if (datos.Length > 2)
                         {
-                            StreamReader sR = new StreamReader(@file.FullName);
-                            string lectura = sR.ReadToEnd();
-                            sR.Close();
-                            string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
-                            if (datos.Length > 2)
-                            {
-                                Label item = (Label)FindName(datos[2]);
-                                if (item != null)
-                                    item.Content = pLisTablas[x].TableName;
-                            }
-                            break;
+                            Label item = (Label)FindName(datos[2]);
+                            if (item != null)
+                                item.Content = pLisTablas[x].TableName;
                         }
+                        break;
                     }
-                    foreach (DataGridColumn column in control.Columns)
-                        column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
-
-                    //control.UpdateLayout();
-                    ColorFuenteFondoTabla(pNombre, pTag);
                 }
-                catch (Exception) { }
+                foreach (DataGridColumn column in control.Columns)
+                    column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
 
+                ColorFuenteFondoTabla(pNombre, pTag);
             }));
+
+            }
+            catch{ }
         }
 
-        public async Task<int> MostrarVideoFullScream(string pNombre, string pTag)
+        public int MostrarVideoFullScream(string pNombre, string pTag)
         {
             int duracion = 0;
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                try
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
+
                     SilenciarVideos(true);
                     MediaElement control = (MediaElement)FindName(pNombre);
                     string[] datos = pTag.Split('|');
@@ -2105,13 +2319,13 @@ namespace Precios_Turnos
                     obj.Source = new Uri(control.Source.ToString());
                     obj.Position = control.Position;
                     obj.LoadedBehavior = MediaState.Play;
+                    obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
                     obj.Stretch = Stretch.Uniform;
                     obj.Height = this.ActualHeight;
                     obj.Volume = 1;
 
-                    duracion = Convert.ToInt32(Math.Round(control.NaturalDuration.TimeSpan.TotalMilliseconds));
                     if (int.Parse(datos[3]) != 0)
                         duracion = int.Parse(datos[3]) * 1000;
 
@@ -2125,96 +2339,108 @@ namespace Precios_Turnos
                     Video.Background = new SolidColorBrush(Colors.Black);
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Video.Children.Add(obj);
-                    //Video.UpdateLayout();
-                }
-                catch (Exception) { }
-            }));
+
+
+                }));
+            }
+            catch { }
             return duracion;
         }
 
-        public async Task EliminarVideoFullScream(string pNombre, string pTag)
+        public void EliminarVideoFullScream(string pNombre)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                try
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+
+                MediaElement control = (MediaElement)FindName(pNombre);
+                MediaElement video = (MediaElement)FindName("FullScreamVideo");
+                if (video != null)
                 {
-                    MediaElement control = (MediaElement)FindName(pNombre);
-                    MediaElement video = (MediaElement)FindName("FullScreamVideo");
-                    if (video != null)
-                    {
-                        Video.Children.Remove(video);
-                        NameScope.GetNameScope(this).UnregisterName(video.Name);
-                        Video.Background = null;
-                        //Video.UpdateLayout();
-                        SilenciarVideos(false);
-                    }
+                    if (control.Visibility == Visibility.Hidden)
+                        control.Position = video.Position;
+
+                    Video.Children.Remove(video);
+                    NameScope.GetNameScope(this).UnregisterName(video.Name);
+                    Video.Background = null;
+                    SilenciarVideos(false);
                 }
-                catch (Exception) { }
             }));
+
+            }
+            catch (Exception) { }
         }
 
         private void PausarVideos(bool pPlay)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                try
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+
+                foreach (var itemObjets in Principal.Children)
                 {
-                    foreach (var itemObjets in Principal.Children)
+                    switch (itemObjets.GetType().Name.ToString())
                     {
-                        switch (itemObjets.GetType().Name.ToString())
-                        {
-                            case "MediaElement":
-                                if (!pPlay)
-                                {
-                                    ((MediaElement)itemObjets).LoadedBehavior = MediaState.Manual;
-                                    ((MediaElement)itemObjets).Pause();
-                                }
-                                else
+                        case "MediaElement":
+                            if (!pPlay)
+                            {
+                                ((MediaElement)itemObjets).LoadedBehavior = MediaState.Manual;
+                                ((MediaElement)itemObjets).Pause();
+                            }
+                            else
+                            {
+                                if (((MediaElement)itemObjets).Visibility == Visibility.Visible)
                                 {
                                     ((MediaElement)itemObjets).Play();
                                     ((MediaElement)itemObjets).LoadedBehavior = MediaState.Play;
                                 }
 
-                                break;
-                            default:
-                                break;
-                        }
+                            }
+
+                            break;
+                        default:
+                            break;
                     }
                 }
-                catch (Exception) { }
             }));
+
+            }
+            catch { }
         }
 
         private void SilenciarVideos(bool pSilencio)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            try
             {
-                try
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                foreach (var itemObjets in Principal.Children)
                 {
-                    foreach (var itemObjets in Principal.Children)
+                    switch (itemObjets.GetType().Name.ToString())
                     {
-                        switch (itemObjets.GetType().Name.ToString())
-                        {
-                            case "MediaElement":
-                                if (pSilencio)
-                                {
-                                    ((MediaElement)itemObjets).Volume = 0;
-                                }
-                                else
-                                {
-                                    string[] datos = ((MediaElement)itemObjets).Tag.ToString().Split('|');
-                                    if (datos[0].Equals("S"))
-                                        ((MediaElement)itemObjets).Volume = 1;
-                                }
+                        case "MediaElement":
+                            if (pSilencio)
+                            {
+                                ((MediaElement)itemObjets).Volume = 0;
+                            }
+                            else
+                            {
+                                string[] datos = ((MediaElement)itemObjets).Tag.ToString().Split('|');
+                                if (datos[0].Equals("S"))
+                                    ((MediaElement)itemObjets).Volume = 1;
+                            }
 
-                                break;
-                            default:
-                                break;
-                        }
+                            break;
+                        default:
+                            break;
                     }
                 }
-                catch (Exception) { }
             }));
+
+            }
+            catch { }
         }
 
         private void Turnero_Click(object sender, RoutedEventArgs e)
@@ -2258,6 +2484,11 @@ namespace Precios_Turnos
                     foreach (string ob in objEliminar)
                     {
                         BorarObjeto(ob, false);
+                    }
+                    foreach (var item in Directory.GetFiles(@".\objetos\multimedia", "*.*"))
+                    {
+                        File.SetAttributes(item, FileAttributes.Normal);
+                        File.Delete(item);
                     }
                 }
                 catch { }
@@ -2304,16 +2535,16 @@ namespace Precios_Turnos
             TranslateTransform? _currentTTEscalar = new TranslateTransform();
             try
             {
-
-                for (int x = 0; x < ((TransformGroup)item.RenderTransform).Children.Count; x++)
-                {
-                    switch (((TransformGroup)item.RenderTransform).Children[x].GetType().Name)
+                if (item.RenderTransform != null)
+                    for (int x = 0; x < ((TransformGroup)item.RenderTransform).Children.Count; x++)
                     {
-                        case "TranslateTransform":
-                            item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[x];
-                            break;
+                        switch (((TransformGroup)item.RenderTransform).Children[x].GetType().Name)
+                        {
+                            case "TranslateTransform":
+                                item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[x];
+                                break;
+                        }
                     }
-                }
             }
             catch
             {
@@ -2465,10 +2696,36 @@ namespace Precios_Turnos
                 Directory.CreateDirectory(@".\objetos\consultasSQL");
             }
 
-            //Carpeta multimedia
-            if (!Directory.Exists(@".\multimedia"))
+            //Carpeta multimedia principal
+            if (!Directory.Exists(@".\objetos\multimedia"))
             {
-                Directory.CreateDirectory(@".\multimedia");
+                Directory.CreateDirectory(@".\objetos\multimedia");
+            }
+
+            //Carpeta multimedia turno
+            if (!Directory.Exists(@".\objetosTurno\multimedia"))
+            {
+                Directory.CreateDirectory(@".\objetosTurno\multimedia");
+            }
+        }
+
+        private void EditarDisenoTurnero_Click(object sender, RoutedEventArgs e)
+        {
+            EntrarDiseno dialog = new EntrarDiseno(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            if (dialog.ShowDialog() == true)
+            {
+                MostrarTurno dialog2 = new MostrarTurno(true);
+                dialog2.ShowDialog();
             }
         }
     }

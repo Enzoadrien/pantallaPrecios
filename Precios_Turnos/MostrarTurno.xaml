@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Mostrar turno" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing">
+        Title="Mostrar turno" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -13,9 +13,8 @@
             <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Mostrar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Mostrar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
             <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Mostrar nombre" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turno anterior" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipo anterior" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Mostrar nombre anterior" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades fondo" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -37,9 +36,8 @@
         <Label x:Name="NumeroTurno" Content="Turno" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="NumeroEquipo" Content="Equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="NombreEquipo" Content="Nombre" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroTurnoAnt" Content="Turno anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroEquipoAnt" Content="Equipo anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NombreEquipoAnt" Content="Nombre anterior" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroTurnoAnt" Content="Turno anterior 1&#10;Turno anterior 2&#10;Turno anterior 3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroEquipoAnt" Content="Equipo anterior 1&#10;Equipo anterior 2&#10;Equipo anterior 3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="ModoEdicion" Content="Modo edición" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
     </Grid>

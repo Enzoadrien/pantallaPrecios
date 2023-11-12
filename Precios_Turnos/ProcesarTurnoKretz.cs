@@ -80,16 +80,7 @@ namespace Precios_Turnos
                         string line;
                         while ((line = sr.ReadLine()) != null)
                         {
-                            string[] turnoAnt = line.Split('|');
-                            if (turnoAnt.Length == 2)
-                            {
-                                nuevoTurno.SetNumTurnoAnt(int.Parse(turnoAnt[0]));
-                                nuevoTurno.SetNumEquipoAnt(turnoAnt[1]);
-                                break;
-                            }
-                            else
-                                break;
-
+                            nuevoTurno.SetTurnosAnt(line);
                         }
                         stream.Close();
                         break;
@@ -127,15 +118,7 @@ namespace Precios_Turnos
                         string line;
                         while ((line = sr.ReadLine()) != null)
                         {
-                            string[] turnoAnt = line.Split('|');
-                            if (turnoAnt.Length == 2)
-                            {
-                                nuevoTurno.SetNumTurnoAnt(int.Parse(turnoAnt[0]));
-                                nuevoTurno.SetNumEquipoAnt(turnoAnt[1]);
-                                break;
-                            }
-                            else
-                                break;
+                            nuevoTurno.SetTurnosAnt(line);
 
                         }
                         stream.Close();
@@ -172,12 +155,12 @@ namespace Precios_Turnos
             nuevoTurno.SetNumTurnero(cmd85[0].Substring(7, 2));
             nuevoTurno.SetNumEquipo(cmd85[0].Substring(1, 2));
             nuevoTurno.SetNumTurno(int.Parse(cmd85[0].Substring(9, 6)));
-            if (cmd85.Length == 2)
+            /*if (cmd85.Length == 2)
             {
                 string[] cmd = cmd85[1].Split('-');
                 nuevoTurno.SetNumTurnoAnt(int.Parse(cmd[0]));
                 nuevoTurno.SetNumEquipoAnt(cmd[1].Substring(0, 2));
-            }
+            }*/
 
             return nuevoTurno;
         }
@@ -202,17 +185,16 @@ namespace Precios_Turnos
                 case EstadoTurno.SOLO_MOSTRAR_TURNO:
                     respuesta = "OK";
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetTurnosAnt());
                     break;
 
                 case EstadoTurno.NUEVO_TURNO:
                     respuesta += TURNOSETEADO;
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
-                    respuesta += "|" + pvStateObject.GetTurno().GetNumTurnoAnt() + "-" + pvStateObject.GetTurno().GetNumEquipoAnt();
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
                     new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetTurnosAnt());
                     new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
                 case EstadoTurno.ANTERIOR_TURNO:
@@ -221,7 +203,7 @@ namespace Precios_Turnos
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(),6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
                     new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetTurnosAnt());
                     new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
                 case EstadoTurno.SETEAR_TURNO:
@@ -230,7 +212,7 @@ namespace Precios_Turnos
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
                     new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetNumTurnoAnt(), pvStateObject.GetTurno().GetNumEquipoAnt());
+                    new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetTurnosAnt());
                     new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     break;
             }

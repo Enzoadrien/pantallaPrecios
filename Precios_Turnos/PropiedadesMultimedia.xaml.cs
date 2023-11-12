@@ -474,7 +474,7 @@ namespace Precios_Turnos
 
 
                 Cada.Text = "900";
-                Durar.Text = "0";
+                Durar.Text = ((MediaElement)item).NaturalDuration.TimeSpan.TotalSeconds.ToString();
                 Cada.IsEnabled = true;
                 Durar.IsEnabled = true;
             }
@@ -547,6 +547,9 @@ namespace Precios_Turnos
                     break;
                 case "MediaElement":
                     ((MediaElement)item).Visibility = Visibility.Hidden;
+                    ((MediaElement)item).LoadedBehavior = MediaState.Manual;
+                    ((MediaElement)item).Pause();
+                    ((MediaElement)item).Position = TimeSpan.FromSeconds(0);
                     break;
                 default: break;
             }
@@ -562,6 +565,7 @@ namespace Precios_Turnos
                     break;
                 case "MediaElement":
                     ((MediaElement)item).Visibility = Visibility.Visible;
+                    ((MediaElement)item).LoadedBehavior = MediaState.Play;
                     break;
                 default: break;
             }

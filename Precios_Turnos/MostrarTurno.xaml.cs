@@ -29,14 +29,18 @@ namespace Precios_Turnos
     {
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
-        private string controlClickName;
+        private string? controlClickName;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
         private bool estaSaliendo = false;
         private bool esDiseno;
+        public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+        private Window? mainWindow;
+        public static bool estaAbierto = false;
 
-        public MostrarTurno(bool pEsDiseno = false)
+        public MostrarTurno(bool pEsDiseno = false, Window? parentWindow = null)
         {
+            mainWindow = parentWindow;
             esDiseno = pEsDiseno;
             InitializeComponent();
             double height = SystemParameters.FullPrimaryScreenHeight;
@@ -47,16 +51,37 @@ namespace Precios_Turnos
             MaxWidth = Width;
             if (!esDiseno)
             {
-                StartCloseTimer();
+                estaAbierto = true;
+                IsHitTestVisible = false;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
+                StartCloseTimer();
             }
 
         }
 
+        private void TimerTick(object sender, EventArgs e)
+        {
+            DispatcherTimer timer = (DispatcherTimer)sender;
+            timer.Stop();
+            timer.Tick -= TimerTick;
+            estaAbierto = false;
+            Close();
+        }
+
+        public void StartCloseTimer()
+        {
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            double ms = double.Parse(config.AppSettings.Settings["DuracionTurnero"].Value);
+
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(ms);
+            timer.Tick += TimerTick;
+            timer.Start();
+        }
         public async Task ActivarVoz()
         {
-            var synthesizer = new SpeechSynthesizer();
             synthesizer.SetOutputToDefaultAudioDevice();
             string line = string.Empty;
             try
@@ -81,29 +106,9 @@ namespace Precios_Turnos
                 line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
 
                 line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
-
-                line = line.Replace(@"NombreEquipoAnt", NombreEquipoAnt.Content.ToString());
             }));
+
             synthesizer.SpeakAsync(line);
-        }
-
-        private void TimerTick(object sender, EventArgs e)
-        {
-            DispatcherTimer timer = (DispatcherTimer)sender;
-            timer.Stop();
-            timer.Tick -= TimerTick;
-            Close();
-        }
-
-        private void StartCloseTimer()
-        {
-
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            double ms = double.Parse(config.AppSettings.Settings["DuracionTurnero"].Value);
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(ms);
-            timer.Tick += TimerTick;
-            timer.Start();
         }
 
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -232,15 +237,9 @@ namespace Precios_Turnos
                     else
                         ((MenuItem)cm.Items[6]).Header = "Mostrar equipo anterior";
 
-                    control = (Label)FindName("NombreEquipoAnt");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[7]).Header = "Ocultar nombre anterior";
-                    else
-                        ((MenuItem)cm.Items[7]).Header = "Mostrar nombre anterior";
 
 
-
-                    MenuItem itemCm = (MenuItem)cm.Items[9];
+                    MenuItem itemCm = (MenuItem)cm.Items[8];
                     itemCm.Items.Clear();
                     foreach (var itemObjets in Principal.Children)
                     {
@@ -483,6 +482,17 @@ namespace Precios_Turnos
                             if (file.Name.Equals(pNombre + ".anim"))
                                 File.Delete(file.FullName);
                         }
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "Image":
+                                File.Delete(new Uri(((Image)item).Source.ToString()).AbsolutePath);
+                                break;
+                            case "MediaElement":
+                                File.Delete(new Uri(((MediaElement)item).Source.ToString()).AbsolutePath);
+                                break;
+                            default:
+                                break;
+                        }
 
                     }
                     catch { }
@@ -613,12 +623,70 @@ namespace Precios_Turnos
             if (dialog.ShowDialog() == true)
             {
                 string extension = System.IO.Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
+
+                FileInfo fi = new FileInfo(dialog.ContenidoText);
+                try
+                {
+                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
+                    if (File.Exists(@".\objetosTurno\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    {
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        dialogMsg.lblNombre.Content = "¡Advertencia!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        if (dialogMsg.ShowDialog() == true)
+                        {
+                            fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                            foreach (var itemObjets in Principal.Children)
+                            {
+                                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                                if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo"))
+                                {
+                                    switch (itemObjets.GetType().Name.ToString())
+                                    {
+                                        case "Image":
+                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.LocalPath.Equals(fileImg.FullName))
+                                            {
+                                                BitmapImage bitmapImage = new BitmapImage();
+                                                bitmapImage.BeginInit();
+                                                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                                bitmapImage.UriSource = new Uri(fileImg.FullName);
+                                                bitmapImage.EndInit();
+
+                                                ((Image)itemObjets).Source = bitmapImage;
+                                            }
+                                            break;
+                                        case "MediaElement":
+                                            if (((MediaElement)itemObjets).Source.LocalPath.Equals(fileImg.FullName))
+                                            {
+                                                Application.Current.Dispatcher.Invoke(new Action(async () =>
+                                                {
+                                                    ((MediaElement)itemObjets).Source = null;
+                                                    await Task.Delay(100);
+                                                    ((MediaElement)itemObjets).Source = new Uri(fileImg.FullName);
+                                                }));
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                        fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                }
+                catch
+                {
+                }
                 if (extension.Equals("gif"))
                 {
+                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(dialog.ContenidoText);
+                    obj.Source = new Uri(fileImg.FullName);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -628,7 +696,9 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
-                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.UriSource = new Uri(fileImg.FullName);
                     bitmapImage.EndInit();
 
                     obj.Height = bitmapImage.Height;
@@ -645,7 +715,10 @@ namespace Precios_Turnos
 
                     BitmapImage bitmapImage = new BitmapImage();
                     bitmapImage.BeginInit();
-                    bitmapImage.UriSource = new Uri(dialog.ContenidoText);
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
+                    bitmapImage.UriSource = new Uri(fileImg.FullName);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -700,6 +773,11 @@ namespace Precios_Turnos
                     {
                         file.Delete();
                     }
+                    foreach (var item in Directory.GetFiles(@".\objetosTurno\multimedia", "*.*"))
+                    {
+                        File.SetAttributes(item, FileAttributes.Normal);
+                        File.Delete(item);
+                    }
                 }
                 catch { }
                 esDiseno = false;
@@ -714,6 +792,7 @@ namespace Precios_Turnos
             MediaElement item = (MediaElement)e.Source;
             item.Position = TimeSpan.FromMilliseconds(1);
         }
+
         private void GuardarControles()
         {
             try
@@ -822,14 +901,6 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroEquipoAnt);
                             NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
                             ((Label)item).Content = NumeroEquipoAnt.Content;
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
-                        {
-                            Principal.Children.Remove(NombreEquipoAnt);
-                            NameScope.GetNameScope(this).UnregisterName(NombreEquipoAnt.Name);
-                            ((Label)item).Content = NombreEquipoAnt.Content;
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -953,22 +1024,6 @@ namespace Precios_Turnos
             }
         }
 
-        private void MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            MenuItem itemCm = (MenuItem)sender;
-            Label control = (Label)FindName("NombreEquipoAnt");
-            if (control.Visibility == Visibility.Visible)
-            {
-                control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar nombre anterior";
-            }
-            else
-            {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar nombre anterior";
-            }
-        }
-
         private void CargarAnimaciones()
         {
             foreach (UIElement item in Principal.Children)
@@ -985,16 +1040,17 @@ namespace Precios_Turnos
             TranslateTransform? _currentTTEscalar = new TranslateTransform();
             try
             {
-
-                for (int x = 0; x < ((TransformGroup)item.RenderTransform).Children.Count; x++)
-                {
-                    switch (((TransformGroup)item.RenderTransform).Children[x].GetType().Name)
+                if (item.RenderTransform != null)
+                    for (int x = 0; x < ((TransformGroup)item.RenderTransform).Children.Count; x++)
                     {
-                        case "TranslateTransform":
-                            item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[x];
-                            break;
+                        switch (((TransformGroup)item.RenderTransform).Children[x].GetType().Name)
+                        {
+                            case "TranslateTransform":
+                                item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[x];
+                                break;
+                        }
                     }
-                }
+
             }
             catch
             {
@@ -1120,6 +1176,30 @@ namespace Precios_Turnos
                 myTransformGroup.Children.Add(new TranslateTransform(_currentTTEscalar.X, _currentTTEscalar.Y));
             item.RenderTransformOrigin = new Point(.5, .5);
             item.RenderTransform = myTransformGroup;
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (mainWindow != null)
+            {
+                switch (e.Key)
+                {
+                    case Key.Left:
+                    case Key.Right:
+                    case Key.Down:
+                    case Key.Up:
+                        mainWindow.Focus();
+                        break;
+                    default:
+                        if (new Recursos().NumericKeys.ContainsKey(e.Key))
+                        {
+                            mainWindow.Focus();
+                        }
+                        break;
+                }
+                        
+            }
+                
         }
     }
 }

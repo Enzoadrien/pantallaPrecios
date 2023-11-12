@@ -110,6 +110,8 @@ namespace Precios_Turnos
                     stream.Close();
                 }
                 Nombres.ItemsSource = items;
+       
+
             }
             catch
             {
