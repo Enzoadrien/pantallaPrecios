@@ -24,32 +24,31 @@ namespace Precios_Turnos
             switch (numeroComando)
             {
                 case 8500:
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.REPLICA_TURNO);
+                    pvStateObject.SetEstadoActual(EstadoTurno.REPLICA_TURNO);
                     break;
                 case 8501:
                     pvStateObject.SetTurno(NuevoTurno(pvSrtComando));
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.NUEVO_TURNO);
+                    pvStateObject.SetEstadoActual(EstadoTurno.NUEVO_TURNO);
                     break;
                 case 8502:
                     pvStateObject.SetTurno(RegresarTurno(pvSrtComando));
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.ANTERIOR_TURNO);
+                    pvStateObject.SetEstadoActual(EstadoTurno.ANTERIOR_TURNO);
                     break;
                 case 8503:
                     pvStateObject.SetTurno(SetearTurno(pvSrtComando));
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.SETEAR_TURNO);
+                    pvStateObject.SetEstadoActual(EstadoTurno.SETEAR_TURNO);
                     break;
                 case 8550:
                     pvStateObject.SetTurno(CargarTurno(pvSrtComando));
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.SOLO_MOSTRAR_TURNO);
+                    pvStateObject.SetEstadoActual(EstadoTurno.SOLO_MOSTRAR_TURNO);
                     break;
                 default:
-                    Console.WriteLine("***Comando enviado desconocido****");
-                    pvStateObject.SetEstadoActual(StateObject.EstadoTurno.ERROR);
+                    pvStateObject.SetEstadoActual(EstadoTurno.ERROR);
                     break;
             }
-            if (pvStateObject.GetEstadoActual().Equals(StateObject.EstadoTurno.ERROR))
+            if (pvStateObject.GetEstadoActual().Equals(EstadoTurno.ERROR))
             {
-                return (string.Empty);
+                return string.Empty;
             }
             else
             {
@@ -192,6 +191,7 @@ namespace Precios_Turnos
                     respuesta += TURNOSETEADO;
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
+                    //respuesta += "|" + pvStateObject.GetTurno().GetNumTurnoAnt() + "-" + pvStateObject.GetTurno().GetNumEquipoAnt();
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
                     new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
                     new Recursos().MostrarTurno(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo(), pvStateObject.GetTurno().GetTurnosAnt());

@@ -34,11 +34,10 @@ namespace Precios_Turnos
         public Color ultimoColorFondo;
         private bool estaSaliendo = false;
         private bool esDiseno;
+        private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
-        private Window? mainWindow;
-        public static bool estaAbierto = false;
 
-        public MostrarTurno(bool pEsDiseno = false, Window? parentWindow = null)
+        public MostrarTurno(bool pEsDiseno = false, MainWindow? parentWindow = null)
         {
             mainWindow = parentWindow;
             esDiseno = pEsDiseno;
@@ -50,8 +49,7 @@ namespace Precios_Turnos
             MaxHeight = Height;
             MaxWidth = Width;
             if (!esDiseno)
-            {
-                estaAbierto = true;
+            {   
                 IsHitTestVisible = false;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
@@ -65,11 +63,10 @@ namespace Precios_Turnos
             DispatcherTimer timer = (DispatcherTimer)sender;
             timer.Stop();
             timer.Tick -= TimerTick;
-            estaAbierto = false;
             Close();
         }
 
-        public void StartCloseTimer()
+        private void StartCloseTimer()
         {
 
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -80,35 +77,41 @@ namespace Precios_Turnos
             timer.Tick += TimerTick;
             timer.Start();
         }
-        public async Task ActivarVoz()
+
+        public void ActivarVoz()
         {
-            synthesizer.SetOutputToDefaultAudioDevice();
-            string line = string.Empty;
             try
             {
-                using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                synthesizer.SetOutputToDefaultAudioDevice();
+                string line = string.Empty;
+                try
                 {
-                    var sr = new StreamReader(stream);
+                    using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                    {
+                        var sr = new StreamReader(stream);
 
-                    line = sr.ReadToEnd();
-                    stream.Close();
+                        line = sr.ReadToEnd();
+                        stream.Close();
+                    }
                 }
+                catch { }
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
+
+                    line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
+
+                    line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
+
+                    line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
+
+                    line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
+                }));
+
+                synthesizer.SpeakAsync(line);
             }
             catch { }
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
-
-                line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
-
-                line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
-
-                line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
-
-                line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
-            }));
-
-            synthesizer.SpeakAsync(line);
+            
         }
 
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -850,7 +853,7 @@ namespace Precios_Turnos
                         Seguridad vSeguridad = new Seguridad();
                         StringReader stringReader = new StringReader(vSeguridad.DecryptString(MainWindow.nombreApp, text));
                         XmlReader xmlReader = XmlReader.Create(stringReader);
-                        object ob = System.Windows.Markup.XamlReader.Load(xmlReader);
+                        object ob = XamlReader.Load(xmlReader);
                         var item = ob as UIElement;
                         if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
                         {
@@ -922,7 +925,8 @@ namespace Precios_Turnos
 
         private void SalirEdicion()
         {
-            GuardarControles();
+            if(esDiseno)
+                GuardarControles();
             Close();
         }
 
@@ -1180,26 +1184,77 @@ namespace Precios_Turnos
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (mainWindow != null)
+                Task.Run(() => ProcesarTecla(e));
+        }
+        
+        internal void ProcesarTecla(KeyEventArgs e)
+        {
+            try
             {
-                switch (e.Key)
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    case Key.Left:
-                    case Key.Right:
-                    case Key.Down:
-                    case Key.Up:
-                        mainWindow.Focus();
-                        break;
-                    default:
-                        if (new Recursos().NumericKeys.ContainsKey(e.Key))
+                        switch (e.Key)
                         {
-                            mainWindow.Focus();
+                            case Key.Left:
+                                mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
+                                break;
+                            case Key.Right:
+                                mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
+                                break;
+                            case Key.Down:
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                                dialog.lblNombre.Content = "¡Advertencia!";
+                                dialog.lblTexto.Text = "Se reinicia el turno al numero 1, ¿Está seguro que desea continuar?.";
+                                dialog.btnCancelar.Visibility = Visibility.Visible;
+                                new Recursos().ventanaMensajesGrande800x600(dialog);
+                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                if (dialog.ShowDialog() == true)
+                                {
+                                    SetearNumeroTurno(0);
+                                    File.WriteAllText(@".\turnoAnt.3k", string.Empty);
+
+                                var numeroTurnoAnt = mainWindow.FindName("NumeroTurnoAnt") as UIElement;
+                                var numeroEquipoAnt = mainWindow.FindName("NumeroEquipoAnt") as UIElement;
+                                numeroTurnoAnt.SetValue(ContentProperty, "");
+                                numeroEquipoAnt.SetValue(ContentProperty, "");
+
+                            }
+                                break;
+                            case Key.Up:
+                                CapturaTexto dialog2 = new CapturaTexto(mainWindow);
+                                dialog2.lblNombre.Content = "¡Seteo de turno!";
+                                new Recursos().ventanaCapturaTextoGrande800x600(dialog2);
+                                dialog2.lblNombre.FontSize = 80;
+                                dialog2.Texto.FontSize = 200;
+                                dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                if (dialog2.ShowDialog() == true)
+                                    try
+                                    {
+                                        SetearNumeroTurno(int.Parse(dialog2.Texto.Text));
+                                    }
+                                    catch (Exception)
+                                    {
+                                        Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                                        dialog3.lblNombre.Content = "¡Error!";
+                                        dialog3.lblTexto.Text = "No se pudo setear el turno, el valor introducido no es correcto. ¡Intente nuevamente!";
+                                        new Recursos().ventanaMensajesGrande800x600(dialog3);
+                                        dialog3.ShowDialog();
+                                    }
+                                break;
+
+                            default:
+                                if (new Recursos().NumericKeys.ContainsKey(e.Key))
+                                    mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
+                                break;
                         }
-                        break;
-                }
-                        
+                }));
             }
-                
+            catch (Exception) { }
+        }
+     
+        public void SetearNumeroTurno(int numeroTurno)
+        {
+            new Recursos().GuardarNumeroTurno(numeroTurno);
         }
     }
 }

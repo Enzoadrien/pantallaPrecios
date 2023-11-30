@@ -110,11 +110,11 @@ namespace Precios_Turnos
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             chkTurnero.IsChecked = config.AppSettings.Settings["Turnero"].Value.Equals("true")? true : false;
-            chkTeclasDemo.IsChecked = config.AppSettings.Settings["TeclasDemo"].Value.Equals("true") ? true : false;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
             Durar.Text = config.AppSettings.Settings["DuracionTurnero"].Value;
+            cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["AudioTurnero"].Value;
             chkVoz.IsChecked = config.AppSettings.Settings["VozTurnero"].Value.Equals("true") ? true : false;
             string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
@@ -132,11 +132,11 @@ namespace Precios_Turnos
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["Turnero"].Value = chkTurnero.IsChecked == true ? "true" : "false";
-            config.AppSettings.Settings["TeclasDemo"].Value = chkTeclasDemo.IsChecked == true ? "true" : "false";
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
             config.AppSettings.Settings["DuracionTurnero"].Value = Durar.Text;
+            config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["AudioTurnero"].Value = cbxAudio.SelectedItem.ToString();
             config.AppSettings.Settings["VozTurnero"].Value = chkVoz.IsChecked == true ? "true" : "false";
             string clientes = string.Empty;
@@ -328,17 +328,6 @@ namespace Precios_Turnos
             dialog.Top = centerParent.Y - vCenterChild;
 
             dialog.ShowDialog();
-        }
-
-        private void chkTurnero_Checked(object sender, RoutedEventArgs e)
-        {
-            chkTeclasDemo.Visibility = Visibility.Visible;
-        }
-
-        private void chkTurnero_Unchecked(object sender, RoutedEventArgs e)
-        {
-            chkTeclasDemo.IsChecked = false;
-            chkTeclasDemo.Visibility = Visibility.Hidden;
         }
 
         private void btnVoz_Click(object sender, RoutedEventArgs e)

@@ -107,8 +107,10 @@ namespace Precios_Turnos
                         }
                         stream.Close();
                     }
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
 
-                    if (turnosAnteriores.Count() < 3)
+                    if (turnosAnteriores.Count() < TurnosAnt)
                         turnosAnteriores.Add(numeroTurno.ToString() + '|' + numeroEquipo);
                     else
                     {
@@ -123,69 +125,65 @@ namespace Precios_Turnos
                 }
         }
 
-        internal void MostrarTurno(int numeroTurno, string numeroEquipo, List<string>? turnosAnteriores = null, Window? parentWindow = null)
+        internal async Task MostrarTurno(int numeroTurno, string numeroEquipo, List<string>? turnosAnteriores = null, MainWindow? parentWindow = null)
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(new Action(async () =>
-                {
-                    MostrarTurno mostrarTurno = new MostrarTurno(false,parentWindow);
-                    mostrarTurno.WindowStyle = WindowStyle.None;
-                    mostrarTurno.ShowInTaskbar = false;
-                    mostrarTurno.NumeroTurno.Content = numeroTurno;
-                    mostrarTurno.NumeroEquipo.Content = numeroEquipo;
-                    mostrarTurno.NumeroTurnoAnt.Content = "";
-                    mostrarTurno.NumeroEquipoAnt.Content = "";
-                    if (turnosAnteriores != null)
-                    {
+                 await Application.Current.Dispatcher.InvokeAsync(new Action(() =>
+               {
+                   MostrarTurno mostrarTurno = new MostrarTurno(false, parentWindow);
+                   mostrarTurno.WindowStyle = WindowStyle.None;
+                   mostrarTurno.ShowInTaskbar = false;
+                   mostrarTurno.NumeroTurno.Content = numeroTurno;
+                   mostrarTurno.NumeroEquipo.Content = numeroEquipo;
+                   mostrarTurno.NumeroTurnoAnt.Content = "";
+                   mostrarTurno.NumeroEquipoAnt.Content = "";
+                   if (turnosAnteriores != null)
+                   {
 
-                        foreach (string text in turnosAnteriores)
-                        {
-                            string[] anteriores = text.Split('|');
-                            mostrarTurno.NumeroTurnoAnt.Content = mostrarTurno.NumeroTurnoAnt.Content + anteriores[0] + "\n";
-                            mostrarTurno.NumeroEquipoAnt.Content = mostrarTurno.NumeroEquipoAnt.Content + anteriores[1] + "\n";
-                        }
-                        
-                    }
-                    
+                       foreach (string text in turnosAnteriores)
+                       {
+                           string[] anteriores = text.Split('|');
+                           mostrarTurno.NumeroTurnoAnt.Content = mostrarTurno.NumeroTurnoAnt.Content + anteriores[0] + "\n";
+                           mostrarTurno.NumeroEquipoAnt.Content = mostrarTurno.NumeroEquipoAnt.Content + anteriores[1] + "\n";
+                       }
+                   }
 
+                   Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                   if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
+                   {
+                       try
+                       {
+                           using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
+                           {
+                               var sr = new StreamReader(stream);
 
-                    Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
-                    {
-                        try
-                        {
-                            using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
-                            {
-                                var sr = new StreamReader(stream);
+                               string line;
+                               while ((line = sr.ReadLine()) != null)
+                               {
+                                   string[] equipo = line.Split('=');
+                                   if (equipo.Length == 2)
+                                   {
+                                       if (equipo[0].Equals(numeroEquipo))
+                                           mostrarTurno.NombreEquipo.Content = equipo[1];
 
-                                string line;
-                                while ((line = sr.ReadLine()) != null)
-                                {
-                                    string[] equipo = line.Split('=');
-                                    if (equipo.Length == 2)
-                                    {
-                                        if (equipo[0].Equals(numeroEquipo))
-                                            mostrarTurno.NombreEquipo.Content = equipo[1];
+                                   }
 
-                                    }
+                               }
+                               stream.Close();
+                           }
+                       }
+                       catch { }
+                   }
+                   else
+                       mostrarTurno.NombreEquipo.Content = "";
 
-                                }
-                                stream.Close();
-                            }
-                        }
-                        catch { }
-                    }
-                    else
-                        mostrarTurno.NombreEquipo.Content = "";
-
-                     mostrarTurno.Show();
-                }));
+                   mostrarTurno.ShowDialog();
+               }));
             }
-            catch (Exception e){
-            
-            }
+            catch{}
         }
+        
         internal void ventanaMensajesGrande800x600(Mensajes pVentana)
         {
             pVentana.Width = 800;

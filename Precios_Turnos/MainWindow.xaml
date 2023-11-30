@@ -12,6 +12,10 @@
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video/audio" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuTurnos" Header="Turnos">
+                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            </MenuItem>
             <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web (experimental)" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
@@ -48,6 +52,8 @@
                 <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
             </MenuItem>
         </Menu>
+        <Label x:Name="NumeroTurnoAnt" Content="1&#10;2&#10;3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+        <Label x:Name="NumeroEquipoAnt" Content="01&#10;02&#10;03" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="Tabla" Panel.ZIndex="1000"/>
