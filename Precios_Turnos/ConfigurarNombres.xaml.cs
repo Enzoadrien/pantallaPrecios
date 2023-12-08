@@ -67,7 +67,7 @@ namespace Precios_Turnos
             try
             {
 
-                using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
                 {
                     stream.SetLength(0);
                     foreach (Item item in Nombres.ItemsSource)
@@ -93,7 +93,7 @@ namespace Precios_Turnos
             try
             {
                 List<Item> items = new List<Item>();
-                using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
 

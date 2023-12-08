@@ -86,7 +86,7 @@ namespace Precios_Turnos
                 string line = string.Empty;
                 try
                 {
-                    using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
 
@@ -441,7 +441,7 @@ namespace Precios_Turnos
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 try
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
                     player.Play();
                 }
                 catch { }
@@ -685,11 +685,10 @@ namespace Precios_Turnos
                 }
                 if (extension.Equals("gif"))
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(fileImg.FullName);
+                    obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -701,7 +700,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(fileImg.FullName);
+                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Height = bitmapImage.Height;
@@ -720,8 +719,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
-                    bitmapImage.UriSource = new Uri(fileImg.FullName);
+                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -852,8 +850,12 @@ namespace Precios_Turnos
                         sR.Close();
                         Seguridad vSeguridad = new Seguridad();
                         StringReader stringReader = new StringReader(vSeguridad.DecryptString(MainWindow.nombreApp, text));
-                        XmlReader xmlReader = XmlReader.Create(stringReader);
-                        object ob = XamlReader.Load(xmlReader);
+                        text = stringReader.ReadToEnd();
+                        ParserContext pc = new ParserContext();
+                        pc.BaseUri = new Uri("file://" + Directory.GetCurrentDirectory() + "/", UriKind.Absolute);
+                        MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text));
+
+                        object ob = XamlReader.Load(ms, pc);
                         var item = ob as UIElement;
                         if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
                         {
@@ -1211,7 +1213,7 @@ namespace Precios_Turnos
                                 if (dialog.ShowDialog() == true)
                                 {
                                     SetearNumeroTurno(0);
-                                    File.WriteAllText(@".\turnoAnt.3k", string.Empty);
+                                    File.WriteAllText(@".\Recursos\turnoAnt.3k", string.Empty);
 
                                 var numeroTurnoAnt = mainWindow.FindName("NumeroTurnoAnt") as UIElement;
                                 var numeroEquipoAnt = mainWindow.FindName("NumeroEquipoAnt") as UIElement;

@@ -13,6 +13,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
@@ -29,6 +30,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
+using System.Windows.Resources;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Linq;
@@ -302,7 +304,7 @@ namespace Precios_Turnos
                             if (dialog.ShowDialog() == true)
                             {
                                 SetearNumeroTurno(0);
-                                File.WriteAllText(@".\turnoAnt.3k", string.Empty);
+                                File.WriteAllText(@".\Recursos\turnoAnt.3k", string.Empty);
                                 var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
                                 var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
                                 numeroTurnoAnt.SetValue(ContentProperty, "");
@@ -356,7 +358,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
                         string line;
@@ -417,7 +419,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
                         string line;
@@ -984,12 +986,12 @@ namespace Precios_Turnos
 
                 if (extension.Equals("gif"))
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
+                    //FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
 
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(fileImg.FullName);
+                    obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -1001,7 +1003,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(fileImg.FullName);
+                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Height = bitmapImage.Height;
@@ -1020,8 +1022,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
-                    bitmapImage.UriSource = new Uri(fileImg.FullName);
+                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -1572,12 +1573,10 @@ namespace Precios_Turnos
                 catch
                 {
                 }
-                FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
-
                 MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new Uri(fileImg.FullName);
+                obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 obj.LoadedBehavior = MediaState.Play;
                 obj.MediaEnded += MediaElement_MediaEnded;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
@@ -2078,10 +2077,13 @@ namespace Precios_Turnos
                         sR.Close();
                         Seguridad vSeguridad = new Seguridad();
                         StringReader stringReader = new StringReader(vSeguridad.DecryptString(nombreApp, text));
-                        XmlReader xmlReader = XmlReader.Create(stringReader);
+                        text = stringReader.ReadToEnd();
+                        ParserContext pc = new ParserContext();
+                        pc.BaseUri = new Uri("file://" + Directory.GetCurrentDirectory() + "/", UriKind.Absolute);
+                        MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text));
 
+                        object ob = XamlReader.Load(ms, pc);
 
-                        object ob = XamlReader.Load(xmlReader);
                         var item = ob as UIElement;
 
                         if (item.GetValue(NameProperty).ToString().Equals("Fondo"))

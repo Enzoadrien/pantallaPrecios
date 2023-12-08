@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Precios, turnos y publicidad 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" Icon="/ICONO.ico" MinWidth="920" MinHeight="600" Closed="Window_Closed">
+        Title="Precios, turnos y publicidad 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Icon="/logo.png">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -32,9 +32,12 @@
         </ContextMenu>
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
-        <Grid x:Name="Fondo"></Grid>
-        <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"></Grid>
-        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid x:Name="Fondo"/>
+        <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"/>
+        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000" Height="25" Width="160">
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
                 <Separator />
@@ -52,12 +55,12 @@
                 <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="NumeroTurnoAnt" Content="1&#10;2&#10;3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroEquipoAnt" Content="01&#10;02&#10;03" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
-        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
+        <Label x:Name="NumeroTurnoAnt" Content="1&#10;2&#10;3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden" Margin="448,0,0,0" Height="134" Width="30"/>
+        <Label x:Name="NumeroEquipoAnt" Content="01&#10;02&#10;03" FontSize="36" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden" Margin="438,0,0,0" Height="134" Width="50"/>
+        <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Height="26" Width="201"/>
+        <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Height="31" Width="114"/>
         <Grid x:Name="Tabla" Panel.ZIndex="1000"/>
         <Grid x:Name="Video" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="/ICONO.ico" Opacity="0.5" Panel.ZIndex="1000" Grid.Column="1"/>
+        <Image x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="Recursos/logo.png" Opacity="0.5" Panel.ZIndex="1000"/>
     </Grid>
 </Window>

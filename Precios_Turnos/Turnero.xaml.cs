@@ -188,7 +188,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\audios\" + cbxAudio.SelectedItem.ToString());
+                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + cbxAudio.SelectedItem.ToString());
                         player.Play(); 
                 }
                 catch { }
@@ -286,7 +286,7 @@ namespace Precios_Turnos
         {
             // This is called on the UI thread when ReportProgress method is called
             BarraP.Value = e.ProgressPercentage;
-            Progress.Text = e.ProgressPercentage+"/255";
+            Progress.Text = e.ProgressPercentage+"/255"; 
             lblEncontrados.Content = "Encontrados: "+countEncontrados;
         }
 
@@ -350,7 +350,7 @@ namespace Precios_Turnos
             string line = string.Empty;
             try
             {
-                using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
 
@@ -382,7 +382,7 @@ namespace Precios_Turnos
             {
                 "Silencio"
             };
-            DirectoryInfo di = new DirectoryInfo(@".\audios");
+            DirectoryInfo di = new DirectoryInfo(@".\Recursos\audios");
             foreach (FileInfo file in di.GetFiles("*.wav"))
             {
                 CmbContentAudio.Add(file.Name);

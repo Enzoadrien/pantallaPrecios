@@ -67,7 +67,7 @@ namespace Precios_Turnos
 
         private void GuardarTexto()
         {
-            using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+            using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
             {
                 stream.SetLength(0);
                 byte[] bytes = Encoding.UTF8.GetBytes(lblTexto.Text);
@@ -86,7 +86,7 @@ namespace Precios_Turnos
             string line = string.Empty;
             try
             {
-                using (Stream stream = new FileStream(@".\vozTurnero.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
 

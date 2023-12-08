@@ -50,7 +50,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    using (Stream stream = new FileStream(@".\controlTurno.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\controlTurno.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
 
@@ -77,7 +77,7 @@ namespace Precios_Turnos
                 try
                 {
 
-                    using (Stream stream = new FileStream(@".\controlTurno.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\controlTurno.3k", FileMode.Open))
                     {
                         stream.SetLength(0);
                         byte[] bytes = Encoding.UTF8.GetBytes(numeroTurno.ToString());
@@ -97,7 +97,7 @@ namespace Precios_Turnos
                 try
                 {
                     List<string>? turnosAnteriores = new List<string>();
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
                         string line;
@@ -118,7 +118,7 @@ namespace Precios_Turnos
                         turnosAnteriores.Add(numeroTurno.ToString() + '|' + numeroEquipo);
                     }
                     
-                        File.WriteAllLines(@".\turnoAnt.3k", turnosAnteriores.ToArray());
+                        File.WriteAllLines(@".\Recursos\turnoAnt.3k", turnosAnteriores.ToArray());
                 }
                 catch
                 {
@@ -154,7 +154,7 @@ namespace Precios_Turnos
                    {
                        try
                        {
-                           using (Stream stream = new FileStream(@".\nombreEquipos.3k", FileMode.Open))
+                           using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
                            {
                                var sr = new StreamReader(stream);
 

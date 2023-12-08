@@ -208,6 +208,10 @@ namespace Precios_Turnos
                         mainWindow.Conexion.IsEnabled = true;
                         mainWindow.Turnero.IsEnabled = true;
                         mainWindow.EditarDiseno.IsEnabled = true;
+                        mainWindow.EditarDisenoTurnero.IsEnabled = true;
+                        mainWindow.ImportarDiseno.IsEnabled = true;
+                        mainWindow.ExportarDiseno.IsEnabled = true;
+
                         mainWindow.ResizeMode = ResizeMode.CanResize;
                         mainWindow.CargarControles();
 

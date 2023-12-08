@@ -72,7 +72,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
 
@@ -110,7 +110,7 @@ namespace Precios_Turnos
             {
                 try
                 {
-                    using (Stream stream = new FileStream(@".\turnoAnt.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
 
