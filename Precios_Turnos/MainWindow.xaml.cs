@@ -1246,16 +1246,9 @@ namespace Precios_Turnos
             dialog.btnAbrir.Visibility = Visibility.Hidden;
             if (dialog.ShowDialog() == true)
             {
-
-                WebView2 obj = new WebView2();
+                DockPanel obj = new DockPanel();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                try
-                {
-                    obj.Source = new Uri(dialog.ContenidoText);
-                }
-                catch { }
-
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.MaxHeight = MaxHeight;
@@ -1263,8 +1256,20 @@ namespace Precios_Turnos
                 obj.Height = 400;
                 obj.Width = 600;
                 obj.Tag = "";
-                obj.MouseLeave += objetoMedia_MouseLeave;
-                obj.MouseEnter += objetoMedia_MouseEnter;
+                obj.Background = new SolidColorBrush(Colors.Transparent);
+
+                WebView2 web = new WebView2();
+                try
+                {
+                    web.Source = new Uri(dialog.ContenidoText);
+                }
+                catch { }
+                web.Margin = new Thickness(0, 20, 0, 0);
+
+                obj.Children.Add(web);
+
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
 
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
