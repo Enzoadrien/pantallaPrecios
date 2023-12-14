@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Speech.Synthesis;
@@ -34,11 +35,14 @@ namespace Precios_Turnos
         public Color ultimoColorFondo;
         private bool estaSaliendo = false;
         private bool esDiseno;
+        private SolidColorBrush ultimoColor;
+        private double ultimaOpacidad;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 
         public MostrarTurno(bool pEsDiseno = false, MainWindow? parentWindow = null)
         {
+            Owner = parentWindow;
             mainWindow = parentWindow;
             esDiseno = pEsDiseno;
             InitializeComponent();
@@ -49,7 +53,7 @@ namespace Precios_Turnos
             MaxHeight = Height;
             MaxWidth = Width;
             if (!esDiseno)
-            {   
+            {
                 IsHitTestVisible = false;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
@@ -192,6 +196,16 @@ namespace Precios_Turnos
 
                     if (SeModificaControl(controlClickName))
                     {
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "Label":
+                                item.SetValue(BackgroundProperty, ultimoColor);
+                                break;
+                            case "MediaElement":
+                            case "Image":
+                                item.SetValue(OpacityProperty, ultimaOpacidad);
+                                break;
+                        }
                         mostarPropiedadesObjetos(e);
                     }
                 }
@@ -331,6 +345,7 @@ namespace Precios_Turnos
         private void mostarPropiedadesObjetos(MouseButtonEventArgs e)
         {
             var item = FindName(controlClickName) as UIElement;
+            Point pointItem = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
             var mousePosition = e.GetPosition(Principal);
             var point = PointToScreen(mousePosition);
@@ -363,8 +378,8 @@ namespace Precios_Turnos
                     propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
                     propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
                     propiedadesLabel.Opacidad.Value = item.Opacity;
-                    propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                    propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
                     propiedadesLabel.ShowDialog();
                     break;
                 case "Image":
@@ -388,8 +403,8 @@ namespace Precios_Turnos
                     propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
-                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
                     propiedadesImagen.chkRelacion.IsChecked = true;
                     propiedadesImagen.esInicio = false;
                     propiedadesImagen.ShowDialog();
@@ -416,8 +431,8 @@ namespace Precios_Turnos
                     propiedadesMultimedia.Alto.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
                     propiedadesMultimedia.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
                     propiedadesMultimedia.Opacidad.Value = item.Opacity;
-                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(point.X).ToString();
-                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(point.Y).ToString();
+                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
                     propiedadesMultimedia.chkRelacion.IsChecked = true;
                     propiedadesMultimedia.esInicio = false;
                     propiedadesMultimedia.ShowDialog();
@@ -514,6 +529,32 @@ namespace Precios_Turnos
             }
         }
 
+        private void objeto_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            control.SetValue(BackgroundProperty, ultimoColor);
+        }
+
+        private void objeto_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            ultimoColor = new SolidColorBrush((control.GetValue(BackgroundProperty) as SolidColorBrush).Color);
+            control.SetValue(BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffbee6fd")));
+        }
+
+        private void objetoMedia_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            control.SetValue(OpacityProperty, ultimaOpacidad);
+        }
+
+        private void objetoMedia_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            ultimaOpacidad = control.Opacity;
+            control.SetValue(OpacityProperty, ultimaOpacidad > .5 ? ultimaOpacidad - .3 : ultimaOpacidad + .3);
+        }
+
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // get the position within the container
@@ -597,6 +638,8 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.FontSize = 24;
                 obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
             }
@@ -702,10 +745,12 @@ namespace Precios_Turnos
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
-
+                    
                     obj.Height = bitmapImage.Height;
-
                     obj.Tag = "";
+                    obj.MouseLeave += objetoMedia_MouseLeave;
+                    obj.MouseEnter += objetoMedia_MouseEnter;
+
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
                 }
@@ -729,6 +774,9 @@ namespace Precios_Turnos
                     obj.MaxHeight = MaxHeight;
                     obj.MaxWidth = MaxWidth;
                     obj.Tag = "";
+                    obj.MouseLeave += objetoMedia_MouseLeave;
+                    obj.MouseEnter += objetoMedia_MouseEnter;
+
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
 
@@ -874,6 +922,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroTurno);
                             NameScope.GetNameScope(this).UnregisterName(NumeroTurno.Name);
                             ((Label)item).Content = NumeroTurno.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -882,6 +933,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroEquipo);
                             NameScope.GetNameScope(this).UnregisterName(NumeroEquipo.Name);
                             ((Label)item).Content = NumeroEquipo.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -890,6 +944,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NombreEquipo);
                             NameScope.GetNameScope(this).UnregisterName(NombreEquipo.Name);
                             ((Label)item).Content = NombreEquipo.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -898,6 +955,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroTurnoAnt);
                             NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
                             ((Label)item).Content = NumeroTurnoAnt.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -906,6 +966,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroEquipoAnt);
                             NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
                             ((Label)item).Content = NumeroEquipoAnt.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
+
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -913,8 +976,27 @@ namespace Precios_Turnos
                         {
                             try
                             {
+
                                 NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                                 Principal.Children.Add(item);
+
+                                switch (item.GetType().Name.ToString())
+                                {
+                                    case "Label":
+                                        item.MouseLeave += objeto_MouseLeave;
+                                        item.MouseEnter += objeto_MouseEnter;
+                                        break;
+                                    case "MediaElement":
+                                        MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
+                                        media.MediaEnded += MediaElement_MediaEnded;
+                                        item.MouseLeave += objetoMedia_MouseLeave;
+                                        item.MouseEnter += objetoMedia_MouseEnter;
+                                        break;
+                                    case "Image":
+                                        item.MouseLeave += objetoMedia_MouseLeave;
+                                        item.MouseEnter += objetoMedia_MouseEnter;
+                                        break;
+                                }
                             }
                             catch (Exception) { }
                         }

@@ -56,6 +56,9 @@ namespace Precios_Turnos
         public Color ultimoColorFondo;
         private string? controlClickName;
         public Dictionary<long, Dictionary<bool, string>> listaTurnos = new Dictionary<long, Dictionary<bool, string>>();
+        private SolidColorBrush ultimoColor;
+        private double ultimaOpacidad;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -79,12 +82,12 @@ namespace Precios_Turnos
 
         private void CenterWindowOnScreen()
         {
-            double screenWidth = System.Windows.SystemParameters.VirtualScreenWidth;
-            double screenHeight = System.Windows.SystemParameters.VirtualScreenHeight;
+            double screenWidth = SystemParameters.VirtualScreenWidth;
+            double screenHeight = SystemParameters.VirtualScreenHeight;
             double windowWidth = this.Width;
             double windowHeight = this.Height;
-            this.Left = (screenWidth / 2) - (windowWidth / 2);
-            this.Top = (screenHeight / 2) - (windowHeight / 2);
+            Left = (screenWidth / 2) - (windowWidth / 2);
+            Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
         private bool ValidarActivar()
@@ -194,12 +197,11 @@ namespace Precios_Turnos
         {
             if (WindowState == WindowState.Maximized && !maximizado && !editar)
             {
+                //Topmost = true;
                 maximizado = true;
                 esAplicacion = true;
-
                 Principal.IsHitTestVisible = false;
                 ModoEdicion.Visibility = Visibility.Hidden;
-
                 WindowStyle = WindowStyle.None;
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
@@ -222,11 +224,11 @@ namespace Precios_Turnos
 
             else if (WindowState == WindowState.Maximized && editar)
             {
+                //Topmost = false;
                 maximizado = true;
                 animaciones = false;
-                ModoEdicion.Visibility = Visibility.Visible;
                 Principal.IsHitTestVisible = true;
-
+                ModoEdicion.Visibility = Visibility.Visible;
                 WindowStyle = WindowStyle.None;
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
@@ -240,14 +242,15 @@ namespace Precios_Turnos
             }
             else if (WindowState != WindowState.Maximized && !editar && maximizado)
             {
+                //Topmost = false;
                 maximizado = false;
                 animaciones = false;
+                Principal.IsHitTestVisible = true;
+
                 AsynchronousSocketListener.StopListening();
-                Topmost = false;
                 Menu.Visibility = Visibility.Visible;
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
-                Principal.IsHitTestVisible = true;
                 CenterWindowOnScreen();
 
 
@@ -756,11 +759,32 @@ namespace Precios_Turnos
 
                         if (SeModificaControl(controlClickName))
                         {
-                            mostarPropiedadesObjetos(e);
+                            switch (item.GetType().Name.ToString())
+                            {
+                                case "Label":
+                                    item.SetValue(BackgroundProperty, ultimoColor);
+                                    break;
+                                case "DataGrid":
+                                case "MediaElement":
+                                case "WebView2":
+                                case "Image":
+                                    item.SetValue(OpacityProperty, ultimaOpacidad);
+                                    break;
+                            }
+                                    
+                            mostarPropiedadesObjetos(e.GetPosition(Principal));
                         }
                     }
                 }
                 catch (Exception) { }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) 
+        {
+            var item = e.Source as UIElement;
+            controlClickName = item.GetValue(NameProperty).ToString();
+
+            mostarPropiedadesObjetos(item.PointToScreen(new Point(((Button)item).ActualWidth, ((Button)item).ActualHeight)));
         }
 
         private void Principal_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
@@ -774,8 +798,19 @@ namespace Precios_Turnos
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
+                        Label control = (Label)FindName("NumeroTurnoAnt");
+                        if (control.Visibility == Visibility.Visible)
+                            ((MenuItem)((MenuItem)cm.Items[6]).Items[0]).Header = "Ocultar turnos anteriores";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[6]).Items[0]).Header = "Mostrar turnos anteriores";
 
-                        MenuItem itemCm = (MenuItem)cm.Items[7];
+                        control = (Label)FindName("NumeroEquipoAnt");
+                        if (control.Visibility == Visibility.Visible)
+                            ((MenuItem)((MenuItem)cm.Items[6]).Items[1]).Header = "Ocultar equipos anteriores";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[6]).Items[1]).Header = "Mostrar equipos anteriores";
+
+                        MenuItem itemCm = (MenuItem)cm.Items[9];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -898,9 +933,37 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.FontSize = 24;
                 obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
             }
+        }
+        
+        private void objeto_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            control.SetValue(BackgroundProperty, ultimoColor);
+        }
+        
+        private void objeto_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            ultimoColor = new SolidColorBrush((control.GetValue(BackgroundProperty) as SolidColorBrush).Color);
+            control.SetValue(BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffbee6fd")));
+        }
+
+        private void objetoMedia_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            control.SetValue(OpacityProperty, ultimaOpacidad);
+        }
+        
+        private void objetoMedia_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            ultimaOpacidad = control.Opacity;
+            control.SetValue(OpacityProperty, ultimaOpacidad>.5? ultimaOpacidad-.3: ultimaOpacidad+.3);
         }
 
         private void MenuAgregarImagen_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1005,10 +1068,10 @@ namespace Precios_Turnos
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                     bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
-
                     obj.Height = bitmapImage.Height;
-
                     obj.Tag = "";
+                    obj.MouseLeave += objetoMedia_MouseLeave;
+                    obj.MouseEnter += objetoMedia_MouseEnter;
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
                 }
@@ -1033,6 +1096,8 @@ namespace Precios_Turnos
                     obj.MaxWidth = MaxWidth;
                     obj.Height = bitmapImage.Height;
                     obj.Tag = "";
+                    obj.MouseLeave += objetoMedia_MouseLeave;
+                    obj.MouseEnter += objetoMedia_MouseEnter;
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
 
@@ -1040,6 +1105,124 @@ namespace Precios_Turnos
             }
         }
 
+        private void MenuAgregarReloj_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var mousePosition = e.GetPosition(Principal);
+
+
+            if (mousePosition.X + dialog.Width >= MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            if (mousePosition.Y + dialog.Height >= MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            dialog.btnAbrir.Visibility = Visibility.Hidden;
+            dialog.Titulo.Content = "Agregar hora";
+            dialog.ContenidoText = DateTime.Now.ToLongTimeString();
+            dialog.ContenidoTextBox.IsReadOnly = true;
+            if (dialog.ShowDialog() == true)
+            {
+                Button obj = new Button();
+                obj.Name = dialog.NombreText.ToUpper();
+                obj.ToolTip = dialog.NombreText.ToUpper();
+                obj.Content = dialog.ContenidoText;
+                obj.Tag = "R|L";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.BorderThickness = new Thickness(0);
+                obj.Background = new SolidColorBrush(Colors.Transparent);
+                obj.MouseDoubleClick += Button_Click;
+
+                DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
+                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.IsEnabled = true;
+                timer.Tick += (s, e) =>
+                {
+                    UpdateTime(obj);
+                };
+
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+            }
+        }
+
+        private void MenuAgregarFecha_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var mousePosition = e.GetPosition(Principal);
+
+
+            if (mousePosition.X + dialog.Width >= MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            if (mousePosition.Y + dialog.Height >= MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            dialog.btnAbrir.Visibility = Visibility.Hidden;
+            dialog.Titulo.Content = "Agregar fecha";
+            dialog.ContenidoText = DateTime.Now.ToLongDateString();
+            dialog.ContenidoTextBox.IsReadOnly = true;
+            if (dialog.ShowDialog() == true)
+            {
+                Button obj = new Button();
+                obj.Name = dialog.NombreText.ToUpper();
+                obj.ToolTip = dialog.NombreText.ToUpper();
+                obj.Content = dialog.ContenidoText;
+                obj.Tag = "F|L";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.BorderThickness = new Thickness(0);
+                obj.Background = new SolidColorBrush(Colors.Transparent);
+                obj.Click += Button_Click;
+
+                DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
+                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.IsEnabled = true;
+                timer.Tick += (s, e) =>
+                {
+                    UpdateTime(obj);
+                };
+
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+            }
+        }
+
+        private void UpdateTime(Button reloj)
+        {
+            try
+            {
+                string[] datos = reloj.Tag.ToString().Split('|');
+                if (datos[0].Equals("R"))
+                    if (datos[1].Equals("L"))
+                        reloj.Content = DateTime.Now.ToLongTimeString();
+                    else
+                        reloj.Content = DateTime.Now.ToShortTimeString();
+
+                else
+                    if (datos[1].Equals("L"))
+                    reloj.Content = DateTime.Now.ToLongDateString();
+                else
+                    reloj.Content = DateTime.Now.ToShortDateString();
+            }
+            catch { }
+        }
+        
         private void MenuAgregarWEB_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
@@ -1077,9 +1260,12 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxWidth;
-                obj.Height = 600;
-                obj.Width = 400;
+                obj.Height = 400;
+                obj.Width = 600;
                 obj.Tag = "";
+                obj.MouseLeave += objetoMedia_MouseLeave;
+                obj.MouseEnter += objetoMedia_MouseEnter;
+
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
 
@@ -1101,7 +1287,7 @@ namespace Precios_Turnos
             if (editar)
                 try
                 {
-                    mostarPropiedadesObjetos(e);
+                    mostarPropiedadesObjetos(e.GetPosition(Principal));
                 }
                 catch (Exception) { }
         }
@@ -1120,8 +1306,6 @@ namespace Precios_Turnos
                 control.Visibility = Visibility.Visible;
                 itemCm.Header = "Ocultar turno anterior";
             }
-
-
         }
 
         private void MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1140,11 +1324,10 @@ namespace Precios_Turnos
             }
         }
 
-        private void mostarPropiedadesObjetos(MouseButtonEventArgs e)
+        private void mostarPropiedadesObjetos(Point point)
         {
             var item = FindName(controlClickName) as UIElement;
-
-            var point = e.GetPosition(Principal);
+            Point pointItem = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
             switch (item.GetType().Name)
             {
@@ -1173,10 +1356,8 @@ namespace Precios_Turnos
                     propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
                     propiedadesLabel.Opacidad.Value = item.Opacity;
 
-                    Point pointLabel = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-                    propiedadesLabel.CoordenadaX.Text = Math.Round(pointLabel.X).ToString();
-                    propiedadesLabel.CoordenadaY.Text = Math.Round(pointLabel.Y).ToString();
+                    propiedadesLabel.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesLabel.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
                     propiedadesLabel.ShowDialog();
                     break;
@@ -1202,10 +1383,8 @@ namespace Precios_Turnos
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
 
-                    Point pointImage = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-                    propiedadesImagen.CoordenadaX.Text = Math.Round(pointImage.X).ToString();
-                    propiedadesImagen.CoordenadaY.Text = Math.Round(pointImage.Y).ToString();
+                    propiedadesImagen.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesImagen.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
                     propiedadesImagen.chkSonido.IsEnabled = false;
                     propiedadesImagen.Cada.IsEnabled = false;
@@ -1259,10 +1438,8 @@ namespace Precios_Turnos
 
                     propiedadesMultimedia.chkSonido.IsChecked = ((MediaElement)item).Volume == 1 ? true : false;
 
-                    Point pointMediaElement = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-                    propiedadesMultimedia.CoordenadaX.Text = Math.Round(pointMediaElement.X).ToString();
-                    propiedadesMultimedia.CoordenadaY.Text = Math.Round(pointMediaElement.Y).ToString();
+                    propiedadesMultimedia.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesMultimedia.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
                     string[] datosTag = ((MediaElement)item).Tag.ToString().Split('|');
                     if (datosTag.Length > 2)
@@ -1308,10 +1485,8 @@ namespace Precios_Turnos
                     propiedadesWebView2.Alto.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
                     propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
 
-                    Point pointWebView2 = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-                    propiedadesWebView2.CoordenadaX.Text = Math.Round(pointWebView2.X).ToString();
-                    propiedadesWebView2.CoordenadaY.Text = Math.Round(pointWebView2.Y).ToString();
+                    propiedadesWebView2.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesWebView2.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
                     propiedadesWebView2.Cada.IsEnabled = true;
                     propiedadesWebView2.Durar.IsEnabled = true;
@@ -1374,12 +1549,53 @@ namespace Precios_Turnos
 
                     propiedadesTabla.Opacidad.Value = item.Opacity;
 
-                    Point pointDataGrid = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-                    propiedadesTabla.CoordenadaX.Text = Math.Round(pointDataGrid.X).ToString();
-                    propiedadesTabla.CoordenadaY.Text = Math.Round(pointDataGrid.Y).ToString();
+                    propiedadesTabla.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesTabla.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
                     propiedadesTabla.ShowDialog();
+                    break;
+                case "Button":
+                    PropiedadesReloj propiedadesReloj = new PropiedadesReloj(this);
+                    propiedadesReloj.WindowStartupLocation = WindowStartupLocation.Manual;
+
+                    if (point.X + propiedadesReloj.Width >= MaxWidth)
+                        propiedadesReloj.Left = point.X - propiedadesReloj.Width;
+                    else
+                        propiedadesReloj.Left = point.X;
+
+                    if (point.Y + propiedadesReloj.Height >= MaxHeight)
+                        propiedadesReloj.Top = point.Y - propiedadesReloj.Height;
+                    else
+                        propiedadesReloj.Top = point.Y;
+
+                    propiedadesReloj.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    
+                    string[] datos2 = ((Button)item).Tag.ToString().Split('|');
+                    if (datos2[0].Equals("R"))
+                    {
+                        propiedadesReloj.TipoControl.Text = "Hora";
+                        propiedadesReloj.Titulo.Content = "Propiedades hora";
+                    }  
+                    else
+                    {
+                        propiedadesReloj.TipoControl.Text = "Fecha";
+                        propiedadesReloj.Titulo.Content = "Propiedades fecha";
+                    }
+                        
+
+                    propiedadesReloj.cbxFormato.SelectedValue = datos2[1];
+                    propiedadesReloj.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                    propiedadesReloj.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                    propiedadesReloj.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                    propiedadesReloj.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                    propiedadesReloj.btnColorFuente.Fill = new SolidColorBrush((((Button)item).Foreground as SolidColorBrush).Color);
+                    propiedadesReloj.btnColorFondo.Fill = new SolidColorBrush((((Button)item).Background as SolidColorBrush).Color);
+                    propiedadesReloj.Opacidad.Value = item.Opacity;
+
+                    propiedadesReloj.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesReloj.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
+
+                    propiedadesReloj.ShowDialog();
                     break;
 
                 default:
@@ -1586,6 +1802,8 @@ namespace Precios_Turnos
                 obj.MaxWidth = MaxHeight;
                 obj.Volume = 1;
                 obj.Tag = "";
+                obj.MouseLeave += objetoMedia_MouseLeave;
+                obj.MouseEnter += objetoMedia_MouseEnter;
 
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
@@ -1638,6 +1856,8 @@ namespace Precios_Turnos
                 obj.CanUserAddRows = false;
                 obj.Tag = "2|15|H|15";
                 obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
+                obj.MouseLeave += objetoMedia_MouseLeave;
+                obj.MouseEnter += objetoMedia_MouseEnter;
 
                 NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                 Principal.Children.Add(obj);
@@ -1974,7 +2194,7 @@ namespace Precios_Turnos
         {
             MenuItem item = (MenuItem)e.Source;
             controlClickName = item.Tag.ToString();
-            mostarPropiedadesObjetos(e);
+            mostarPropiedadesObjetos(e.GetPosition(Principal));
         }
 
         private void ConfigurarConexion_Click(object sender, RoutedEventArgs e)
@@ -2095,6 +2315,9 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroTurnoAnt);
                             NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
                             ((Label)item).Content = NumeroTurnoAnt.Content;
+
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -2103,6 +2326,8 @@ namespace Precios_Turnos
                             Principal.Children.Remove(NumeroEquipoAnt);
                             NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
                             ((Label)item).Content = NumeroEquipoAnt.Content;
+                            item.MouseLeave += objeto_MouseLeave;
+                            item.MouseEnter += objeto_MouseEnter;
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
                         }
@@ -2113,6 +2338,10 @@ namespace Precios_Turnos
 
                             switch (item.GetType().Name.ToString())
                             {
+                                case "Label":
+                                    item.MouseLeave += objeto_MouseLeave;
+                                    item.MouseEnter += objeto_MouseEnter;
+                                    break;
                                 case "DataGrid":
                                     string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
                                     DataGrid control = (DataGrid)FindName(item.GetValue(NameProperty).ToString());
@@ -2139,12 +2368,35 @@ namespace Precios_Turnos
                                         control.ItemsSource = list[0].DefaultView;
                                     //control.UpdateLayout();
                                     ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
+                                    item.MouseLeave += objetoMedia_MouseLeave;
+                                    item.MouseEnter += objetoMedia_MouseEnter;
                                     break;
                                 case "MediaElement":
                                     MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
                                     media.MediaEnded += MediaElement_MediaEnded;
+                                    item.MouseLeave += objetoMedia_MouseLeave;
+                                    item.MouseEnter += objetoMedia_MouseEnter;
+                                    break;
+                                case "WebView2":
+                                    item.MouseLeave += objetoMedia_MouseLeave;
+                                    item.MouseEnter += objetoMedia_MouseEnter;
+                                    break;
+                                case "Image":
+                                    item.MouseLeave += objetoMedia_MouseLeave;
+                                    item.MouseEnter += objetoMedia_MouseEnter;
+                                    break;
+                                case "Button":
+                                    Button reloj = (Button)FindName(item.GetValue(NameProperty).ToString());
+                                    DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
+                                    timer.Interval = TimeSpan.FromSeconds(1);
+                                    timer.IsEnabled = true;
+                                    timer.Tick += (s, e) =>
+                                    {
+                                        UpdateTime(reloj);
+                                    };
                                     break;
                             }
+                            
                         }
                     }
                     catch (Exception) { }
@@ -2680,26 +2932,30 @@ namespace Precios_Turnos
 
         private void QuitarAnimaciones()
         {
-            foreach (UIElement item in Principal.Children)
+            try
             {
-
-                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                foreach (UIElement item in Principal.Children)
                 {
-                    bool seModifico = false;
-                    try
+
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
-                        item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[((TransformGroup)item.RenderTransform).Children.Count - 1];
-                        seModifico = true;
-                    }
-                    catch
-                    {
-                        if (item.RenderTransform != null)
+                        bool seModifico = false;
+                        try
+                        {
+                            item.RenderTransform = (TranslateTransform)((TransformGroup)item.RenderTransform).Children[((TransformGroup)item.RenderTransform).Children.Count - 1];
                             seModifico = true;
+                        }
+                        catch
+                        {
+                            if (item.RenderTransform != null)
+                                seModifico = true;
+                        }
+                        if (!seModifico)
+                            item.RenderTransform = null;
                     }
-                    if (!seModifico)
-                        item.RenderTransform = null;
                 }
             }
+            catch { }
         }
 
         private void CargarAnimaciones()
@@ -2911,5 +3167,14 @@ namespace Precios_Turnos
                 dialog2.ShowDialog();
             }
         }
+
+        private void VentanaPrincipal_Activated(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Maximized && !editar)
+            {
+                FocusManager.SetFocusedElement(this, VentanaPrincipal);
+            }
+        }
+
     }
 }
