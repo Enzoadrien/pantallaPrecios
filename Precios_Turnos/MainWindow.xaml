@@ -12,14 +12,13 @@
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video/audio" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarTabla" Header="Agregar tabla" PreviewMouseLeftButtonDown="MenuAgregarTabla_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarFecha" Header="Agregar fecha" PreviewMouseLeftButtonDown="MenuAgregarFecha_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarReloj" Header="Agregar reloj" PreviewMouseLeftButtonDown="MenuAgregarReloj_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuTurnos" Header="Turnos">
                 <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
                 <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
-            
-            <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web (experimental)" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>

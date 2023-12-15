@@ -142,7 +142,7 @@ namespace Precios_Turnos
                         default: break;
                     }
                     // Echo the data back to the client.
-                    string[] dataSend = data.Split('|');
+                    string[] dataSend = data.Split('-');
                     msg = Encoding.ASCII.GetBytes(new Comunicacion().CrearComandoBascula(dataSend[0]));
                     handler.Send(msg);
                     break;

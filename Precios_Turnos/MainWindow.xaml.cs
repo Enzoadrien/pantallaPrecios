@@ -55,7 +55,8 @@ namespace Precios_Turnos
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
         private string? controlClickName;
-        public Dictionary<long, Dictionary<bool, string>> listaTurnos = new Dictionary<long, Dictionary<bool, string>>();
+        public Dictionary<long, Dictionary<bool, string>> listaTurnosTeclas = new Dictionary<long, Dictionary<bool, string>>();
+        internal static List<StateObject> listaTurnosKretz = new List<StateObject>();
         private SolidColorBrush ultimoColor;
         private double ultimaOpacidad;
 
@@ -212,6 +213,7 @@ namespace Precios_Turnos
                 LimpiarVistaPrevia();
                 PausarVideos(true);
                 animaciones = true;
+                CargarWEB();
                 CargarAnimaciones();
                 Task.Run(() => ComportamientoObjetos());
 
@@ -238,6 +240,7 @@ namespace Precios_Turnos
                 Visibility = Visibility.Visible;
                 LimpiarVistaPrevia();
                 PausarVideos(true);
+                CargarWEB();
 
             }
             else if (WindowState != WindowState.Maximized && !editar && maximizado)
@@ -261,6 +264,7 @@ namespace Precios_Turnos
                 }
 
                 CargarVistaPrevia();
+                QuitarWEB();
             }
         }
 
@@ -290,11 +294,11 @@ namespace Precios_Turnos
                     switch (e.Key)
                     {
                         case Key.Left:
-                            listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
+                            listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
                             //ProcesarTurnoTeclado(false, "00");
                             break;
                         case Key.Right:
-                            listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
+                            listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
                             //ProcesarTurnoTeclado(true, "00");
                             break;
                         case Key.Down:
@@ -338,7 +342,7 @@ namespace Precios_Turnos
 
                         default:
                             if (new Recursos().NumericKeys.ContainsKey(e.Key))
-                                listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
+                                listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
                             break;
                     }
                 }));
@@ -395,18 +399,37 @@ namespace Precios_Turnos
             CargarTurnosPrincipal();
         }
 
-        private async void ProcesarListadoTurnos()
+        private async void ProcesarListadoTurnosTeclado()
         {
             while (animaciones)
             {
                 try
                 {
-                        if (listaTurnos.Count > 0)
-                        {
-                            var first = listaTurnos.First();
-                            await ProcesarTurno(first.Value.First().Key, first.Value.First().Value);
-                            listaTurnos.Remove(first.Key);
-                        }
+                    if (listaTurnosTeclas.Count > 0)
+                    {
+                        var first = listaTurnosTeclas.First();
+                        await ProcesarTurno(first.Value.First().Key, first.Value.First().Value);
+                        listaTurnosTeclas.Remove(first.Key);
+                    }
+                    await Task.Delay(1000);
+
+                }
+                catch (Exception) { }
+            }
+        }
+
+        private async void ProcesarListadoTurnosKretz()
+        {
+            while (animaciones)
+            {
+                try
+                {
+                    if (listaTurnosKretz.Count > 0)
+                    {
+                        var first = listaTurnosKretz.First();
+                        await new Recursos().MostrarTurno(first.GetTurno().GetNumTurno(), first.GetTurno().GetNumEquipo(), first.GetTurno().GetTurnosAnt(), this);
+                        listaTurnosKretz.Remove(first);
+                    }
                     await Task.Delay(1000);
 
                 }
@@ -771,7 +794,7 @@ namespace Precios_Turnos
                                     item.SetValue(OpacityProperty, ultimaOpacidad);
                                     break;
                             }
-                                    
+
                             mostarPropiedadesObjetos(e.GetPosition(Principal));
                         }
                     }
@@ -779,7 +802,7 @@ namespace Precios_Turnos
                 catch (Exception) { }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e) 
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             var item = e.Source as UIElement;
             controlClickName = item.GetValue(NameProperty).ToString();
@@ -800,15 +823,15 @@ namespace Precios_Turnos
 
                         Label control = (Label)FindName("NumeroTurnoAnt");
                         if (control.Visibility == Visibility.Visible)
-                            ((MenuItem)((MenuItem)cm.Items[6]).Items[0]).Header = "Ocultar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[7]).Items[0]).Header = "Ocultar turnos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[6]).Items[0]).Header = "Mostrar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[7]).Items[0]).Header = "Mostrar turnos anteriores";
 
                         control = (Label)FindName("NumeroEquipoAnt");
                         if (control.Visibility == Visibility.Visible)
-                            ((MenuItem)((MenuItem)cm.Items[6]).Items[1]).Header = "Ocultar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[7]).Items[1]).Header = "Ocultar equipos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[6]).Items[1]).Header = "Mostrar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[7]).Items[1]).Header = "Mostrar equipos anteriores";
 
                         MenuItem itemCm = (MenuItem)cm.Items[9];
                         itemCm.Items.Clear();
@@ -939,13 +962,13 @@ namespace Precios_Turnos
                 Principal.Children.Add(obj);
             }
         }
-        
+
         private void objeto_MouseLeave(object sender, MouseEventArgs e)
         {
             var control = e.Source as UIElement;
             control.SetValue(BackgroundProperty, ultimoColor);
         }
-        
+
         private void objeto_MouseEnter(object sender, MouseEventArgs e)
         {
             var control = e.Source as UIElement;
@@ -958,12 +981,12 @@ namespace Precios_Turnos
             var control = e.Source as UIElement;
             control.SetValue(OpacityProperty, ultimaOpacidad);
         }
-        
+
         private void objetoMedia_MouseEnter(object sender, MouseEventArgs e)
         {
             var control = e.Source as UIElement;
             ultimaOpacidad = control.Opacity;
-            control.SetValue(OpacityProperty, ultimaOpacidad>.5? ultimaOpacidad-.3: ultimaOpacidad+.3);
+            control.SetValue(OpacityProperty, ultimaOpacidad > .5 ? ultimaOpacidad - .3 : ultimaOpacidad + .3);
         }
 
         private void MenuAgregarImagen_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1142,7 +1165,7 @@ namespace Precios_Turnos
                 obj.MouseDoubleClick += Button_Click;
 
                 DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
-                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.Interval = TimeSpan.FromMilliseconds(1);
                 timer.IsEnabled = true;
                 timer.Tick += (s, e) =>
                 {
@@ -1222,7 +1245,7 @@ namespace Precios_Turnos
             }
             catch { }
         }
-        
+
         private void MenuAgregarWEB_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
@@ -1246,34 +1269,40 @@ namespace Precios_Turnos
             dialog.btnAbrir.Visibility = Visibility.Hidden;
             if (dialog.ShowDialog() == true)
             {
-                DockPanel obj = new DockPanel();
-                obj.Name = dialog.NombreText.ToUpper();
-                obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.MaxHeight = MaxHeight;
-                obj.MaxWidth = MaxWidth;
-                obj.Height = 400;
-                obj.Width = 600;
-                obj.Tag = "";
-                obj.Background = new SolidColorBrush(Colors.Transparent);
-
                 WebView2 web = new WebView2();
                 try
                 {
                     web.Source = new Uri(dialog.ContenidoText);
+                    web.Margin = new Thickness(0, 20, 0, 0);
+                    web.Tag = dialog.ContenidoText;
+
+                    DockPanel obj = new DockPanel();
+                    obj.Name = dialog.NombreText.ToUpper();
+                    obj.ToolTip = dialog.NombreText.ToUpper();
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.MaxHeight = MaxHeight;
+                    obj.MaxWidth = MaxWidth;
+                    obj.Height = 400;
+                    obj.Width = 600;
+                    obj.Tag = "";
+                    obj.Background = new SolidColorBrush(Colors.Transparent);
+                    
+                    obj.Children.Add(web);
+
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
                 }
-                catch { }
-                web.Margin = new Thickness(0, 20, 0, 0);
-
-                obj.Children.Add(web);
-
-                obj.MouseLeave += objeto_MouseLeave;
-                obj.MouseEnter += objeto_MouseEnter;
-
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
-
+                catch
+                {
+                    Mensajes dialogE = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialogE.lblNombre.Content = "¡Error!";
+                    dialogE.lblTexto.Text = "La url no es válida, no se puede agregar el objeto web.";
+                    dialogE.ShowDialog();
+                }
             }
         }
 
@@ -1464,7 +1493,7 @@ namespace Precios_Turnos
                     propiedadesMultimedia.esInicio = false;
                     propiedadesMultimedia.ShowDialog();
                     break;
-                case "WebView2":
+                case "DockPanel":
                     PropiedadesWEB propiedadesWebView2 = new PropiedadesWEB(this);
                     propiedadesWebView2.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -1480,22 +1509,15 @@ namespace Precios_Turnos
 
                     propiedadesWebView2.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesWebView2.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesWebView2.TipoControl.Text = item.GetType().Name;
-                    try
-                    {
-                        propiedadesWebView2.Ruta.Text = ((WebView2)item).Source.ToString();
-                    }
-                    catch { }
+                    propiedadesWebView2.TipoControl.Text = "WebView2";
 
-                    propiedadesWebView2.Alto.Text = Math.Round(((WebView2)item).ActualHeight).ToString();
-                    propiedadesWebView2.Ancho.Text = Math.Round(((WebView2)item).ActualWidth).ToString();
+
+                    propiedadesWebView2.Alto.Text = Math.Round(((DockPanel)item).ActualHeight).ToString();
+                    propiedadesWebView2.Ancho.Text = Math.Round(((DockPanel)item).ActualWidth).ToString();
 
                     propiedadesWebView2.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
                     propiedadesWebView2.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
-                    propiedadesWebView2.Cada.IsEnabled = true;
-                    propiedadesWebView2.Durar.IsEnabled = true;
-                    propiedadesWebView2.chkMaximizar.IsEnabled = true;
                     propiedadesWebView2.esInicio = false;
                     propiedadesWebView2.ShowDialog();
                     break;
@@ -1574,19 +1596,19 @@ namespace Precios_Turnos
                         propiedadesReloj.Top = point.Y;
 
                     propiedadesReloj.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    
+
                     string[] datos2 = ((Button)item).Tag.ToString().Split('|');
                     if (datos2[0].Equals("R"))
                     {
                         propiedadesReloj.TipoControl.Text = "Hora";
                         propiedadesReloj.Titulo.Content = "Propiedades hora";
-                    }  
+                    }
                     else
                     {
                         propiedadesReloj.TipoControl.Text = "Fecha";
                         propiedadesReloj.Titulo.Content = "Propiedades fecha";
                     }
-                        
+
 
                     propiedadesReloj.cbxFormato.SelectedValue = datos2[1];
                     propiedadesReloj.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
@@ -2382,9 +2404,9 @@ namespace Precios_Turnos
                                     item.MouseLeave += objetoMedia_MouseLeave;
                                     item.MouseEnter += objetoMedia_MouseEnter;
                                     break;
-                                case "WebView2":
-                                    item.MouseLeave += objetoMedia_MouseLeave;
-                                    item.MouseEnter += objetoMedia_MouseEnter;
+                                case "DockPanel":
+                                    item.MouseLeave += objeto_MouseLeave;
+                                    item.MouseEnter += objeto_MouseEnter;
                                     break;
                                 case "Image":
                                     item.MouseLeave += objetoMedia_MouseLeave;
@@ -2401,7 +2423,7 @@ namespace Precios_Turnos
                                     };
                                     break;
                             }
-                            
+
                         }
                     }
                     catch (Exception) { }
@@ -2656,10 +2678,11 @@ namespace Precios_Turnos
                 switch (Protocolo)
                 {
                     case "T":
-                        Task.Run(() => ProcesarListadoTurnos());
+                        Task.Run(() => ProcesarListadoTurnosTeclado());
                         break;
                     case "K":
                         Task.Run(() => AsynchronousSocketListener.StartListening());
+                        Task.Run(() => ProcesarListadoTurnosKretz());
                         break;
                     default:
                         break;
@@ -2965,11 +2988,61 @@ namespace Precios_Turnos
 
         private void CargarAnimaciones()
         {
-            foreach (UIElement item in Principal.Children)
+            try
             {
-                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
-                    Animacion(item.GetValue(NameProperty).ToString());
+                foreach (UIElement item in Principal.Children)
+                {
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                        Animacion(item.GetValue(NameProperty).ToString());
+                }
             }
+            catch { }
+        }
+
+        private void QuitarWEB()
+        {
+            try
+            {
+                foreach (UIElement item in Principal.Children)
+                {
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "DockPanel":
+                            DockPanel dockPanel = (DockPanel)FindName(item.GetValue(NameProperty).ToString());
+                            foreach (UIElement item2 in dockPanel.Children)
+                            {
+                                item2.Visibility = Visibility.Hidden;
+                                ((WebView2)item2).Tag = ((WebView2)item2).Source;
+                                ((WebView2)item2).Source = new Uri("https://www.google.com.mx/");
+                            }
+                            break;
+                    }
+
+                }
+            }
+            catch { }
+        }
+
+        private void CargarWEB()
+        {
+            try
+            {
+                foreach (UIElement item in Principal.Children)
+                {
+                    switch (item.GetType().Name.ToString())
+                    {
+                        case "DockPanel":
+                            DockPanel dockPanel = (DockPanel)FindName(item.GetValue(NameProperty).ToString());
+                            foreach (UIElement item2 in dockPanel.Children)
+                            {
+                                item2.Visibility = Visibility.Visible;
+                                ((WebView2)item2).Source = new Uri(((WebView2)item2).Tag.ToString());
+                            }
+                            break;
+                    }
+                }
+            }
+            catch { }
         }
 
         private void Animacion(string pNombreControl)

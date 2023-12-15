@@ -1280,10 +1280,10 @@ namespace Precios_Turnos
                         switch (e.Key)
                         {
                             case Key.Left:
-                                mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
+                                mainWindow.listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
                                 break;
                             case Key.Right:
-                                mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
+                                mainWindow.listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
                                 break;
                             case Key.Down:
                                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
@@ -1328,7 +1328,7 @@ namespace Precios_Turnos
 
                             default:
                                 if (new Recursos().NumericKeys.ContainsKey(e.Key))
-                                    mainWindow.listaTurnos.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
+                                    mainWindow.listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "0" + new Recursos().NumericKeys[e.Key] } });
                                 break;
                         }
                 }));

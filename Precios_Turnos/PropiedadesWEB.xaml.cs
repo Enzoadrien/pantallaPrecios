@@ -30,7 +30,7 @@ namespace Precios_Turnos
         {
             InitializeComponent();
             mainWindow = pmainWindow;
-            FocusManager.SetFocusedElement(this, Ruta);
+            FocusManager.SetFocusedElement(this, Ancho);
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -77,12 +77,12 @@ namespace Precios_Turnos
                 var itemP = mainWindow.FindName(NombreControl.Text);
                 if (cajaTexto.Name.Equals("Ancho"))
                 {
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(((WebView2)itemP).ActualWidth)).ToString();
+                    cajaTexto.Text = Convert.ToInt32(Math.Round(((DockPanel)itemP).ActualWidth)).ToString();
 
                 }
                 else
                 {
-                    cajaTexto.Text = Convert.ToInt32(Math.Round(((WebView2)itemP).ActualWidth)).ToString();
+                    cajaTexto.Text = Convert.ToInt32(Math.Round(((DockPanel)itemP).ActualWidth)).ToString();
                 }
 
                 esCambio = true;
@@ -112,7 +112,7 @@ namespace Precios_Turnos
         private void PastingHandler(object sender, DataObjectPastingEventArgs e)
         {
             // more error handling would be needed here - this is asking for trouble!
-            String s = (String)e.DataObject.GetData(typeof(String));
+            string s = (string)e.DataObject.GetData(typeof(string));
             if (!TextAllowed(s)) e.CancelCommand();
         }
 
@@ -195,7 +195,7 @@ namespace Precios_Turnos
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
 
-            ((WebView2)item).SizeChanged += item_SizeChanged;
+            ((DockPanel)item).SizeChanged += item_SizeChanged;
 
         }
 
@@ -208,7 +208,7 @@ namespace Precios_Turnos
                 {
                     var itemP = mainWindow.FindName(NombreControl.Text) as UIElement;
 
-                    WebView2 webView2 = (WebView2)itemP;
+                    DockPanel webView2 = (DockPanel)itemP;
 
                     if (Alto.Text.Length > 0 && int.Parse(Alto.Text) > 0 && ((TextBox)item).Name.CompareTo("Alto") == 0)
                     {
@@ -262,84 +262,27 @@ namespace Precios_Turnos
                 esCambio = false;
                 var item = e.Source;
 
-                if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString()))
-                    Ancho.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualWidth)).ToString();
-                if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString()))
-                    Alto.Text = Convert.ToInt32(Math.Round(((WebView2)item).ActualHeight)).ToString();
+                if (!Ancho.Text.Equals(Convert.ToInt32(Math.Round(((DockPanel)item).ActualWidth)).ToString()))
+                    Ancho.Text = Convert.ToInt32(Math.Round(((DockPanel)item).ActualWidth)).ToString();
+                if (!Alto.Text.Equals(Convert.ToInt32(Math.Round(((DockPanel)item).ActualHeight)).ToString()))
+                    Alto.Text = Convert.ToInt32(Math.Round(((DockPanel)item).ActualHeight)).ToString();
                 esCambio = true;
             }
         }
 
-        private void chkMaximizar_Checked(object sender, RoutedEventArgs e)
-        {
-            if (!esInicio)
-            {
-                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-                ((WebView2)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
-
-
-                Cada.Text = "900";
-                Durar.Text = "0";
-                Cada.IsEnabled = true;
-                Durar.IsEnabled = true;
-            }
-        }
-
-        private void chkMaximizar_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            ((WebView2)item).Tag = "";
-            Cada.Text = "";
-            Durar.Text = "";
-            Cada.IsEnabled = false;
-            Durar.IsEnabled = false;
-        }
-
-        private void CadaDurante_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-            if (chkMaximizar.IsChecked == true)
-            {
-                ((WebView2)item).Tag = "M|" + Cada.Text + "|" + Durar.Text;
-            }
-            else
-            {
-                ((WebView2)item).Tag = "";
-            }
-        }
 
         private void chkOcultar_Checked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
 
-            ((WebView2)item).Visibility = Visibility.Hidden;
+            ((DockPanel)item).Visibility = Visibility.Hidden;
         }
 
         private void chkOcultar_Unchecked(object sender, RoutedEventArgs e)
         {
             var item = mainWindow.FindName(NombreControl.Text) as UIElement;
 
-            ((WebView2)item).Visibility = Visibility.Visible;
-        }
-
-        private void Ruta_KeyDown(object sender, KeyEventArgs e)
-        {
-            /*try
-            {
-                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-                ((WebView2)item).Source = new Uri(Ruta.Text);
-            }
-            catch { }*/
-        }
-
-        private void Ruta_LostFocus(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var item = mainWindow.FindName(NombreControl.Text) as UIElement;
-                ((WebView2)item).Source = new Uri(Ruta.Text);
-            }
-            catch { }
+            ((DockPanel)item).Visibility = Visibility.Visible;
         }
     }
 }

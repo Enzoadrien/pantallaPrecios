@@ -14,7 +14,7 @@ namespace Precios_Turnos
         private static string CodEquipo = "C";
         private string NumEquipo;
         private int NumTurno;
-        private List<string> TurnosAnt;
+        private List<string>? TurnosAnt = new List<string>();
 
         internal string GetCodTurnero()
         {
