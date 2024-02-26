@@ -10,6 +10,7 @@ using System.Management;
 using System.Security.Policy;
 using System.Net.NetworkInformation;
 using System.Windows;
+using System.Net.Http;
 
 namespace Precios_Turnos
 {
@@ -89,29 +90,41 @@ namespace Precios_Turnos
         internal string numeroSerieHD()
         {
             ManagementObjectSearcher Finder = new ManagementObjectSearcher("Select * from Win32_OperatingSystem");
-            string Name = "";
-            string SerialNumber = "";
+            string? Name = "";
+            string? SerialNumber = "";
             foreach (ManagementObject OS in Finder.Get()) Name = OS["Name"].ToString();
 
-            int ind = Name.IndexOf("Harddisk") + 8;
-            int HardIndex = Convert.ToInt16(Name.Substring(ind, 1));
-            Finder = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE Index=" + HardIndex);
-            foreach (ManagementObject HardDisks in Finder.Get())
-                foreach (ManagementObject HardDisk in HardDisks.GetRelated("Win32_PhysicalMedia"))
-                    SerialNumber = HardDisk["SerialNumber"].ToString();
+            if (Name != null)
+            {
+                int ind = Name.IndexOf("Harddisk") + 8;
+                int HardIndex = Convert.ToInt16(Name.Substring(ind, 1));
+                Finder = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE Index=" + HardIndex);
+                foreach (ManagementObject HardDisks in Finder.Get())
+                    foreach (ManagementObject HardDisk in HardDisks.GetRelated("Win32_PhysicalMedia"))
+                        SerialNumber = HardDisk["SerialNumber"].ToString();
 
-            return SerialNumber.Replace(" ", string.Empty);
+                if (SerialNumber != null)
+                    SerialNumber.Replace(" ", string.Empty);
+                else
+                    SerialNumber = "";
+            }
+            
+            return SerialNumber;
         }
 
         internal string numeroSeriePlacaBase()
         {
             ManagementObjectSearcher Finder = new ManagementObjectSearcher("Select * from Win32_BaseBoard");
-            string SerialNumber = "";
+            string? SerialNumber = "";
             foreach (ManagementObject getserial in Finder.Get())
             {
                 SerialNumber = getserial["SerialNumber"].ToString();
+                if (SerialNumber != null)
+                    SerialNumber.Replace(" ", string.Empty);
+                else
+                    SerialNumber = "";
             }
-            return SerialNumber.Replace(" ", string.Empty);
+            return SerialNumber;
         }
 
         internal DateTime GetNetworkTime()
@@ -132,7 +145,7 @@ namespace Precios_Turnos
                 ulong fractPart = (ulong)ntpData[44] << 24 | (ulong)ntpData[45] << 16 | (ulong)ntpData[46] << 8 | (ulong)ntpData[47];
                 var milliseconds = (intPart * 1000) + ((fractPart * 1000) / 0x100000000L);
                 var networkDateTime = (new DateTime(1900, 1, 1)).AddMilliseconds((long)milliseconds);
-                TimeSpan offsetAmount = TimeZone.CurrentTimeZone.GetUtcOffset(networkDateTime);
+                TimeSpan offsetAmount = TimeZoneInfo.Local.GetUtcOffset(networkDateTime);
                 return networkDateTime + offsetAmount;
             }
             catch (Exception)
@@ -140,28 +153,6 @@ namespace Precios_Turnos
                 return new DateTime(1900, 1, 1);
             }
 
-        }
-        
-        internal bool ValidaConexionWEB()
-        {
-            bool Estado = false;
-            System.Uri Url = new System.Uri("https://www.google.com/");
-
-            System.Net.WebRequest WebRequest;
-            WebRequest = System.Net.WebRequest.Create(Url);
-            System.Net.WebResponse objetoResp;
-
-            try
-            {
-                objetoResp = WebRequest.GetResponse();
-                Estado = true;
-                objetoResp.Close();
-            }
-            catch (Exception)
-            {
-            }
-            WebRequest = null;
-            return Estado;
         }
 
         internal string GenerarCheckSum(int campoInicio, string comando, bool tieneCheckSum)
@@ -192,7 +183,7 @@ namespace Precios_Turnos
             }
             catch (Exception)
             {
-                return null;
+                return string.Empty;
             }
             return checkSum;
         }

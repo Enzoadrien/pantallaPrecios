@@ -25,6 +25,7 @@ namespace Precios_Turnos
     public partial class EntrarDiseno : Window
     {
         private MainWindow mainWindow;
+        
         public EntrarDiseno(MainWindow pmainWindow)
         {
             InitializeComponent();
@@ -32,10 +33,12 @@ namespace Precios_Turnos
             mainWindow = pmainWindow;
             FocusManager.SetFocusedElement(this, Llave);
         }
+        
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
+        
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -43,6 +46,7 @@ namespace Precios_Turnos
                 Close();
             }
         }
+        
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }

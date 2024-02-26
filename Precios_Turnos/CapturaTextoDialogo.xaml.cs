@@ -105,6 +105,7 @@ namespace Precios_Turnos
             {
                 // Open document
                 ContenidoTextBox.Text = dlg.FileName;
+                ContenidoTextBox.ToolTip = dlg.FileName;
 
             }
 

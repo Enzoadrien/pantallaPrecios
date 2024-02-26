@@ -35,7 +35,8 @@ namespace Precios_Turnos
         bool esInicio = true;
         int count = 0;
         int countEncontrados = 0;
-        
+        public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+
         private BackgroundWorker backgroundWorker = new BackgroundWorker();
         
         public Turnero(MainWindow pmainWindow)
@@ -341,15 +342,15 @@ namespace Precios_Turnos
         {
             btnVoz.Visibility = Visibility.Visible;
             if (!esInicio)
-                Task.Run( () => vozDemo());
+                Task.Run(() => vozDemo());
         }
 
-        private async Task vozDemo() 
+        private void vozDemo() 
         {
-            var synthesizer = new SpeechSynthesizer();
             string line = string.Empty;
             try
             {
+                synthesizer.SpeakAsyncCancelAll();
                 using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
@@ -357,18 +358,17 @@ namespace Precios_Turnos
                     line = sr.ReadToEnd();
                     stream.Close();
                 }
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                if (!config.AppSettings.Settings["TipoVozTurnero"].Value.Equals(""))
+                    synthesizer.SelectVoice(config.AppSettings.Settings["TipoVozTurnero"].Value);
+                synthesizer.SpeakAsync(line);
             }
             catch { }
-
-
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            if (!config.AppSettings.Settings["TipoVozTurnero"].Value.Equals(""))
-                synthesizer.SelectVoice(config.AppSettings.Settings["TipoVozTurnero"].Value);
-            synthesizer.Speak(line);
         }
 
         private void chkVoz_Unchecked(object sender, RoutedEventArgs e)
         {
+            synthesizer.SpeakAsyncCancelAll();
             btnVoz.Visibility = Visibility.Hidden;
         }
     }

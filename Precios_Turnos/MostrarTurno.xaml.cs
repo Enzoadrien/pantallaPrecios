@@ -17,7 +17,6 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml;
 
@@ -37,6 +36,7 @@ namespace Precios_Turnos
         private bool esDiseno;
         private SolidColorBrush ultimoColor;
         private double ultimaOpacidad;
+        private string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 
@@ -101,15 +101,21 @@ namespace Precios_Turnos
                 catch { }
                 Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
-
-                    line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
-
-                    line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
-
-                    line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
-
-                    line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
+                    Label NumeroTurno = (Label)FindName("NumeroTurno");
+                    if(NumeroTurno != null)
+                        line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
+                    Label NumeroEquipo = (Label)FindName("NumeroEquipo");
+                    if (NumeroEquipo != null)
+                        line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
+                    Label NombreEquipo = (Label)FindName("NombreEquipo");
+                    if (NombreEquipo != null)
+                        line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
+                    Label NumeroTurnoAnt = (Label)FindName("NumeroTurnoAnt");
+                    if (NumeroTurnoAnt != null)
+                        line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
+                    Label NumeroEquipoAnt = (Label)FindName("NumeroEquipoAnt");
+                    if (NumeroEquipoAnt != null)
+                        line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
                 }));
 
                 synthesizer.SpeakAsync(line);
@@ -224,35 +230,35 @@ namespace Precios_Turnos
                     ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
                     Label control = (Label)FindName("NumeroTurno");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[2]).Header = "Ocultar turno";
+                    if (control != null)
+                        ((MenuItem)cm.Items[2]).Header = "Eliminar turno";
                     else
-                        ((MenuItem)cm.Items[2]).Header = "Mostrar turno";
+                        ((MenuItem)cm.Items[2]).Header = "Agregar turno";
 
                     control = (Label)FindName("NumeroEquipo");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[3]).Header = "Ocultar equipo";
+                    if (control != null)
+                        ((MenuItem)cm.Items[3]).Header = "Eliminar equipo";
                     else
-                        ((MenuItem)cm.Items[3]).Header = "Mostrar equipo";
+                        ((MenuItem)cm.Items[3]).Header = "Agregar equipo";
 
                     control = (Label)FindName("NombreEquipo");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[4]).Header = "Ocultar nombre";
+                    if (control != null)
+                        ((MenuItem)cm.Items[4]).Header = "Eliminar nombre equipo";
                     else
-                        ((MenuItem)cm.Items[4]).Header = "Mostrar nombre";
+                        ((MenuItem)cm.Items[4]).Header = "Agregar nombre equipo";
 
 
                     control = (Label)FindName("NumeroTurnoAnt");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[5]).Header = "Ocultar turno anterior";
+                    if (control != null)
+                        ((MenuItem)cm.Items[5]).Header = "Eliminar turno anterior";
                     else
-                        ((MenuItem)cm.Items[5]).Header = "Mostrar turno anterior";
+                        ((MenuItem)cm.Items[5]).Header = "Agregar turno anterior";
 
                     control = (Label)FindName("NumeroEquipoAnt");
-                    if (control.Visibility == Visibility.Visible)
-                        ((MenuItem)cm.Items[6]).Header = "Ocultar equipo anterior";
+                    if (control != null)
+                        ((MenuItem)cm.Items[6]).Header = "Eliminar equipo anterior";
                     else
-                        ((MenuItem)cm.Items[6]).Header = "Mostrar equipo anterior";
+                        ((MenuItem)cm.Items[6]).Header = "Agregar equipo anterior";
 
 
 
@@ -303,17 +309,12 @@ namespace Precios_Turnos
             bool seElimina;
             switch (name)
             {
+                case "Base":
                 case "Coordenadas":
                 case "ModoEdicion":
                 case "Principal":
                 case "Fondo":
                 case "Borde":
-                case "NumeroTurno":
-                case "NumeroEquipo":
-                case "NombreEquipo":
-                case "NumeroTurnoAnt":
-                case "NumeroEquipoAnt":
-                case "NombreEquipoAnt":
                     seElimina = false;
                     break;
                 default:
@@ -328,6 +329,7 @@ namespace Precios_Turnos
             bool seModifica;
             switch (name)
             {
+                case "Base":
                 case "Coordenadas":
                 case "ModoEdicion":
                 case "Principal":
@@ -366,6 +368,7 @@ namespace Precios_Turnos
                         propiedadesLabel.Top = point.Y;
 
                     propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesLabel.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
                     propiedadesLabel.TipoControl.Text = item.GetType().Name;
                     propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
                     if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo") || item.GetValue(NameProperty).ToString().Equals("NombreEquipo")
@@ -398,8 +401,10 @@ namespace Precios_Turnos
 
                     propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
                     propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesImagen.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
                     propiedadesImagen.TipoControl.Text = item.GetType().Name;
-                    propiedadesImagen.Ruta.Text = ((Image)item).Source.ToString();
+                    propiedadesImagen.Ruta.Text = Path.GetFileName(((Image)item).Source.ToString());
+                    propiedadesImagen.Ruta.ToolTip = Path.GetFileName(((Image)item).Source.ToString());
                     propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
                     propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
                     propiedadesImagen.Opacidad.Value = item.Opacity;
@@ -473,14 +478,13 @@ namespace Precios_Turnos
         {
             if (SeEliminaControl(pNombre))
             {
-
+                var item = FindName(pNombre) as UIElement;
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
                 dialog.lblNombre.Content = "¡Advertencia!";
-                dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto.";
+                dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto " + pNombre+ "("+ item.GetType().Name + ").";
 
                 if (dialog.ShowDialog() == true)
                 {
-                    var item = FindName(pNombre) as UIElement;
                     Principal.Children.Remove(item);
                     NameScope.GetNameScope(this).UnregisterName(pNombre);
                     try
@@ -540,6 +544,7 @@ namespace Precios_Turnos
             var control = e.Source as UIElement;
             ultimoColor = new SolidColorBrush((control.GetValue(BackgroundProperty) as SolidColorBrush).Color);
             control.SetValue(BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffbee6fd")));
+            controlSelectedName = control.GetValue(NameProperty).ToString();
         }
 
         private void objetoMedia_MouseLeave(object sender, MouseEventArgs e)
@@ -553,6 +558,7 @@ namespace Precios_Turnos
             var control = e.Source as UIElement;
             ultimaOpacidad = control.Opacity;
             control.SetValue(OpacityProperty, ultimaOpacidad > .5 ? ultimaOpacidad - .3 : ultimaOpacidad + .3);
+            controlSelectedName = control.GetValue(NameProperty).ToString();
         }
 
         private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -573,12 +579,20 @@ namespace Precios_Turnos
                 propiedadesFondo.Top = mousePosition.Y;
             try
             {
-                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Principal.Background).Color);
+                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
             }
             catch (Exception)
             {
                 propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(Colors.White);
             }
+            try
+            {
+                propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesFondo.Opacidad.IsEnabled = true;
+                propiedadesFondo.Opacidad.Value = Fondo.Opacity;
+            }
+            catch { }
             propiedadesFondo.ShowDialog();
         }
 
@@ -665,7 +679,7 @@ namespace Precios_Turnos
 
             dialog.lblTexto.Content = "Abrir";
             dialog.Titulo.Content = "Agregar imagen";
-            dialog.ContenidoTextBox.IsEnabled = false;
+            dialog.ContenidoTextBox.IsReadOnly = true;
             if (dialog.ShowDialog() == true)
             {
                 string extension = System.IO.Path.GetExtension(dialog.ContenidoText).Replace(".", "").ToLower();
@@ -676,9 +690,9 @@ namespace Precios_Turnos
                     FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                     if (File.Exists(@".\objetosTurno\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
-                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
                             fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
@@ -690,26 +704,26 @@ namespace Precios_Turnos
                                     switch (itemObjets.GetType().Name.ToString())
                                     {
                                         case "Image":
-                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.LocalPath.Equals(fileImg.FullName))
+                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.Equals(@".\objetosTurno\multimedia\" + fi.Name))
                                             {
                                                 BitmapImage bitmapImage = new BitmapImage();
                                                 bitmapImage.BeginInit();
                                                 bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                                bitmapImage.UriSource = new Uri(fileImg.FullName);
+                                                bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                 bitmapImage.EndInit();
 
                                                 ((Image)itemObjets).Source = bitmapImage;
                                             }
                                             break;
                                         case "MediaElement":
-                                            if (((MediaElement)itemObjets).Source.LocalPath.Equals(fileImg.FullName))
+                                            if (((MediaElement)itemObjets).Source.Equals(@".\objetosTurno\multimedia\" + fi.Name))
                                             {
                                                 Application.Current.Dispatcher.Invoke(new Action(async () =>
                                                 {
                                                     ((MediaElement)itemObjets).Source = null;
                                                     await Task.Delay(100);
-                                                    ((MediaElement)itemObjets).Source = new Uri(fileImg.FullName);
+                                                    ((MediaElement)itemObjets).Source = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                 }));
                                             }
                                             break;
@@ -731,7 +745,7 @@ namespace Precios_Turnos
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    obj.Source = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -743,7 +757,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
                     
                     obj.Height = bitmapImage.Height;
@@ -764,7 +778,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -846,6 +860,25 @@ namespace Precios_Turnos
         {
             try
             {
+                var controlSelected = FindName(controlSelectedName) as UIElement;
+                switch (controlSelected.GetType().Name.ToString())
+                {
+                    case "Image":
+                    case "MediaElement":
+                    case "DataGrid":
+                        controlSelected.SetValue(OpacityProperty, ultimaOpacidad);
+                        break;
+                    case "DockPanel":
+                    case "Label":
+                        controlSelected.SetValue(BackgroundProperty, ultimoColor);
+                        break;
+                }
+
+            }
+            catch { }
+
+            try
+            {
                 if (!Directory.Exists(@".\objetosTurno"))
                 {
                     Directory.CreateDirectory(@".\objetosTurno");
@@ -858,9 +891,8 @@ namespace Precios_Turnos
                 }
                 foreach (var itemObjets in Principal.Children)
                 {
-                    bool esTabla;
                     string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                    if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Borde"))
+                    if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Base") || nombreControl.Equals("Borde"))
                     {
                         StringBuilder outstr = new StringBuilder();
 
@@ -883,12 +915,12 @@ namespace Precios_Turnos
             catch (Exception) { }
         }
 
-        private void CargarControles()
+        public void CargarControles()
         {
             try
             {
                 DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
-                foreach (var file in info.GetFiles())
+                foreach (var file in info.GetFiles().OrderBy(x => int.Parse(x.Name.Substring(0, x.Name.IndexOf('-')))).ToArray())
                 {
 
                     try
@@ -900,74 +932,23 @@ namespace Precios_Turnos
                         StringReader stringReader = new StringReader(vSeguridad.DecryptString(MainWindow.nombreApp, text));
                         text = stringReader.ReadToEnd();
                         ParserContext pc = new ParserContext();
-                        pc.BaseUri = new Uri("file://" + Directory.GetCurrentDirectory() + "/", UriKind.Absolute);
+                        pc.BaseUri = new Uri(Directory.GetCurrentDirectory() + "/", UriKind.Absolute);
                         MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text));
 
                         object ob = XamlReader.Load(ms, pc);
                         var item = ob as UIElement;
                         if (item.GetValue(NameProperty).ToString().Equals("Fondo"))
                         {
-                            Fondo.Background = ((Grid)item).Background;
+                            Fondo.Source = ((Image)item).Source;
+                        }
+                        else if (item.GetValue(NameProperty).ToString().Equals("Base"))
+                        {
+                            Base.Background = ((Grid)item).Background;
                         }
                         else if (item.GetValue(NameProperty).ToString().Equals("Borde"))
                         {
                             Principal.Children.Remove(Borde);
                             NameScope.GetNameScope(this).UnregisterName(Borde.Name);
-
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno"))
-                        {
-                            Principal.Children.Remove(NumeroTurno);
-                            NameScope.GetNameScope(this).UnregisterName(NumeroTurno.Name);
-                            ((Label)item).Content = NumeroTurno.Content;
-                            item.MouseLeave += objeto_MouseLeave;
-                            item.MouseEnter += objeto_MouseEnter;
-
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipo"))
-                        {
-                            Principal.Children.Remove(NumeroEquipo);
-                            NameScope.GetNameScope(this).UnregisterName(NumeroEquipo.Name);
-                            ((Label)item).Content = NumeroEquipo.Content;
-                            item.MouseLeave += objeto_MouseLeave;
-                            item.MouseEnter += objeto_MouseEnter;
-
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NombreEquipo"))
-                        {
-                            Principal.Children.Remove(NombreEquipo);
-                            NameScope.GetNameScope(this).UnregisterName(NombreEquipo.Name);
-                            ((Label)item).Content = NombreEquipo.Content;
-                            item.MouseLeave += objeto_MouseLeave;
-                            item.MouseEnter += objeto_MouseEnter;
-
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt"))
-                        {
-                            Principal.Children.Remove(NumeroTurnoAnt);
-                            NameScope.GetNameScope(this).UnregisterName(NumeroTurnoAnt.Name);
-                            ((Label)item).Content = NumeroTurnoAnt.Content;
-                            item.MouseLeave += objeto_MouseLeave;
-                            item.MouseEnter += objeto_MouseEnter;
-
-                            NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
-                            Principal.Children.Add(item);
-                        }
-                        else if (item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt"))
-                        {
-                            Principal.Children.Remove(NumeroEquipoAnt);
-                            NameScope.GetNameScope(this).UnregisterName(NumeroEquipoAnt.Name);
-                            ((Label)item).Content = NumeroEquipoAnt.Content;
-                            item.MouseLeave += objeto_MouseLeave;
-                            item.MouseEnter += objeto_MouseEnter;
 
                             NameScope.GetNameScope(this).RegisterName(item.GetValue(NameProperty).ToString(), item);
                             Principal.Children.Add(item);
@@ -1034,15 +1015,27 @@ namespace Precios_Turnos
             MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroTurno");
 
-            if (control.Visibility == Visibility.Visible)
+            if (control != null)
             {
-                control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar turno";
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar turno";
             }
             else
             {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar turno";
+                Label obj = new Label();
+                obj.Name = "NumeroTurno";
+                obj.ToolTip = "NumeroTurno";
+                obj.Content = "NumeroTurno";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar turno";
             }
         }
 
@@ -1050,15 +1043,27 @@ namespace Precios_Turnos
         {
             MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroEquipo");
-            if (control.Visibility == Visibility.Visible)
+            if (control != null)
             {
-                control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar equipo";
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar equipo";
             }
             else
             {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar equipo";
+                Label obj = new Label();
+                obj.Name = "NumeroEquipo";
+                obj.ToolTip = "NumeroEquipo";
+                obj.Content = "NumeroEquipo";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar equipo";
             }
         }
 
@@ -1066,15 +1071,27 @@ namespace Precios_Turnos
         {
             MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NombreEquipo");
-            if (control.Visibility == Visibility.Visible)
+            if (control != null)
             {
-                control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar nombre";
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar nombre equipo";
             }
             else
             {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar nombre";
+                Label obj = new Label();
+                obj.Name = "NombreEquipo";
+                obj.ToolTip = "NombreEquipo";
+                obj.Content = "NombreEquipo";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar nombre equipo";
             }
         }
 
@@ -1082,15 +1099,35 @@ namespace Precios_Turnos
         {
             MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroTurnoAnt");
-            if (control.Visibility == Visibility.Visible)
+            if (control != null)
             {
-                control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar turno anterior";
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar turno anterior";
             }
             else
             {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar turno anterior";
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+
+                Label obj = new Label();
+                obj.Name = "NumeroTurnoAnt";
+                obj.ToolTip = "NumeroTurnoAnt";
+
+                string turnosAntLista = string.Empty;
+                for (int x = 1; x <= TurnosAnt; x++)
+                    turnosAntLista += "Turno " + x + "\n";
+
+                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar turno anterior";
             }
 
 
@@ -1100,15 +1137,37 @@ namespace Precios_Turnos
         {
             MenuItem itemCm = (MenuItem)sender;
             Label control = (Label)FindName("NumeroEquipoAnt");
-            if (control.Visibility == Visibility.Visible)
+            if (control != null)
             {
                 control.Visibility = Visibility.Hidden;
-                itemCm.Header = "Ocultar equipo anterior";
+                itemCm.Header = "Eliminar equipo anterior";
             }
             else
             {
-                control.Visibility = Visibility.Visible;
-                itemCm.Header = "Mostrar equipo anterior";
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+
+                Label obj = new Label();
+                obj.Name = "NumeroEquipoAnt";
+                obj.ToolTip = "NumeroEquipoAnt";
+
+                string turnosAntLista = string.Empty;
+                for (int x = 1; x <= TurnosAnt; x++)
+                    if (x == 10)
+                        turnosAntLista += "Equipo" + x + "\n";
+                    else
+                        turnosAntLista += "Equipo 0" + x + "\n";
+
+                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar equipo anterior";
             }
         }
 
@@ -1299,8 +1358,10 @@ namespace Precios_Turnos
 
                                 var numeroTurnoAnt = mainWindow.FindName("NumeroTurnoAnt") as UIElement;
                                 var numeroEquipoAnt = mainWindow.FindName("NumeroEquipoAnt") as UIElement;
-                                numeroTurnoAnt.SetValue(ContentProperty, "");
-                                numeroEquipoAnt.SetValue(ContentProperty, "");
+                                if(numeroTurnoAnt != null)
+                                    numeroTurnoAnt.SetValue(ContentProperty, "");
+                                if (numeroTurnoAnt != null)
+                                    numeroEquipoAnt.SetValue(ContentProperty, "");
 
                             }
                                 break;

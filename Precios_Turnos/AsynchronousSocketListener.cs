@@ -17,7 +17,7 @@ namespace Precios_Turnos
         internal static ManualResetEvent allDone = new ManualResetEvent(false);
         internal static Socket? listener;
         internal static bool start;
-        internal static string Protocolo;
+        internal static string? Protocolo;
 
         public static void StartListening()
         {
@@ -96,7 +96,7 @@ namespace Precios_Turnos
                 handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReadCallback), state);
             }
-            catch (Exception e) { }
+            catch (Exception) { }
         }
 
         internal static void ReadCallback(IAsyncResult ar)
@@ -154,7 +154,7 @@ namespace Precios_Turnos
             {
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
-            }
+            }catch (Exception ex) { }
         }
     }
 }

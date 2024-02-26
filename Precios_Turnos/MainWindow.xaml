@@ -16,8 +16,8 @@
             <MenuItem x:Name="MenuAgregarFecha" Header="Agregar fecha" PreviewMouseLeftButtonDown="MenuAgregarFecha_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarReloj" Header="Agregar reloj" PreviewMouseLeftButtonDown="MenuAgregarReloj_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuTurnos" Header="Turnos">
-                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
@@ -34,10 +34,8 @@
         </ContextMenu>
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid x:Name="Fondo"/>
+        <Grid x:Name="Base" />
+        <Image x:Name="Fondo" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" />
         <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"/>
         <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000" Height="25" Width="160">
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
@@ -57,12 +55,9 @@
                 <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
             </MenuItem>
         </Menu>
-        <Label x:Name="NumeroTurnoAnt" Content="1&#10;2&#10;3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden" Margin="448,0,0,0" Height="134" Width="30"/>
-        <Label x:Name="NumeroEquipoAnt" Content="01&#10;02&#10;03" FontSize="36" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Hidden" Margin="438,0,0,0" Height="134" Width="50"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
-        <Grid x:Name="Tabla" Panel.ZIndex="1000"/>
-        <Grid x:Name="Video" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="Recursos/logo.png" Opacity="0.5" Panel.ZIndex="1000"/>
+        <Grid x:Name="PantallaCompleta" Panel.ZIndex="1000" />
+        <Image x:Name="LogoPrincipal" Height="60" Width="60" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="Recursos/logo.png" Opacity="0.5" Panel.ZIndex="1000"/>
     </Grid>
 </Window>

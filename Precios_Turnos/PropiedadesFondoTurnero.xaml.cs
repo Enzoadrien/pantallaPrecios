@@ -49,12 +49,6 @@ namespace Precios_Turnos
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             SolidColorBrush colorBase = new SolidColorBrush(Colors.White);
-            if (ContenidoTextBox.Text.Length > 0)
-            {
-                ContenidoTextBox.Text = "";
-                Opacidad.IsEnabled = false;
-            }
-
             ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (colorBase as SolidColorBrush).Color);
             // get the parent container
 
@@ -74,8 +68,12 @@ namespace Precios_Turnos
             if ((bool)colorPicker.ShowDialog())
             {
                 btnColorFondo.Fill = new SolidColorBrush(colorPicker.SelectedColor);
-                mainWindow.Fondo.Background = new SolidColorBrush(colorPicker.SelectedColor);
+                mainWindow.Fondo.Source = null;
+                ContenidoTextBox.Text = "";
+                ContenidoTextBox.ToolTip = "";
+                mainWindow.Base.Background = new SolidColorBrush(colorPicker.SelectedColor);
                 mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
+                Opacidad.IsEnabled = false;
             }
         }
 
@@ -86,11 +84,11 @@ namespace Precios_Turnos
 
             // Set filter for file extension and default file extension 
             //dlg.DefaultExt = ".png";
-            dlg.Filter = "Todos los archivos de imagen|*.jpeg;*.jpg;*.png;*.gif|JPEG (*.jpeg;*.jpg)|*.jpeg;*.jpg|PNG (*.png)|*.png|GIF (*.gif)|*.gif";
+            dlg.Filter = "Todos los archivos de imagen|*.jpeg;*.jpg;*.png|JPEG (*.jpeg;*.jpg)|*.jpeg;*.jpg|PNG (*.png)|*.png";
 
 
             // Display OpenFileDialog by calling ShowDialog method 
-            Nullable<bool> result = dlg.ShowDialog();
+            bool? result = dlg.ShowDialog();
 
             // Get the selected file name and display in a TextBox 
             if (result == true)
@@ -101,9 +99,9 @@ namespace Precios_Turnos
                     FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                     if (File.Exists(@".\objetosTurno\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
-                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación y será reemplazado, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                        dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
                             fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
@@ -117,17 +115,19 @@ namespace Precios_Turnos
                 }
                 FileInfo Img = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
                 // Open document 
-                ContenidoTextBox.Text = Img.FullName;
+                ContenidoTextBox.Text = Img.Name;
+                ContenidoTextBox.ToolTip = Img.Name;
                 btnColorFondo.Fill = new SolidColorBrush(Colors.White);
                 ImageBrush myBrush = new ImageBrush();
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(@Img.FullName, UriKind.Relative);
+                image.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 image.EndInit();
                 myBrush.ImageSource = image;
-                mainWindow.Fondo.Background = myBrush;
+                mainWindow.Base.Background = new SolidColorBrush(Colors.White);
+                mainWindow.Fondo.Source = image;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;
             }
@@ -136,11 +136,7 @@ namespace Precios_Turnos
 
         private void Opacidad_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            ImageBrush myBrush = new ImageBrush();
-            myBrush.ImageSource =
-                new BitmapImage(new Uri(ContenidoTextBox.Text));
-            myBrush.Opacity = Opacidad.Value;
-            mainWindow.Fondo.Background = myBrush;
+            mainWindow.Fondo.Opacity = Opacidad.Value;
         }
 
         private void Opacidad_MouseWheel(object sender, MouseWheelEventArgs e)

@@ -81,7 +81,7 @@ namespace Precios_Turnos
                 }
                     
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return Task.FromResult(false);
             }

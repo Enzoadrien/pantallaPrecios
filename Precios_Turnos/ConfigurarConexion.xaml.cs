@@ -114,6 +114,12 @@ namespace Precios_Turnos
             if (regKey != null)
                 foreach (string name in regKey.GetValueNames())
                     CmbContent.Add(name);
+
+            regKey = Registry.LocalMachine.OpenSubKey(@"Software\ODBC\ODBC.INI\ODBC Data Sources");
+            if (regKey != null)
+                foreach (string name in regKey.GetValueNames())
+                    CmbContent.Add(name);
+
             regKey = Registry.LocalMachine.OpenSubKey(@"Software\WOW6432Node\ODBC\ODBC.INI\ODBC Data Sources");
             if (regKey != null)
                 foreach (string name in regKey.GetValueNames())

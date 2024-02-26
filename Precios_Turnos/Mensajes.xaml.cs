@@ -20,10 +20,12 @@ namespace Precios_Turnos
     public partial class Mensajes : Window
     {
 
-        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta=false)
+        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta=false, string textoBotonAceptar="Aceptar", string textoBotonCancelar= "Cancelar")
         {
             InitializeComponent();
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            btnOK.Content = textoBotonAceptar;
+            btnCancelar.Content= textoBotonCancelar;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (tipoMensaje == Recursos.TipoMensaje.ACEPTAR)
             {
                 lblTexto.Foreground = new SolidColorBrush(Colors.White);

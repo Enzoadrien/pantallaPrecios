@@ -59,8 +59,8 @@
         <TextBox x:Name="NombreControl" Grid.Row="1" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
         <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="TipoControl" Grid.Row="2" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
-        <Label x:Name="lblRuta" Content="Ruta:" Grid.Row="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ruta" Grid.Row="3" Grid.ColumnSpan="4" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
+        <Label x:Name="lblRuta" Content="Archivo:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ruta" Grid.Row="3" Grid.ColumnSpan="3" Text="" Grid.Column="2"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
         <Label x:Name="lblOpacidad" Content="Opacidad:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
         <Slider x:Name="Opacidad" Minimum="0" Maximum="1" SmallChange="0.1" LargeChange="0.3" Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Grid.Row="4" Width="120" VerticalAlignment="Center" ValueChanged="Opacidad_ValueChanged" MouseWheel="Opacidad_MouseWheel"/>
         <Label x:Name="lblTamano" Content="Tamaño" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>

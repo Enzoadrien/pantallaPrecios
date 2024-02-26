@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Shapes;
@@ -94,96 +95,122 @@ namespace Precios_Turnos
 
         internal void GuardarTurnoAnt(int numeroTurno, string numeroEquipo)
         {
-                try
+            try
+            {
+                Dictionary<string, int>? turnosAnteriores = new Dictionary<string, int>();
+                using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
                 {
-                    List<string>? turnosAnteriores = new List<string>();
-                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
+                    var sr = new StreamReader(stream);
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        var sr = new StreamReader(stream);
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            turnosAnteriores.Add(line);
-                        }
-                        stream.Close();
+                        string[] turnos = line.Split('|');
+                        turnosAnteriores.Add(turnos[1], int.Parse(turnos[0]));
                     }
+                    stream.Close();
+                }
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+                if (turnosAnteriores.ContainsKey(numeroEquipo))
+                    turnosAnteriores.Remove(numeroEquipo);
 
-                    if (turnosAnteriores.Count() < TurnosAnt)
-                        turnosAnteriores.Add(numeroTurno.ToString() + '|' + numeroEquipo);
-                    else
-                    {
-                        turnosAnteriores.RemoveAt(0);
-                        turnosAnteriores.Add(numeroTurno.ToString() + '|' + numeroEquipo);
-                    }
-                    
-                        File.WriteAllLines(@".\Recursos\turnoAnt.3k", turnosAnteriores.ToArray());
-                }
-                catch
+                if (turnosAnteriores.Count() < TurnosAnt)
+                    turnosAnteriores.Add(numeroEquipo, numeroTurno);
+
+                else
                 {
+                    turnosAnteriores.Remove(turnosAnteriores.First().Key);
+                    turnosAnteriores.Add(numeroEquipo, numeroTurno);
                 }
+                Dictionary<string, int>? turnosAnterioresOrdenados = turnosAnteriores.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+                using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
+                {
+                    stream.SetLength(0);
+                    foreach (KeyValuePair<string, int> entry in turnosAnterioresOrdenados)
+                    {
+                        byte[] bytes = Encoding.UTF8.GetBytes(entry.Value + "|" + entry.Key + "\n");
+                        stream.Write(bytes, 0, bytes.Length);
+                    }
+                    stream.Close();
+                }
+            }
+            catch
+            {
+            }
         }
 
         internal async Task MostrarTurno(int numeroTurno, string numeroEquipo, List<string>? turnosAnteriores = null, MainWindow? parentWindow = null)
         {
             try
             {
-                 await Application.Current.Dispatcher.InvokeAsync(new Action(() =>
-               {
-                   MostrarTurno mostrarTurno = new MostrarTurno(false, parentWindow);
-                   mostrarTurno.WindowStyle = WindowStyle.None;
-                   mostrarTurno.ShowInTaskbar = false;
-                   mostrarTurno.NumeroTurno.Content = numeroTurno;
-                   mostrarTurno.NumeroEquipo.Content = numeroEquipo;
-                   mostrarTurno.NumeroTurnoAnt.Content = "";
-                   mostrarTurno.NumeroEquipoAnt.Content = "";
-                   if (turnosAnteriores != null)
-                   {
+                await Application.Current.Dispatcher.InvokeAsync(new Action(() =>
+              {
+                  MostrarTurno mostrarTurno = new MostrarTurno(false, parentWindow);
+                  mostrarTurno.WindowStyle = WindowStyle.None;
+                  mostrarTurno.ShowInTaskbar = false;
+                  mostrarTurno.CargarControles();
 
-                       foreach (string text in turnosAnteriores)
-                       {
-                           string[] anteriores = text.Split('|');
-                           mostrarTurno.NumeroTurnoAnt.Content = mostrarTurno.NumeroTurnoAnt.Content + anteriores[0] + "\n";
-                           mostrarTurno.NumeroEquipoAnt.Content = mostrarTurno.NumeroEquipoAnt.Content + anteriores[1] + "\n";
-                       }
-                   }
+                  Label NumeroTurno = (Label)mostrarTurno.FindName("NumeroTurno");
+                  if (NumeroTurno != null)
+                      NumeroTurno.Content = numeroTurno;
+                  Label NumeroEquipo = (Label)mostrarTurno.FindName("NumeroEquipo");
+                  if (NumeroEquipo != null)
+                      NumeroEquipo.Content = numeroEquipo;
+                  Label NumeroTurnoAnt = (Label)mostrarTurno.FindName("NumeroTurnoAnt");
+                  if (NumeroTurnoAnt != null)
+                      NumeroTurnoAnt.Content = "";
+                  Label NumeroEquipoAnt = (Label)mostrarTurno.FindName("NumeroEquipoAnt");
+                  if (NumeroEquipoAnt != null)
+                      NumeroEquipoAnt.Content = "";
+                  if (turnosAnteriores != null)
+                  {
 
-                   Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                   if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
-                   {
-                       try
-                       {
-                           using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
-                           {
-                               var sr = new StreamReader(stream);
+                      foreach (string text in turnosAnteriores)
+                      {
+                          string[] anteriores = text.Split('|');
+                          if (NumeroTurnoAnt != null)
+                              NumeroTurnoAnt.Content = NumeroTurnoAnt.Content + anteriores[0] + "\n";
+                          if (NumeroEquipoAnt != null)
+                              NumeroEquipoAnt.Content = NumeroEquipoAnt.Content + anteriores[1] + "\n";
+                      }
+                  }
 
-                               string line;
-                               while ((line = sr.ReadLine()) != null)
-                               {
-                                   string[] equipo = line.Split('=');
-                                   if (equipo.Length == 2)
-                                   {
-                                       if (equipo[0].Equals(numeroEquipo))
-                                           mostrarTurno.NombreEquipo.Content = equipo[1];
+                  Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                  if (config.AppSettings.Settings["MostrarNombres"].Value.Equals("true"))
+                  {
+                      try
+                      {
+                          using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
+                          {
+                              var sr = new StreamReader(stream);
 
-                                   }
+                              string line;
+                              while ((line = sr.ReadLine()) != null)
+                              {
+                                  string[] equipo = line.Split('=');
+                                  if (equipo.Length == 2)
+                                  {
+                                      if (equipo[0].Equals(numeroEquipo))
+                                      {
+                                          Label NombreEquipo = (Label)mostrarTurno.FindName("NombreEquipo");
+                                          if (NombreEquipo != null)
+                                              NombreEquipo.Content = equipo[1];
+                                      }
+                                  }
 
-                               }
-                               stream.Close();
-                           }
-                       }
-                       catch { }
-                   }
-                   else
-                       mostrarTurno.NombreEquipo.Content = "";
+                              }
+                              stream.Close();
+                          }
+                      }
+                      catch { }
+                  }
 
-                   mostrarTurno.ShowDialog();
-               }));
+                  mostrarTurno.ShowDialog();
+              }));
             }
-            catch{}
+            catch { }
         }
-        
+
         internal void ventanaMensajesGrande800x600(Mensajes pVentana)
         {
             pVentana.Width = 800;
@@ -200,7 +227,7 @@ namespace Precios_Turnos
             pVentana.btnCancelar.Width = 300;
             pVentana.btnCancelar.Height = 100;
             pVentana.btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
-            pVentana.btnCancelar.Margin = new Thickness(5,5,5,5);
+            pVentana.btnCancelar.Margin = new Thickness(5, 5, 5, 5);
         }
 
         internal void ventanaCapturaTextoGrande800x600(CapturaTexto pVentana)

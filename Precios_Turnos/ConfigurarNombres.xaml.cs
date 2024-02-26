@@ -28,11 +28,10 @@ namespace Precios_Turnos
     /// </summary>
     public partial class ConfigurarNombres : Window
     {
-        bool esInicio = true;
         public ConfigurarNombres()
         {
             InitializeComponent();
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
             CargarInfo();
 
 
@@ -121,7 +120,7 @@ namespace Precios_Turnos
     }
     public class Item
     {
-        public string ID { get; set; }
-        public string Nombre { get; set; }
+        public string? ID { get; set; }
+        public string? Nombre { get; set; }
     }
 }

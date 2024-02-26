@@ -10,11 +10,11 @@
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Mostrar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Mostrar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Mostrar nombre" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Mostrar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Mostrar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Agregar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Agregar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Agregar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades fondo" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -31,13 +31,9 @@
         </ContextMenu>
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
-        <Grid x:Name="Fondo"></Grid>
+        <Grid x:Name="Base"></Grid>
+        <Image x:Name="Fondo" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" />
         <Border x:Name="Borde" BorderBrush="Black" BorderThickness="3" Panel.ZIndex="996"/>
-        <Label x:Name="NumeroTurno" Content="Turno" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroEquipo" Content="Equipo" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NombreEquipo" Content="Nombre" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroTurnoAnt" Content="Turno anterior 1&#10;Turno anterior 2&#10;Turno anterior 3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
-        <Label x:Name="NumeroEquipoAnt" Content="Equipo anterior 1&#10;Equipo anterior 2&#10;Equipo anterior 3" FontSize="36" FontFamily="Arial" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         <Label x:Name="ModoEdicion" Content="Modo edición" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" Grid.ColumnSpan="2"/>
     </Grid>

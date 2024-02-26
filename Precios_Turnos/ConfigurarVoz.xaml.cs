@@ -27,12 +27,12 @@ namespace Precios_Turnos
     public partial class ConfigurarVoz : Window
     {
         bool esInicio = true;
+        public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         public ConfigurarVoz()
         {
             InitializeComponent();
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
             CargarInfo();
-
 
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -93,11 +93,8 @@ namespace Precios_Turnos
                     line = sr.ReadToEnd();
                     stream.Close();
                 }
-            }
-            catch { }
+            
             lblTexto.Text = line;
-
-            var synthesizer = new SpeechSynthesizer();
 
             // show installed voices
             foreach (var v in synthesizer.GetInstalledVoices().Select(v => v.VoiceInfo))
@@ -107,6 +104,8 @@ namespace Precios_Turnos
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             cbxTipoVoz.SelectedItem = config.AppSettings.Settings["TipoVozTurnero"].Value;
+            }
+            catch { }
             esInicio = false;
         }
 
@@ -114,9 +113,13 @@ namespace Precios_Turnos
         {
             if (!esInicio)
             {
-                var synthesizer = new SpeechSynthesizer();
-                synthesizer.SelectVoice(cbxTipoVoz.SelectedItem.ToString());
-                synthesizer.Speak(lblTexto.Text);
+                try
+                {
+                    synthesizer.SpeakAsyncCancelAll();
+                    synthesizer.SelectVoice(cbxTipoVoz.SelectedItem.ToString());
+                    synthesizer.SpeakAsync(lblTexto.Text);
+                }
+                catch { }
             }
             
         }
