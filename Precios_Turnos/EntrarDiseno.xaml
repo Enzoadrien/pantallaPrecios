@@ -18,18 +18,18 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
                     Background="#FF989090" Grid.ColumnSpan="2">
-            <Label x:Name="lblNombre" Content="Ingrese llave para editar"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+            <Label x:Name="lblNombre" Content="Modo edición"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
-            <TextBox x:Name="Llave"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap" Margin="5,5,5,0"/>
+            <TextBox x:Name="Mensaje"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap" Margin="5,5,5,0" IsReadOnly="True"/>
         </ScrollViewer>
-        <Label x:Name="lblFecha" Content="Fecha licencia:" Grid.Row="2" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Llave"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap" Margin="5,5,5,0" IsReadOnly="True" Visibility="Hidden"/>
         <StackPanel Grid.Row="2"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="1" >
             <Button x:Name="btnOK"
-              Content="Aceptar"
+              Content="Entrar"
               Click="btnOK_Click"
               IsDefault="True"
               Width="60"

@@ -46,8 +46,15 @@ namespace Precios_Turnos
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            if (GuardarInfo())
-                Close();
+            if (Codigo.Text.Length > 0 && Correo.Text.Length > 0)
+            {
+                ValidarLicencia validarLicencia = new ValidarLicencia();
+                string key = validarLicencia.cargarLicenciaApp(Correo.Text, Codigo.Text);
+                Llave.Text = key;
+                if(key.Length > 0)
+                    if (GuardarInfo())
+                        Close();
+            }
         }
 
         private void CargarInfo()
@@ -153,12 +160,10 @@ namespace Precios_Turnos
                 if (subs[0].Equals(Correo.Text) && subs[3].Equals(vSeguridad.numeroSerieHD()) && subs[4].Equals(vSeguridad.numeroSeriePlacaBase())
                     && subs[5].Equals(MainWindow.nombreApp))
                 {
-
                     string strKey = vSeguridad.EncryptString(Codigo.Text, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
                     if (!subs[1].Equals("0"))
                     {
-                        if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1)
-                            && vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[2]).AddDays(30))
+                        if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
                         {
                             Licencia licencia = new Licencia();
                             try
@@ -179,47 +184,58 @@ namespace Precios_Turnos
                             }
                             else
                             {
-                                GuardarLicencia(strKey);
-                                mainWindow.Conexion.IsEnabled = true;
-                                mainWindow.Turnero.IsEnabled = true;
-                                mainWindow.EditarDiseno.IsEnabled = true;
-                                mainWindow.ResizeMode = ResizeMode.CanResize;
-                                mainWindow.CargarControles();
+                                ValidarLicencia validarLicencia = new ValidarLicencia();
+                                if(validarLicencia.activarLicenciaApp(Correo.Text, Codigo.Text))
+                                {
+                                    GuardarLicencia(strKey);
+                                    mainWindow.Conexion.IsEnabled = true;
+                                    mainWindow.Turnero.IsEnabled = true;
+                                    mainWindow.EditarDiseno.IsEnabled = true;
+                                    mainWindow.EditarDisenoTurnero.IsEnabled = true;
+                                    mainWindow.ImportarDiseno.IsEnabled = true;
+                                    mainWindow.ExportarDiseno.IsEnabled = true;
+                                    mainWindow.ResizeMode = ResizeMode.CanResize;
+                                    mainWindow.CargarControles();
 
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
-                                dialog.lblNombre.Content = "¡Listo!";
-                                dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
-                                dialog.ShowDialog();
-                                return true;
+                                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
+                                    dialog.lblNombre.Content = "¡Listo!";
+                                    dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
+                                    dialog.ShowDialog();
+                                    return true;
+                                }
                             }
                         }
                         else
                         {
                             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                             dialog.lblNombre.Content = "¡Error!";
-                            dialog.lblTexto.Text = "Su licencia ha caducado. \n Las licencias tienen un tiempo maximo de activación de 30 días despues de ser generadas.";
+                            dialog.lblTexto.Text = "Se requiere de una conexión a internet para activar la licencia";
                             dialog.ShowDialog();
                         }
                     }
                     else
                     {
-                        GuardarLicencia(strKey);
+                        ValidarLicencia validarLicencia = new ValidarLicencia();
+                        if (validarLicencia.activarLicenciaApp(Correo.Text, Codigo.Text))
+                        {
+                            GuardarLicencia(strKey);
 
-                        mainWindow.Conexion.IsEnabled = true;
-                        mainWindow.Turnero.IsEnabled = true;
-                        mainWindow.EditarDiseno.IsEnabled = true;
-                        mainWindow.EditarDisenoTurnero.IsEnabled = true;
-                        mainWindow.ImportarDiseno.IsEnabled = true;
-                        mainWindow.ExportarDiseno.IsEnabled = true;
+                            mainWindow.Conexion.IsEnabled = true;
+                            mainWindow.Turnero.IsEnabled = true;
+                            mainWindow.EditarDiseno.IsEnabled = true;
+                            mainWindow.EditarDisenoTurnero.IsEnabled = true;
+                            mainWindow.ImportarDiseno.IsEnabled = true;
+                            mainWindow.ExportarDiseno.IsEnabled = true;
 
-                        mainWindow.ResizeMode = ResizeMode.CanResize;
-                        mainWindow.CargarControles();
+                            mainWindow.ResizeMode = ResizeMode.CanResize;
+                            mainWindow.CargarControles();
 
-                        Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
-                        dialog.lblNombre.Content = "¡Listo!";
-                        dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
-                        dialog.ShowDialog();
-                        return true;
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
+                            dialog.lblNombre.Content = "¡Listo!";
+                            dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
+                            dialog.ShowDialog();
+                            return true;
+                        }
                     }
                 }
             }

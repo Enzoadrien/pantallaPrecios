@@ -92,22 +92,45 @@ namespace Precios_Turnos
             ManagementObjectSearcher Finder = new ManagementObjectSearcher("Select * from Win32_OperatingSystem");
             string? Name = "";
             string? SerialNumber = "";
-            foreach (ManagementObject OS in Finder.Get()) Name = OS["Name"].ToString();
-
-            if (Name != null)
+            try
             {
-                int ind = Name.IndexOf("Harddisk") + 8;
-                int HardIndex = Convert.ToInt16(Name.Substring(ind, 1));
-                Finder = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE Index=" + HardIndex);
-                foreach (ManagementObject HardDisks in Finder.Get())
-                    foreach (ManagementObject HardDisk in HardDisks.GetRelated("Win32_PhysicalMedia"))
-                        SerialNumber = HardDisk["SerialNumber"].ToString();
+                foreach (ManagementObject OS in Finder.Get()) Name = OS["Name"].ToString();
+                if (Name != null)
+                {
+                    int ind = Name.IndexOf("Harddisk") + 8;
+                    int HardIndex = Convert.ToInt16(Name.Substring(ind, 1));
+                    Finder = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive WHERE Index=" + HardIndex);
+                    foreach (ManagementObject HardDisks in Finder.Get())
+                    {
+                        foreach (ManagementObject HardDisk in HardDisks.GetRelated("Win32_PhysicalMedia"))
+                        {
 
-                if (SerialNumber != null)
-                    SerialNumber.Replace(" ", string.Empty);
-                else
-                    SerialNumber = "";
+                            try
+                            {
+                                SerialNumber += HardDisk["SerialNumber"].ToString();
+                            }
+                            catch { }
+                            try
+                            {
+                                SerialNumber += HardDisk["Model"].ToString();
+                            }
+                            catch { }
+                            try
+                            {
+                                SerialNumber += HardDisk["Type"].ToString();
+                            }
+                            catch { }
+
+                        }
+
+                        if (SerialNumber != null)
+                            SerialNumber = SerialNumber.Replace(" ", string.Empty);
+                        else
+                            SerialNumber = "GenericPhysicalMedia";
+                    }
+                }
             }
+            catch { SerialNumber = "GenericPhysicalMedia"; }
             
             return SerialNumber;
         }
@@ -118,11 +141,40 @@ namespace Precios_Turnos
             string? SerialNumber = "";
             foreach (ManagementObject getserial in Finder.Get())
             {
-                SerialNumber = getserial["SerialNumber"].ToString();
+                try
+                {
+                    SerialNumber += getserial["SerialNumber"].ToString();
+                }
+                catch { }
+                
+                try
+                {
+                    SerialNumber += getserial["Product"].ToString();
+                }
+                catch { }
+
+                try
+                {
+                    SerialNumber += getserial["Name"].ToString();
+                }
+                catch { }
+
+                try
+                {
+                    SerialNumber += getserial["Manufacturer"].ToString();
+                }
+                catch { }
+
+
                 if (SerialNumber != null)
-                    SerialNumber.Replace(" ", string.Empty);
+                {
+                    SerialNumber = SerialNumber.Replace(" ", string.Empty);
+                    if (SerialNumber.Length == 0)
+                        SerialNumber = "GenericBaseBoard";
+                }
                 else
-                    SerialNumber = "";
+                    SerialNumber = "GenericBaseBoard";
+                
             }
             return SerialNumber;
         }

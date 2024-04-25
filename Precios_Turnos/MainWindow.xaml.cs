@@ -526,69 +526,82 @@ namespace Precios_Turnos
 
         private void ImportarDiseno_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Archivos de diseño  (.3kzip)|*.3kzip";
-            bool? checarOK = openFileDialog.ShowDialog();
-            if (checarOK == true)
+            EntrarDiseno dialog = new EntrarDiseno(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+            if (dialog.ShowDialog() == true)
             {
-
-                List<string> objEliminar = new List<string>();
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
-                dialog.lblNombre.Content = "¡Advertencia!";
-                dialog.lblTexto.Text = "Se reemplazará el diseño actual, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
-                if (dialog.ShowDialog() == true)
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Archivos de diseño  (.3kzip)|*.3kzip";
+                bool? checarOK = openFileDialog.ShowDialog();
+                if (checarOK == true)
                 {
-                    Mouse.OverrideCursor = Cursors.Wait;
-                    try
+
+                    List<string> objEliminar = new List<string>();
+                    Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                    dialog2.lblNombre.Content = "¡Advertencia!";
+                    dialog2.lblTexto.Text = "Se reemplazará el diseño actual, ¿Está seguro que desea continuar?. ¡Esta accion no se puede revertir!";
+                    if (dialog2.ShowDialog() == true)
                     {
-                        foreach (var itemObjets in Principal.Children)
+                        Mouse.OverrideCursor = Cursors.Wait;
+                        try
                         {
-                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                            if (SeModificaControl(nombreControl))
+                            foreach (var itemObjets in Principal.Children)
                             {
-                                objEliminar.Add(nombreControl);
+                                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                                if (SeModificaControl(nombreControl))
+                                {
+                                    objEliminar.Add(nombreControl);
+                                }
+                                else if (nombreControl.Equals("Fondo"))
+                                {
+                                    Fondo.Source = null;
+                                }
+                                else if (nombreControl.Equals("Base"))
+                                {
+                                    Base.Background = new SolidColorBrush(Colors.White);
+                                }
                             }
-                            else if (nombreControl.Equals("Fondo"))
-                            {
-                                Fondo.Source = null;
-                            }
-                            else if (nombreControl.Equals("Base"))
-                            {
-                                Base.Background = new SolidColorBrush(Colors.White);
-                            }
-                        }
 
-                        foreach (string ob in objEliminar)
+                            foreach (string ob in objEliminar)
+                            {
+                                BorarObjeto(ob, false);
+                            }
+
+
+                            using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
+                            {
+                                if (Directory.Exists(@".\objetos"))
+                                    Directory.Delete(@".\objetos", true);
+
+                                if (Directory.Exists(@".\objetosTurno"))
+                                    Directory.Delete(@".\objetosTurno", true);
+
+                                if (File.Exists(@"./Principal.png"))
+                                    File.Delete(@"./Principal.png");
+
+                                archive.ExtractToDirectory(@".\");
+                            }
+                            CargarControles();
+                            LimpiarVistaPrevia();
+                            CargarVistaPrevia();
+                        }
+                        catch (Exception ex)
                         {
-                            BorarObjeto(ob, false);
+                            Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                            dialog3.lblNombre.Content = "¡Error!";
+                            dialog3.lblTexto.Text = "Error al importar el diseño: \n" + ex.Message; ;
+                            dialog3.ShowDialog();
                         }
-
-
-                        using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
-                        {
-                            if (Directory.Exists(@".\objetos"))
-                                Directory.Delete(@".\objetos", true);
-
-                            if (Directory.Exists(@".\objetosTurno"))
-                                Directory.Delete(@".\objetosTurno", true);
-
-                            if (File.Exists(@"./Principal.png"))
-                                File.Delete(@"./Principal.png");
-
-                            archive.ExtractToDirectory(@".\");
-                        }
-                        CargarControles();
-                        LimpiarVistaPrevia();
-                        CargarVistaPrevia();
+                        Mouse.OverrideCursor = Cursors.Arrow;
                     }
-                    catch (Exception ex)
-                    {
-                        Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                        dialog2.lblNombre.Content = "¡Error!";
-                        dialog2.lblTexto.Text = "Error al importar el diseño: \n" + ex.Message; ;
-                        dialog2.ShowDialog();
-                    }
-                    Mouse.OverrideCursor = Cursors.Arrow;
                 }
             }
         }
@@ -921,8 +934,8 @@ namespace Precios_Turnos
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
-                            if ((itemObjets as UIElement).Visibility == Visibility.Visible)
-                            {
+                            //if ((itemObjets as UIElement).Visibility == Visibility.Visible)
+                            //{
                                 string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
                                 if (SeModificaControl(nombreControl))
                                 {
@@ -932,7 +945,7 @@ namespace Precios_Turnos
                                     itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
                                     itemCm.Items.Add(itemControl);
                                 }
-                            }
+                            //}
                         }
                         cm.PlacementTarget = sender as Button;
                         cm.IsOpen = true;
@@ -2891,7 +2904,7 @@ namespace Precios_Turnos
                     string[] datos = pTag.Split('|');
                     MediaElement obj = new MediaElement();
                     obj.Name = "FullScreamVideo";
-                    obj.Source = new Uri(control.Source.ToString());
+                    obj.Source = new Uri(@control.Source.ToString(), UriKind.RelativeOrAbsolute);
                     obj.Position = control.Position;
                     obj.LoadedBehavior = MediaState.Play;
                     obj.MediaEnded += MediaElement_MediaEnded;
