@@ -130,7 +130,7 @@ namespace Precios_Turnos
                                     btnGenerar.IsEnabled = false;
                                     btnOK.IsEnabled = false;
                                     lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                                    lblFecha.Content = "Licencia: Permanete";
+                                    lblFecha.Content = "Licencia: Permanente";
                                 }
                             }
                             else

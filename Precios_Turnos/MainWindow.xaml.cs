@@ -150,12 +150,7 @@ namespace Precios_Turnos
                                 {
                                     if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                     {
-                                        Conexion.IsEnabled = true;
-                                        Turnero.IsEnabled = true;
-                                        ImportarDiseno.IsEnabled = true;
-                                        ExportarDiseno.IsEnabled = true;
-                                        EditarDiseno.IsEnabled = true;
-                                        EditarDisenoTurnero.IsEnabled = true;
+                                        ActivarControlesMenu();
                                         return true;
                                     }
                                     dialog.lblTexto.Text = "La licencia ha caducado.";
@@ -163,12 +158,7 @@ namespace Precios_Turnos
                                 }
                                 else
                                 {
-                                    Conexion.IsEnabled = true;
-                                    Turnero.IsEnabled = true;
-                                    ImportarDiseno.IsEnabled = true;
-                                    ExportarDiseno.IsEnabled = true;
-                                    EditarDiseno.IsEnabled = true;
-                                    EditarDisenoTurnero.IsEnabled = true;
+                                    ActivarControlesMenu();
                                     return true;
                                 }
                             }
@@ -187,15 +177,33 @@ namespace Precios_Turnos
                 }
             }
 
+            BloquearControlesMenu();
+            return false;
+        }
+
+        private void BloquearControlesMenu()
+        {
             Conexion.IsEnabled = false;
             Turnero.IsEnabled = false;
+            Verificador.IsEnabled = false;
             ImportarDiseno.IsEnabled = false;
             ExportarDiseno.IsEnabled = false;
             EditarDiseno.IsEnabled = false;
             EditarDisenoTurnero.IsEnabled = false;
+            EditarDisenoVerificador.IsEnabled = false;
             ResizeMode = ResizeMode.NoResize;
+        }
 
-            return false;
+        private void ActivarControlesMenu()
+        {
+            Conexion.IsEnabled = true;
+            Turnero.IsEnabled = true;
+            Verificador.IsEnabled = true;
+            ImportarDiseno.IsEnabled = true;
+            ExportarDiseno.IsEnabled = true;
+            EditarDiseno.IsEnabled = true;
+            EditarDisenoTurnero.IsEnabled = true;
+            EditarDisenoVerificador.IsEnabled = true;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -3397,5 +3405,42 @@ namespace Precios_Turnos
             }
         }
 
+        private void Verificador_Click(object sender, RoutedEventArgs e)
+        {
+            EntrarDiseno dialog = new EntrarDiseno(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            if (dialog.ShowDialog() == true)
+            {
+                
+            }
+        }
+
+        private void EditarDisenoVerificador_Click(object sender, RoutedEventArgs e)
+        {
+            EntrarDiseno dialog = new EntrarDiseno(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            if (dialog.ShowDialog() == true)
+            {
+                
+            }
+        }
     }
 }
