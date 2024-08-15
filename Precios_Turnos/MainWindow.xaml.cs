@@ -1194,7 +1194,7 @@ namespace Precios_Turnos
                 {
                 }
 
-                if (extension.Equals("gif"))
+                if (extension.Equals(".gif"))
                 {
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
@@ -2000,7 +2000,9 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.Stretch = Stretch.Uniform;
                 obj.MaxHeight = MaxHeight;
-                obj.MaxWidth = MaxHeight;
+                obj.MaxWidth = MaxWidth;
+                obj.Width = MaxWidth/3;
+                obj.Height = MaxHeight/3;
                 obj.Volume = .5;
                 obj.Tag = "";
                 obj.MouseLeave += objetoMedia_MouseLeave;
@@ -2011,6 +2013,7 @@ namespace Precios_Turnos
 
             }
         }
+
 
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
@@ -3047,7 +3050,7 @@ namespace Precios_Turnos
             List<string> objEliminar = new List<string>();
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
-            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente.";
+            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente. ¿Está seguro que desea continuar?";
             if (dialog.ShowDialog() == true)
             {
                 try
