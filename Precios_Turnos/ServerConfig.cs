@@ -15,10 +15,6 @@ namespace Precios_Turnos
     {
         private readonly string serverKey = "Aplicaciones_3K_Mto_Prof";
         private Seguridad vSeguridad = new Seguridad();
-        private string server = string.Empty;
-        private string database = string.Empty;
-        private string user = string.Empty;
-        private string password = string.Empty;
 
         internal SqlConnection connection()
         {

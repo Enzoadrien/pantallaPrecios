@@ -77,14 +77,14 @@ namespace Precios_Turnos
             return false;
         }
 
-        internal string cargarLicenciaDiseno(string Correo, string Codigo)
+        internal bool validarLicenciaApp(string Correo, string Codigo)
         {
             SqlConnection connection = new ServerConfig().connection();
             try
             {
                 connection.Open();
                 string llave = "";
-                using var command = new SqlCommand("SELECT llave FROM licenciasDiseno WHERE correo='" + Correo + "' AND codigo='" + Codigo + "' AND nombreApp='" + MainWindow.nombreApp + "';", connection);
+                using var command = new SqlCommand("SELECT llave FROM licenciasApp WHERE correo='" + Correo + "' AND codigo='" + Codigo + "' AND nombreApp='" + MainWindow.nombreApp + "' AND activo=1;", connection);
                 using var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -96,74 +96,11 @@ namespace Precios_Turnos
                 {
                     Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
                     dialogError.lblNombre.Content = "¡Error!";
-                    dialogError.lblTexto.Text = "No se puede cargar la llave de edición, consulte al administrador.";
+                    dialogError.lblTexto.Text = "No se encuentra la llave de activacion en el servidor, consulte al administrador.";
                     dialogError.ShowDialog();
-                    return "";
+                    return false;
                 }
 
-                return llave;
-            }
-            catch (SqlException e)
-            {
-                Console.WriteLine(e.Message);
-                Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialogError.lblNombre.Content = "¡Error!";
-                dialogError.lblTexto.Text = "No se puede conectar con el servidor, consulte al administrador.";
-                dialogError.ShowDialog();
-                return "";
-            }
-        }
-        internal string cargarFechaActivacionLicenciaDiseno(string Correo, string Codigo, string Llave)
-        {
-
-            SqlConnection connection = new ServerConfig().connection();
-            try
-            {
-                connection.Open();
-                string fechaActivacion = "";
-                using var command = new SqlCommand("SELECT fechaActivacion, activo FROM licenciasDiseno WHERE correo='" + Correo + "' AND codigo='" + Codigo + "' AND llave='" + Llave + "' AND nombreApp='" + MainWindow.nombreApp + "';", connection);
-                using var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    if (reader.GetInt32(1) == 1)
-                        fechaActivacion = reader.GetDateTime(0).ToShortDateString();
-                    else
-                        fechaActivacion = new DateTime(1900, 1, 1).ToShortDateString();
-                }
-                connection.Close();
-
-                if (fechaActivacion.Length == 0)
-                {
-                    Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
-                    dialogError.lblNombre.Content = "¡Error!";
-                    dialogError.lblTexto.Text = "No se puede cargar la llave de edición, consulte al administrador.";
-                    dialogError.ShowDialog();
-                    return "";
-                }
-
-                return fechaActivacion;
-            }
-            catch (SqlException e)
-            {
-                Console.WriteLine(e.Message);
-                Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialogError.lblNombre.Content = "¡Error!";
-                dialogError.lblTexto.Text = "No se puede conectar con el servidor, consulte al administrador.";
-                dialogError.ShowDialog();
-                return "";
-            }
-        }
-
-        internal bool activarLicenciaDiseno(string Correo, string Codigo, string Llave)
-        {
-
-            SqlConnection connection = new ServerConfig().connection();
-            try
-            {
-                connection.Open();
-                using var command = new SqlCommand("UPDATE licenciasDiseno SET fechaActivacion ='" + vSeguridad.GetNetworkTime().Date.ToString("yyyy-MM-dd") + "', activo=1 WHERE nombreApp='" + MainWindow.nombreApp + "'AND correo ='" + Correo + "'AND codigo='" + Codigo + "' AND llave='"+ Llave + "';", connection);
-                using var reader = command.ExecuteReader();
-                connection.Close();
                 return true;
             }
             catch (SqlException e)
@@ -171,12 +108,10 @@ namespace Precios_Turnos
                 Console.WriteLine(e.Message);
                 Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialogError.lblNombre.Content = "¡Error!";
-                dialogError.lblTexto.Text = e.Message;
+                dialogError.lblTexto.Text = "No se puede conectar con el servidor, consulte al administrador.";
                 dialogError.ShowDialog();
+                return false;
             }
-
-            return false;
         }
-
     }
 }

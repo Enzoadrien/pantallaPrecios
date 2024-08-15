@@ -163,26 +163,6 @@ namespace Precios_Turnos
             Close();
         }
 
-        private void btnEditar_Click(object sender, RoutedEventArgs e)
-        {
-            EntrarDiseno dialog = new EntrarDiseno(mainWindow);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
-
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
-
-            if (dialog.ShowDialog() == true)
-            {
-                MostrarTurno dialog2 = new MostrarTurno(true);
-                dialog2.ShowDialog();
-            }
-        }
-
         private void cbxAudio_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!esInicio)
