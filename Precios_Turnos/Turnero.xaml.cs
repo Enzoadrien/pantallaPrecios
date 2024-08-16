@@ -114,10 +114,10 @@ namespace Precios_Turnos
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
-            Durar.Text = config.AppSettings.Settings["DuracionTurnero"].Value;
+            Durar.Text = config.AppSettings.Settings["Duracion"].Value;
             cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
-            cbxAudio.SelectedItem = config.AppSettings.Settings["AudioTurnero"].Value;
-            chkVoz.IsChecked = config.AppSettings.Settings["VozTurnero"].Value.Equals("true") ? true : false;
+            cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
+            chkVoz.IsChecked = config.AppSettings.Settings["Voz"].Value.Equals("true") ? true : false;
             string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
             if(clientes[0].Length > 0)
                 foreach (string cliente in clientes)
@@ -136,10 +136,10 @@ namespace Precios_Turnos
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
-            config.AppSettings.Settings["DuracionTurnero"].Value = Durar.Text;
+            config.AppSettings.Settings["Duracion"].Value = Durar.Text;
             config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["AudioTurnero"].Value = cbxAudio.SelectedItem.ToString();
-            config.AppSettings.Settings["VozTurnero"].Value = chkVoz.IsChecked == true ? "true" : "false";
+            config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
+            config.AppSettings.Settings["Voz"].Value = chkVoz.IsChecked == true ? "true" : "false";
             string clientes = string.Empty;
             foreach (string cliente in cbxTurneros.Items)
             {
@@ -331,7 +331,7 @@ namespace Precios_Turnos
             try
             {
                 synthesizer.SpeakAsyncCancelAll();
-                using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
 
@@ -339,8 +339,8 @@ namespace Precios_Turnos
                     stream.Close();
                 }
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (!config.AppSettings.Settings["TipoVozTurnero"].Value.Equals(""))
-                    synthesizer.SelectVoice(config.AppSettings.Settings["TipoVozTurnero"].Value);
+                if (!config.AppSettings.Settings["TipoVoz"].Value.Equals(""))
+                    synthesizer.SelectVoice(config.AppSettings.Settings["TipoVoz"].Value);
                 synthesizer.SpeakAsync(line);
             }
             catch { }

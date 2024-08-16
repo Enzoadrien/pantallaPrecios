@@ -19,6 +19,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
+using static Precios_Turnos.Recursos;
 
 namespace Precios_Turnos
 {
@@ -39,13 +40,27 @@ namespace Precios_Turnos
         private string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+        Recursos.TipoVentana tipoVentana;
 
-        public MostrarTurno(bool pEsDiseno = false, MainWindow? parentWindow = null)
+        public MostrarTurno(Recursos.TipoVentana pTipoVentana, bool pEsDiseno = false, MainWindow? parentWindow = null)
         {
+            tipoVentana = pTipoVentana;
             Owner = parentWindow;
             mainWindow = parentWindow;
             esDiseno = pEsDiseno;
             InitializeComponent();
+            if (tipoVentana == Recursos.TipoVentana.CAJERO)
+            {
+                Title = "Cajero";
+            }
+            else if (tipoVentana == Recursos.TipoVentana.VERIFICADOR)
+            {
+                Title = "Verificador";
+            }
+            else
+            {
+                Title = "Turno";
+            }
             double height = SystemParameters.FullPrimaryScreenHeight;
             double width = SystemParameters.FullPrimaryScreenWidth;
             Height = height - (height * .10);
@@ -74,7 +89,7 @@ namespace Precios_Turnos
         {
 
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            double ms = double.Parse(config.AppSettings.Settings["DuracionTurnero"].Value);
+            double ms = double.Parse(config.AppSettings.Settings["Duracion"].Value);
 
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(ms);
@@ -90,7 +105,7 @@ namespace Precios_Turnos
                 string line = string.Empty;
                 try
                 {
-                    using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
+                    using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
                     {
                         var sr = new StreamReader(stream);
 
@@ -461,12 +476,12 @@ namespace Precios_Turnos
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 try
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + config.AppSettings.Settings["AudioTurnero"].Value);
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + config.AppSettings.Settings["Audio"].Value);
                     player.Play();
                 }
                 catch { }
 
-                if (config.AppSettings.Settings["VozTurnero"].Value.Equals("true"))
+                if (config.AppSettings.Settings["Voz"].Value.Equals("true"))
                 {
                     Task.Run(() => ActivarVoz());
                 }
@@ -845,7 +860,7 @@ namespace Precios_Turnos
                 catch { }
                 esDiseno = false;
                 Close();
-                MostrarTurno dialog2 = new MostrarTurno(true);
+                MostrarTurno dialog2 = new MostrarTurno(tipoVentana, true);
                 dialog2.ShowDialog();
             }
         }

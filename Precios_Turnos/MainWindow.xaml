@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Precios, turnos y publicidad 3K" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Icon="/logo.png" Activated="VentanaPrincipal_Activated">
+        Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Icon="/logoapp.png" Activated="VentanaPrincipal_Activated">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -37,30 +37,40 @@
         <Grid x:Name="Base" />
         <Image x:Name="Fondo" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" />
         <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"/>
-        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000" Height="25" Width="160">
-            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="60">
+        <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000" Height="25">
+            <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
-                <Separator />
-                <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <MenuItem x:Name="EditarDisenoTurnero" Header="Editar diseño turnero" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
-                <MenuItem x:Name="EditarDisenoVerificador" Header="Editar diseño verificador de precios" FontFamily="Arial Rounded MT" Click="EditarDisenoVerificador_Click"/>
                 <Separator />
                 <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
-            <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25" Width="100">
+            <MenuItem x:Name="Editar" Header="Editar" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
+                <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
+                <Separator />
+                <MenuItem x:Name="EditarDisenoTurnero" Header="Editar diseño turnero" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
+                <MenuItem x:Name="EditarDisenoVerificador" Header="Editar diseño verificador de precios" FontFamily="Arial Rounded MT" Click="EditarDisenoVerificador_Click"/>
+                <MenuItem x:Name="EditarDisenoCajero" Header="Editar diseño cajero automático" FontFamily="Arial Rounded MT" Click="EditarDisenoCajero_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
                 <Separator />
                 <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
-                <Separator />
                 <MenuItem x:Name="Verificador" Header="Configurar verificador de precios" FontFamily="Arial Rounded MT" Click="Verificador_Click"/>
+                <MenuItem x:Name="Cajero" Header="Configurar cajero automático" FontFamily="Arial Rounded MT" Click="Cajero_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="Ayuda" Header="Ayuda" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
+                <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT"/>
             </MenuItem>
         </Menu>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="PantallaCompleta" Panel.ZIndex="1000"/>
-        <Image x:Name="LogoPrincipal" Height="60" Width="60" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="Recursos/logo.png" Opacity="0.5" Panel.ZIndex="1000"/>
+        <Button x:Name="LogoPrincipal"  Height="60" Width="60" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
+            <Button.Background>
+                <ImageBrush ImageSource="/logo.png"/>
+            </Button.Background>
+        </Button>
     </Grid>
 </Window>

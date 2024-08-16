@@ -972,6 +972,7 @@ namespace Precios_Turnos
         {
             PausarVideos(false);
             MediaElement control = (MediaElement)FindName("FullScreamVideo");
+
             if (control != null)
             {
                 PantallaCompleta.Children.Remove(control);
@@ -979,7 +980,7 @@ namespace Precios_Turnos
                 PantallaCompleta.Background = null;
                 //Video.UpdateLayout();
             }
-
+            
 
             Coordenadas.Visibility = Visibility.Hidden;
             ModoEdicion.Visibility = Visibility.Hidden;
@@ -1011,6 +1012,7 @@ namespace Precios_Turnos
 
             WindowState = WindowState.Normal;
             LogoPrincipal.Visibility = Visibility.Visible;
+            LogoPrincipal.IsHitTestVisible = false;
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
             ModoEdicion.Visibility = Visibility.Visible;   
@@ -2013,7 +2015,6 @@ namespace Precios_Turnos
 
             }
         }
-
 
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
@@ -3179,6 +3180,12 @@ namespace Precios_Turnos
                                 ((WebView2)item2).Source = new Uri(((WebView2)item2).Tag.ToString());
                             }
                             break;
+                        case "Button":
+                            if(((Button)item).Name.Equals("LogoPrincipal"))
+                                item.IsHitTestVisible = true;
+                            else
+                                item.IsHitTestVisible = false;
+                            break;
                         default:
                             if (!esDiseno)
                                 item.IsHitTestVisible = false;
@@ -3377,15 +3384,15 @@ namespace Precios_Turnos
 
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                MostrarTurno dialog2 = new MostrarTurno(true);
-                dialog2.ShowDialog();
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.TURNERO, true);
+                dialog.ShowDialog();
             }
             else
             {
-                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog3.lblNombre.Content = "¡Error!";
-                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog3.ShowDialog();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
             }
         }
 
@@ -3404,11 +3411,11 @@ namespace Precios_Turnos
             {
                 
             }
-            {
-                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog3.lblNombre.Content = "¡Error!";
-                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog3.ShowDialog();
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
             }
         }
 
@@ -3416,13 +3423,58 @@ namespace Precios_Turnos
         {
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.VERIFICADOR, true);
+                dialog.ShowDialog();
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
+
+        private void Cajero_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
+            {
 
             }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
+
+        private void EditarDisenoCajero_Click(object sender, RoutedEventArgs e)
+        {
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog3.lblNombre.Content = "¡Error!";
-                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog3.ShowDialog();
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.CAJERO, true);
+                dialog.ShowDialog();
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
+
+        private void LogoPrincipal_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
+            dialog.btnCancelar.Visibility = Visibility.Visible;
+            new Recursos().ventanaMensajesGrande800x600(dialog);
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            if (dialog.ShowDialog() == true)
+            {
+                SalirMaximizar();
             }
         }
     }
