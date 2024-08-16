@@ -23,6 +23,11 @@ namespace Precios_Turnos
             ERROR, ADVERTENCIA, ACEPTAR
         }
 
+        public enum TipoVentana
+        {
+            TURNERO, VERIFICADOR, CAJERO
+        }
+
         public readonly IDictionary<Key, int> NumericKeys = new Dictionary<Key, int> {
         { Key.D0, 0 },
         { Key.D1, 1 },
@@ -145,7 +150,7 @@ namespace Precios_Turnos
             {
                 await Application.Current.Dispatcher.InvokeAsync(new Action(() =>
               {
-                  MostrarTurno mostrarTurno = new MostrarTurno(false, parentWindow);
+                  MostrarTurno mostrarTurno = new MostrarTurno(Recursos.TipoVentana.TURNERO, false, parentWindow);
                   mostrarTurno.WindowStyle = WindowStyle.None;
                   mostrarTurno.ShowInTaskbar = false;
                   mostrarTurno.CargarControles();

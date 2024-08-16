@@ -47,6 +47,8 @@ namespace Precios_Turnos
     public partial class MainWindow : Window
     {
         public static string nombreApp = "Precios_Turnos";
+        private Seguridad seguridad = new Seguridad();
+        private Licencia licencia = new Licencia();
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
         private bool esAplicacion = false;
@@ -97,9 +99,6 @@ namespace Precios_Turnos
 
         private bool ValidarActivar()
         {
-            Seguridad vSeguridad = new Seguridad();
-
-            Licencia licencia = new Licencia();
             try
             {
                 using (Stream stream = new FileStream(@".\Llave.key", FileMode.Open))
@@ -128,12 +127,12 @@ namespace Precios_Turnos
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
 
-                string cadena = vSeguridad.DecryptString(licencia.Codigo, licencia.Key);
+                string cadena = seguridad.DecryptString(licencia.Codigo, licencia.Key);
                 string[] subs = cadena.Split('|');
                 if (subs.Length > 0)
                 {
-                    if (subs[0].Equals(vSeguridad.DecryptString(licencia.Codigo, licencia.Correo))
-                        && subs[3].Equals(vSeguridad.numeroSerieHD()) && subs[4].Equals(vSeguridad.numeroSeriePlacaBase())
+                    if (subs[0].Equals(seguridad.DecryptString(licencia.Codigo, licencia.Correo))
+                        && subs[3].Equals(seguridad.numeroSerieHD()) && subs[4].Equals(seguridad.numeroSeriePlacaBase())
                         && subs[5].Equals(nombreApp))
                     {
                         try
@@ -148,7 +147,7 @@ namespace Precios_Turnos
                             {
                                 if (!subs[1].Equals("0"))
                                 {
-                                    if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
+                                    if (seguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                     {
                                         ActivarControlesMenu();
                                         return true;
@@ -511,18 +510,7 @@ namespace Precios_Turnos
 
         private void EditarDiseno_Click(object sender, RoutedEventArgs e)
         {
-            EntrarDiseno dialog = new EntrarDiseno(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
-
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
-
-            if (dialog.ShowDialog() == true)
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
                 editar = true;
                 WindowState = WindowState.Maximized;
@@ -530,21 +518,18 @@ namespace Precios_Turnos
                 ModoEdicion.Content = "Modo edición";
                 ModoEdicion.FontSize = 24;
             }
+            else
+            {
+                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog3.lblNombre.Content = "¡Error!";
+                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog3.ShowDialog();
+            }
         }
 
         private void ImportarDiseno_Click(object sender, RoutedEventArgs e)
         {
-            EntrarDiseno dialog = new EntrarDiseno(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
-
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
-            if (dialog.ShowDialog() == true)
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Filter = "Archivos de diseño  (.3kzip)|*.3kzip";
@@ -605,12 +590,19 @@ namespace Precios_Turnos
                         {
                             Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
                             dialog3.lblNombre.Content = "¡Error!";
-                            dialog3.lblTexto.Text = "Error al importar el diseño: \n" + ex.Message; ;
+                            dialog3.lblTexto.Text = "Error al importar el diseño: \n" + ex.Message;
                             dialog3.ShowDialog();
                         }
                         Mouse.OverrideCursor = Cursors.Arrow;
                     }
                 }
+            }
+            else
+            {
+                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog3.lblNombre.Content = "¡Error!";
+                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog3.ShowDialog();
             }
         }
 
@@ -980,6 +972,7 @@ namespace Precios_Turnos
         {
             PausarVideos(false);
             MediaElement control = (MediaElement)FindName("FullScreamVideo");
+
             if (control != null)
             {
                 PantallaCompleta.Children.Remove(control);
@@ -987,7 +980,7 @@ namespace Precios_Turnos
                 PantallaCompleta.Background = null;
                 //Video.UpdateLayout();
             }
-
+            
 
             Coordenadas.Visibility = Visibility.Hidden;
             ModoEdicion.Visibility = Visibility.Hidden;
@@ -1019,6 +1012,7 @@ namespace Precios_Turnos
 
             WindowState = WindowState.Normal;
             LogoPrincipal.Visibility = Visibility.Visible;
+            LogoPrincipal.IsHitTestVisible = false;
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
             ModoEdicion.Visibility = Visibility.Visible;   
@@ -1202,7 +1196,7 @@ namespace Precios_Turnos
                 {
                 }
 
-                if (extension.Equals("gif"))
+                if (extension.Equals(".gif"))
                 {
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
@@ -2008,7 +2002,9 @@ namespace Precios_Turnos
                 obj.VerticalAlignment = VerticalAlignment.Center;
                 obj.Stretch = Stretch.Uniform;
                 obj.MaxHeight = MaxHeight;
-                obj.MaxWidth = MaxHeight;
+                obj.MaxWidth = MaxWidth;
+                obj.Width = MaxWidth/3;
+                obj.Height = MaxHeight/3;
                 obj.Volume = .5;
                 obj.Tag = "";
                 obj.MouseLeave += objetoMedia_MouseLeave;
@@ -3055,7 +3051,7 @@ namespace Precios_Turnos
             List<string> objEliminar = new List<string>();
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
-            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente.";
+            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente. ¿Está seguro que desea continuar?";
             if (dialog.ShowDialog() == true)
             {
                 try
@@ -3183,6 +3179,12 @@ namespace Precios_Turnos
                                 item2.Visibility = Visibility.Visible;
                                 ((WebView2)item2).Source = new Uri(((WebView2)item2).Tag.ToString());
                             }
+                            break;
+                        case "Button":
+                            if(((Button)item).Name.Equals("LogoPrincipal"))
+                                item.IsHitTestVisible = true;
+                            else
+                                item.IsHitTestVisible = false;
                             break;
                         default:
                             if (!esDiseno)
@@ -3379,21 +3381,18 @@ namespace Precios_Turnos
 
         private void EditarDisenoTurnero_Click(object sender, RoutedEventArgs e)
         {
-            EntrarDiseno dialog = new EntrarDiseno(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
-
-            if (dialog.ShowDialog() == true)
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                MostrarTurno dialog2 = new MostrarTurno(true);
-                dialog2.ShowDialog();
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.TURNERO, true);
+                dialog.ShowDialog();
+            }
+            else
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
             }
         }
 
@@ -3407,39 +3406,75 @@ namespace Precios_Turnos
 
         private void Verificador_Click(object sender, RoutedEventArgs e)
         {
-            EntrarDiseno dialog = new EntrarDiseno(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
-
-            if (dialog.ShowDialog() == true)
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
                 
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
             }
         }
 
         private void EditarDisenoVerificador_Click(object sender, RoutedEventArgs e)
         {
-            EntrarDiseno dialog = new EntrarDiseno(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
+            {
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.VERIFICADOR, true);
+                dialog.ShowDialog();
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
 
-            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
-            var centerParent = this.PointToScreen(relativeCenterParent);
-            //This calculates the relative center of the child form.
-            var hCenterChild = dialog.Width / 2;
-            var vCenterChild = dialog.Height / 2;
-            dialog.Left = centerParent.X - hCenterChild;
-            dialog.Top = centerParent.Y - vCenterChild;
+        private void Cajero_Click(object sender, RoutedEventArgs e)
+        {
 
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
+            {
+
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
+
+        private void EditarDisenoCajero_Click(object sender, RoutedEventArgs e)
+        {
+            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
+            {
+                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.CAJERO, true);
+                dialog.ShowDialog();
+            }
+            else{
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                dialog.ShowDialog();
+            }
+        }
+
+        private void LogoPrincipal_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
+            dialog.btnCancelar.Visibility = Visibility.Visible;
+            new Recursos().ventanaMensajesGrande800x600(dialog);
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (dialog.ShowDialog() == true)
             {
-                
+                SalirMaximizar();
             }
         }
     }

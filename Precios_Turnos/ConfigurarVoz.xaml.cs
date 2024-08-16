@@ -67,7 +67,7 @@ namespace Precios_Turnos
 
         private void GuardarTexto()
         {
-            using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
+            using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
             {
                 stream.SetLength(0);
                 byte[] bytes = Encoding.UTF8.GetBytes(lblTexto.Text);
@@ -76,7 +76,7 @@ namespace Precios_Turnos
             }
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["TipoVozTurnero"].Value = cbxTipoVoz.SelectedItem.ToString();
+            config.AppSettings.Settings["TipoVoz"].Value = cbxTipoVoz.SelectedItem.ToString();
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
@@ -86,7 +86,7 @@ namespace Precios_Turnos
             string line = string.Empty;
             try
             {
-                using (Stream stream = new FileStream(@".\Recursos\vozTurnero.3k", FileMode.Open))
+                using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
                 {
                     var sr = new StreamReader(stream);
 
@@ -103,7 +103,7 @@ namespace Precios_Turnos
             }
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            cbxTipoVoz.SelectedItem = config.AppSettings.Settings["TipoVozTurnero"].Value;
+            cbxTipoVoz.SelectedItem = config.AppSettings.Settings["TipoVoz"].Value;
             }
             catch { }
             esInicio = false;

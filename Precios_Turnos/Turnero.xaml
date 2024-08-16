@@ -208,38 +208,7 @@
         <StackPanel Grid.Row="14"
                 HorizontalAlignment="Left"
                 Orientation="Horizontal"
-                Margin="5,5,0,5" Grid.ColumnSpan="2" >
-            <Button x:Name="btnEditar"
-              Content="Editar diseño"
-              IsDefault="True"
-              Width="120"
-              Height="20"
-              Margin="0,0,0,0"
-              TabIndex="0"
-              FontFamily="Arial Rounded MT" 
-              FontSize="14" Click="btnEditar_Click">
-                <Button.Style>
-                    <Style TargetType="{x:Type Button}">
-                        <Setter Property="Background" Value="#FF989090"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="{x:Type Button}">
-                                    <Border Background="{TemplateBinding Background}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FF0E596D"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </StackPanel>
+                Margin="5,5,0,5" Grid.ColumnSpan="2" />
         <StackPanel Grid.Row="14"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
