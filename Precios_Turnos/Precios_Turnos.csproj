@@ -27,7 +27,7 @@
 
   <ItemGroup>
     <Reference Include="DataGate">
-      <HintPath>..\..\DataGate\DataGate\bin\Release\netstandard2.0\DataGate.dll</HintPath>
+      <HintPath>bin\Debug\net6.0-windows\DataGate.dll</HintPath>
     </Reference>
   </ItemGroup>
 
