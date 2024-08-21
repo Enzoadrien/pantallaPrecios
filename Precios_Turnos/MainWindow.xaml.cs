@@ -218,6 +218,7 @@ namespace Precios_Turnos
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
                 Menu.Visibility = Visibility.Hidden;
+                LogoPrincipal.Opacity = .5;
 
                 //// re-show the window after changing style
                 Visibility = Visibility.Visible;
@@ -246,6 +247,7 @@ namespace Precios_Turnos
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
                 Menu.Visibility = Visibility.Hidden;
+                LogoPrincipal.Opacity = .5;
 
                 //// re-show the window after changing style
                 Visibility = Visibility.Visible;
@@ -266,6 +268,7 @@ namespace Precios_Turnos
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
                 CenterWindowOnScreen();
+                LogoPrincipal.Opacity = 1;
 
 
                 if (esAplicacion)

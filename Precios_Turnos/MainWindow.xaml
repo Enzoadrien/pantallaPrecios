@@ -67,7 +67,7 @@
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="PantallaCompleta" Panel.ZIndex="1000"/>
-        <Button x:Name="LogoPrincipal"  Height="60" Width="60" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
+        <Button x:Name="LogoPrincipal"  Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
             <Button.Background>
                 <ImageBrush ImageSource="/logo.png"/>
             </Button.Background>
