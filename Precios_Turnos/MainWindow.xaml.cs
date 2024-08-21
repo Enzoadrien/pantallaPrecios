@@ -55,7 +55,7 @@ namespace Precios_Turnos
         private bool editar = false;
         private bool animaciones = false;
         private bool maximizado = false;
-        private bool activarTurnero = false;
+        private bool activarSplash = false;
         private bool estaSaliendo = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
@@ -183,26 +183,22 @@ namespace Precios_Turnos
         private void BloquearControlesMenu()
         {
             Conexion.IsEnabled = false;
-            Turnero.IsEnabled = false;
-            Verificador.IsEnabled = false;
+            VentanaSplash.IsEnabled = false;
             ImportarDiseno.IsEnabled = false;
             ExportarDiseno.IsEnabled = false;
             EditarDiseno.IsEnabled = false;
-            EditarDisenoTurnero.IsEnabled = false;
-            EditarDisenoVerificador.IsEnabled = false;
+            EditarDisenoVentanaSplash.IsEnabled = false;
             ResizeMode = ResizeMode.NoResize;
         }
 
         private void ActivarControlesMenu()
         {
             Conexion.IsEnabled = true;
-            Turnero.IsEnabled = true;
-            Verificador.IsEnabled = true;
+            VentanaSplash.IsEnabled = true;
             ImportarDiseno.IsEnabled = true;
             ExportarDiseno.IsEnabled = true;
             EditarDiseno.IsEnabled = true;
-            EditarDisenoTurnero.IsEnabled = true;
-            EditarDisenoVerificador.IsEnabled = true;
+            EditarDisenoVentanaSplash.IsEnabled = true;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -230,8 +226,8 @@ namespace Precios_Turnos
                 Task.Run(() => ComportamientoObjetos());
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                activarTurnero = config.AppSettings.Settings["Turnero"].Value.Equals("true") ? true : false;
-                if (activarTurnero)
+                activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
+                if (activarSplash)
                     EscucharTurnos();
 
             }
@@ -290,7 +286,7 @@ namespace Precios_Turnos
                 SalirMaximizar();
                 estaSaliendo = false;
             }
-            else if (maximizado && activarTurnero)
+            else if (maximizado && activarSplash)
             {
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 if (config.AppSettings.Settings["ProtocoloTurnero"].Value.Equals("T"))
@@ -577,8 +573,8 @@ namespace Precios_Turnos
                                 if (Directory.Exists(@".\objetos"))
                                     Directory.Delete(@".\objetos", true);
 
-                                if (Directory.Exists(@".\objetosTurno"))
-                                    Directory.Delete(@".\objetosTurno", true);
+                                if (Directory.Exists(@".\objetosSplash"))
+                                    Directory.Delete(@".\objetosSplash", true);
 
                                 if (File.Exists(@"./Principal.png"))
                                     File.Delete(@"./Principal.png");
@@ -626,10 +622,10 @@ namespace Precios_Turnos
                 {
                     Mouse.OverrideCursor = Cursors.Wait;
                     Directory.CreateDirectory(@".\temp\objetos");
-                    Directory.CreateDirectory(@".\temp\objetosTurno");
+                    Directory.CreateDirectory(@".\temp\objetosSplash");
 
                     CopyDirectory(@".\objetos", @".\temp\objetos", true);
-                    CopyDirectory(@".\objetosTurno", @".\temp\objetosTurno", true);
+                    CopyDirectory(@".\objetosSplash", @".\temp\objetosSplash", true);
 
                     FileInfo fi = new FileInfo(@"./Principal.png");
                     fi.CopyTo(@".\temp\Principal.png", true);
@@ -3034,9 +3030,9 @@ namespace Precios_Turnos
             catch { }
         }
 
-        private void Turnero_Click(object sender, RoutedEventArgs e)
+        private void VentanaSplash_Click(object sender, RoutedEventArgs e)
         {
-            Turnero dialog = new Turnero(this);
+            ConfigurarVentanaSplash dialog = new ConfigurarVentanaSplash(this);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -3358,9 +3354,9 @@ namespace Precios_Turnos
                 Directory.CreateDirectory(@".\objetos\animaciones");
             }
 
-            if (!Directory.Exists(@".\objetosTurno\animaciones"))
+            if (!Directory.Exists(@".\objetosSplash\animaciones"))
             {
-                Directory.CreateDirectory(@".\objetosTurno\animaciones");
+                Directory.CreateDirectory(@".\objetosSplash\animaciones");
             }
 
             //Carpeta de consultas sql
@@ -3369,17 +3365,25 @@ namespace Precios_Turnos
                 Directory.CreateDirectory(@".\objetos\consultasSQL");
             }
 
+
+            //Carpeta de consultas sql Splah
+            if (!Directory.Exists(@".\objetosSplash\consultasSQL"))
+            {
+                Directory.CreateDirectory(@".\objetosSplash\consultasSQL");
+            }
+
             //Carpeta multimedia principal
             if (!Directory.Exists(@".\objetos\multimedia"))
             {
                 Directory.CreateDirectory(@".\objetos\multimedia");
             }
 
-            //Carpeta multimedia turno
-            if (!Directory.Exists(@".\objetosTurno\multimedia"))
+            //Carpeta multimedia Splah
+            if (!Directory.Exists(@".\objetosSplash\multimedia"))
             {
-                Directory.CreateDirectory(@".\objetosTurno\multimedia");
+                Directory.CreateDirectory(@".\objetosSplash\multimedia");
             }
+
         }
 
         private void EditarDisenoTurnero_Click(object sender, RoutedEventArgs e)
@@ -3387,7 +3391,7 @@ namespace Precios_Turnos
 
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.TURNERO, true);
+                MostrarTurno dialog = new MostrarTurno(true);
                 dialog.ShowDialog();
             }
             else
@@ -3404,66 +3408,6 @@ namespace Precios_Turnos
             if (WindowState == WindowState.Maximized && !editar)
             {
                 FocusManager.SetFocusedElement(this, VentanaPrincipal);
-            }
-        }
-
-        private void Verificador_Click(object sender, RoutedEventArgs e)
-        {
-
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
-            {
-                
-            }
-            else{
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog.ShowDialog();
-            }
-        }
-
-        private void EditarDisenoVerificador_Click(object sender, RoutedEventArgs e)
-        {
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
-            {
-                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.VERIFICADOR, true);
-                dialog.ShowDialog();
-            }
-            else{
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog.ShowDialog();
-            }
-        }
-
-        private void Cajero_Click(object sender, RoutedEventArgs e)
-        {
-
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
-            {
-
-            }
-            else{
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog.ShowDialog();
-            }
-        }
-
-        private void EditarDisenoCajero_Click(object sender, RoutedEventArgs e)
-        {
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
-            {
-                MostrarTurno dialog = new MostrarTurno(Recursos.TipoVentana.CAJERO, true);
-                dialog.ShowDialog();
-            }
-            else{
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog.ShowDialog();
             }
         }
 

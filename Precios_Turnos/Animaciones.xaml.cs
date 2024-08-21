@@ -315,7 +315,7 @@ namespace Precios_Turnos
         private void CargarControles()
         {
             string lectura = string.Empty;
-            DirectoryInfo info = new DirectoryInfo((mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosTurno") + @"\animaciones");
+            DirectoryInfo info = new DirectoryInfo((mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones");
             foreach (var file in info.GetFiles())
             {
                 if (@file.Name.Equals(NombreControl + ".anim"))
@@ -537,7 +537,7 @@ namespace Precios_Turnos
         {
             try
             {
-                using (Stream stream = new FileStream(@".\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosTurno") + @"\animaciones\" + pvStrNombreObjeto + ".anim", FileMode.Create))
+                using (Stream stream = new FileStream(@".\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones\" + pvStrNombreObjeto + ".anim", FileMode.Create))
                 {
                     stream.SetLength(0);
                     byte[] bytes = Encoding.UTF8.GetBytes(pvStrAnimacion);

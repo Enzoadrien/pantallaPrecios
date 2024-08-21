@@ -41,6 +41,11 @@
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
                 <Separator />
+                <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
+                    <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
+                    <MenuItem x:Name="VentanaSplash" Header="Configurar ventana splash" FontFamily="Arial Rounded MT" Click="VentanaSplash_Click"/>
+                </MenuItem>
+                <Separator />
                 <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
@@ -48,17 +53,7 @@
             </MenuItem>
             <MenuItem x:Name="Editar" Header="Editar" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <Separator />
-                <MenuItem x:Name="EditarDisenoTurnero" Header="Editar diseño turnero" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
-                <MenuItem x:Name="EditarDisenoVerificador" Header="Editar diseño verificador de precios" FontFamily="Arial Rounded MT" Click="EditarDisenoVerificador_Click"/>
-                <MenuItem x:Name="EditarDisenoCajero" Header="Editar diseño cajero automático" FontFamily="Arial Rounded MT" Click="EditarDisenoCajero_Click"/>
-            </MenuItem>
-            <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
-                <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
-                <Separator />
-                <MenuItem x:Name="Turnero" Header="Configurar turnero" FontFamily="Arial Rounded MT" Click="Turnero_Click"/>
-                <MenuItem x:Name="Verificador" Header="Configurar verificador de precios" FontFamily="Arial Rounded MT" Click="Verificador_Click"/>
-                <MenuItem x:Name="Cajero" Header="Configurar cajero automático" FontFamily="Arial Rounded MT" Click="Cajero_Click"/>
+                <MenuItem x:Name="EditarDisenoVentanaSplash" Header="Editar diseño ventana splash" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
             </MenuItem>
             <MenuItem x:Name="Ayuda" Header="Ayuda" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT"/>

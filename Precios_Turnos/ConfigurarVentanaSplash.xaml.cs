@@ -29,7 +29,7 @@ namespace Precios_Turnos
     /// <summary>
     /// Lógica de interacción para Turnero.xaml
     /// </summary>
-    public partial class Turnero : Window
+    public partial class ConfigurarVentanaSplash : Window
     {
         private MainWindow mainWindow;
         bool esInicio = true;
@@ -39,7 +39,7 @@ namespace Precios_Turnos
 
         private BackgroundWorker backgroundWorker = new BackgroundWorker();
         
-        public Turnero(MainWindow pmainWindow)
+        public ConfigurarVentanaSplash(MainWindow pmainWindow)
         {
             InitializeComponent();
             CargarDatos();
@@ -74,11 +74,35 @@ namespace Precios_Turnos
             }
         }
 
-        private bool TextAllowed(string s)
+        private bool TextAllowedIP(string s)
         {
             foreach (char c in s.ToCharArray())
             {
                 if (char.IsDigit(c) || c.Equals('.')) continue;
+                else return false;
+            }
+            return true;
+        }
+
+        private void ResponseTextBox_PreviewTextInputIP(object sender, TextCompositionEventArgs e)
+        {
+
+            e.Handled = !TextAllowedIP(e.Text);
+
+        }
+
+        private void PastingHandlerIP(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowedIP(s)) e.CancelCommand();
+        }
+
+        private bool TextAllowed(string s)
+        {
+            foreach (char c in s.ToCharArray())
+            {
+                if (char.IsDigit(c)) continue;
                 else return false;
             }
             return true;
@@ -110,11 +134,13 @@ namespace Precios_Turnos
         private void CargarDatos()
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            chkTurnero.IsChecked = config.AppSettings.Settings["Turnero"].Value.Equals("true")? true : false;
+            chkActivarSplash.IsChecked = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true")? true : false;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
             Durar.Text = config.AppSettings.Settings["Duracion"].Value;
+            Ancho.Text = config.AppSettings.Settings["Ancho"].Value;
+            Alto.Text = config.AppSettings.Settings["Alto"].Value;
             cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
             chkVoz.IsChecked = config.AppSettings.Settings["Voz"].Value.Equals("true") ? true : false;
@@ -132,11 +158,13 @@ namespace Precios_Turnos
         {
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["Turnero"].Value = chkTurnero.IsChecked == true ? "true" : "false";
+            config.AppSettings.Settings["ActivarSplash"].Value = chkActivarSplash.IsChecked == true ? "true" : "false";
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
             config.AppSettings.Settings["Duracion"].Value = Durar.Text;
+            config.AppSettings.Settings["Ancho"].Value = Ancho.Text;
+            config.AppSettings.Settings["Alto"].Value = Alto.Text;
             config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
             config.AppSettings.Settings["Voz"].Value = chkVoz.IsChecked == true ? "true" : "false";

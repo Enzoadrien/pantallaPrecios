@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Odbc;
 using System.IO;
 using System.Linq;
 using System.Speech.Synthesis;
@@ -40,33 +41,20 @@ namespace Precios_Turnos
         private string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
-        Recursos.TipoVentana tipoVentana;
 
-        public MostrarTurno(Recursos.TipoVentana pTipoVentana, bool pEsDiseno = false, MainWindow? parentWindow = null)
+        public MostrarTurno(bool pEsDiseno = false, MainWindow? parentWindow = null)
         {
-            tipoVentana = pTipoVentana;
             Owner = parentWindow;
             mainWindow = parentWindow;
             esDiseno = pEsDiseno;
             InitializeComponent();
-            if (tipoVentana == Recursos.TipoVentana.CAJERO)
+            try
             {
-                Title = "Cajero";
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                Width = double.Parse(config.AppSettings.Settings["Ancho"].Value);
+                Height = double.Parse(config.AppSettings.Settings["Alto"].Value);
             }
-            else if (tipoVentana == Recursos.TipoVentana.VERIFICADOR)
-            {
-                Title = "Verificador";
-            }
-            else
-            {
-                Title = "Turno";
-            }
-            double height = SystemParameters.FullPrimaryScreenHeight;
-            double width = SystemParameters.FullPrimaryScreenWidth;
-            Height = height - (height * .10);
-            Width = width / 2;
-            MaxHeight = Height;
-            MaxWidth = Width;
+            catch { }
             if (!esDiseno)
             {
                 IsHitTestVisible = false;
@@ -246,38 +234,38 @@ namespace Precios_Turnos
 
                     Label control = (Label)FindName("NumeroTurno");
                     if (control != null)
-                        ((MenuItem)cm.Items[2]).Header = "Eliminar turno";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Eliminar turno";
                     else
-                        ((MenuItem)cm.Items[2]).Header = "Agregar turno";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Agregar turno";
 
                     control = (Label)FindName("NumeroEquipo");
                     if (control != null)
-                        ((MenuItem)cm.Items[3]).Header = "Eliminar equipo";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Eliminar equipo";
                     else
-                        ((MenuItem)cm.Items[3]).Header = "Agregar equipo";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Agregar equipo";
 
                     control = (Label)FindName("NombreEquipo");
                     if (control != null)
-                        ((MenuItem)cm.Items[4]).Header = "Eliminar nombre equipo";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Eliminar nombre equipo";
                     else
-                        ((MenuItem)cm.Items[4]).Header = "Agregar nombre equipo";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Agregar nombre equipo";
 
 
                     control = (Label)FindName("NumeroTurnoAnt");
                     if (control != null)
-                        ((MenuItem)cm.Items[5]).Header = "Eliminar turno anterior";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Eliminar turno anterior";
                     else
-                        ((MenuItem)cm.Items[5]).Header = "Agregar turno anterior";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Agregar turno anterior";
 
                     control = (Label)FindName("NumeroEquipoAnt");
                     if (control != null)
-                        ((MenuItem)cm.Items[6]).Header = "Eliminar equipo anterior";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Eliminar equipo anterior";
                     else
-                        ((MenuItem)cm.Items[6]).Header = "Agregar equipo anterior";
+                        ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Agregar equipo anterior";
 
 
 
-                    MenuItem itemCm = (MenuItem)cm.Items[8];
+                    MenuItem itemCm = (MenuItem)cm.Items[5];
                     itemCm.Items.Clear();
                     foreach (var itemObjets in Principal.Children)
                     {
@@ -339,7 +327,7 @@ namespace Precios_Turnos
             return seElimina;
         }
 
-        private bool SeModificaControl(string name)
+        public bool SeModificaControl(string name)
         {
             bool seModifica;
             switch (name)
@@ -457,7 +445,66 @@ namespace Precios_Turnos
                     propiedadesMultimedia.esInicio = false;
                     propiedadesMultimedia.ShowDialog();
                     break;
+                case "DataGrid":
+                    PropiedadesTablaVerificador propiedadesTabla = new PropiedadesTablaVerificador(this);
+                    propiedadesTabla.WindowStartupLocation = WindowStartupLocation.Manual;
 
+                    if (point.X + propiedadesTabla.Width >= MaxWidth)
+                        propiedadesTabla.Left = point.X - propiedadesTabla.Width;
+                    else
+                        propiedadesTabla.Left = point.X;
+
+                    if (point.Y + propiedadesTabla.Height >= MaxHeight)
+                        propiedadesTabla.Top = point.Y - propiedadesTabla.Height;
+                    else
+                        propiedadesTabla.Top = point.Y;
+
+                    propiedadesTabla.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                    propiedadesTabla.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
+                    propiedadesTabla.TipoControl.Text = item.GetType().Name;
+
+                    propiedadesTabla.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                    propiedadesTabla.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                    propiedadesTabla.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                    propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                    propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count * 2;
+                    propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
+                    string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                    propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
+                    propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
+                    propiedadesTabla.cbxOrientacion.SelectedValue = datos[2];
+                    if (datos.Length == 8)
+                    {
+                        propiedadesTabla.chkDoble.IsChecked = true;
+                        propiedadesTabla.btnColorFuente.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                        propiedadesTabla.btnColorFondo.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                        propiedadesTabla.btnColorFuente2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
+                        propiedadesTabla.btnColorFondo2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
+                    }
+                    else
+                    {
+                        propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
+                        propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
+                        Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
+
+                        propiedadesTabla.btnColorFuente.Fill = ((DataGrid)item).Foreground;
+                        propiedadesTabla.btnColorFondo.Fill = ((DataGrid)item).Background;
+                        propiedadesTabla.btnColorFuente2.Fill = ((DataGrid)item).Foreground;
+                        propiedadesTabla.btnColorFondo2.Fill = ((DataGrid)item).Background;
+                    }
+
+                    propiedadesTabla.Opacidad.Value = item.Opacity;
+
+                    propiedadesTabla.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                    propiedadesTabla.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
+
+                    propiedadesTabla.ShowDialog();
+                    break;
                 default:
 
                     break;
@@ -504,7 +551,7 @@ namespace Precios_Turnos
                     NameScope.GetNameScope(this).UnregisterName(pNombre);
                     try
                     {
-                        DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
+                        DirectoryInfo info = new DirectoryInfo(@"objetosSplash\");
                         foreach (var file in info.GetFiles())
                         {
                             string[] nombre = file.Name.Split('-');
@@ -512,7 +559,7 @@ namespace Precios_Turnos
                                 File.Delete(file.FullName);
                         }
 
-                        info = new DirectoryInfo(@"objetosTurno\animaciones");
+                        info = new DirectoryInfo(@"objetosSplash\animaciones");
 
                         foreach (var file in info.GetFiles())
                         {
@@ -702,15 +749,15 @@ namespace Precios_Turnos
                 FileInfo fi = new FileInfo(dialog.ContenidoText);
                 try
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetosTurno\multimedia\" + fi.Name);
-                    if (File.Exists(@".\objetosTurno\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    FileInfo fileImg = new FileInfo(@".\objetosSplash\multimedia\" + fi.Name);
+                    if (File.Exists(@".\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
                         Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
-                            fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                            fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
                             foreach (var itemObjets in Principal.Children)
                             {
                                 string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
@@ -719,26 +766,26 @@ namespace Precios_Turnos
                                     switch (itemObjets.GetType().Name.ToString())
                                     {
                                         case "Image":
-                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.Equals(@".\objetosTurno\multimedia\" + fi.Name))
+                                            if (((BitmapImage)((Image)itemObjets).Source).UriSource.Equals(@".\objetosSplash\multimedia\" + fi.Name))
                                             {
                                                 BitmapImage bitmapImage = new BitmapImage();
                                                 bitmapImage.BeginInit();
                                                 bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                                bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                                                bitmapImage.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                 bitmapImage.EndInit();
 
                                                 ((Image)itemObjets).Source = bitmapImage;
                                             }
                                             break;
                                         case "MediaElement":
-                                            if (((MediaElement)itemObjets).Source.Equals(@".\objetosTurno\multimedia\" + fi.Name))
+                                            if (((MediaElement)itemObjets).Source.Equals(@".\objetosSplash\multimedia\" + fi.Name))
                                             {
                                                 Application.Current.Dispatcher.Invoke(new Action(async () =>
                                                 {
                                                     ((MediaElement)itemObjets).Source = null;
                                                     await Task.Delay(100);
-                                                    ((MediaElement)itemObjets).Source = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                                                    ((MediaElement)itemObjets).Source = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                 }));
                                             }
                                             break;
@@ -750,7 +797,7 @@ namespace Precios_Turnos
                         }
                     }
                     else
-                        fi.CopyTo(@".\objetosTurno\multimedia\" + fi.Name, true);
+                        fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
                 }
                 catch
                 {
@@ -760,7 +807,7 @@ namespace Precios_Turnos
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    obj.Source = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -772,7 +819,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
                     
                     obj.Height = bitmapImage.Height;
@@ -793,7 +840,7 @@ namespace Precios_Turnos
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetosTurno\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -841,17 +888,17 @@ namespace Precios_Turnos
         {
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
-            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente.";
+            dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente. ¿Está seguro que desea continuar?";
             if (dialog.ShowDialog() == true)
             {
                 try
                 {
-                    DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
+                    DirectoryInfo di = new DirectoryInfo(@".\objetosSplash");
                     foreach (FileInfo file in di.EnumerateFiles())
                     {
                         file.Delete();
                     }
-                    foreach (var item in Directory.GetFiles(@".\objetosTurno\multimedia", "*.*"))
+                    foreach (var item in Directory.GetFiles(@".\objetosSplash\multimedia", "*.*"))
                     {
                         File.SetAttributes(item, FileAttributes.Normal);
                         File.Delete(item);
@@ -860,7 +907,7 @@ namespace Precios_Turnos
                 catch { }
                 esDiseno = false;
                 Close();
-                MostrarTurno dialog2 = new MostrarTurno(tipoVentana, true);
+                MostrarTurno dialog2 = new MostrarTurno(true);
                 dialog2.ShowDialog();
             }
         }
@@ -894,21 +941,33 @@ namespace Precios_Turnos
 
             try
             {
-                if (!Directory.Exists(@".\objetosTurno"))
+                if (!Directory.Exists(@".\objetosSplash"))
                 {
-                    Directory.CreateDirectory(@".\objetosTurno");
+                    Directory.CreateDirectory(@".\objetosSplash");
                 }
                 int x = 0;
-                DirectoryInfo di = new DirectoryInfo(@".\objetosTurno");
+                DirectoryInfo di = new DirectoryInfo(@".\objetosSplash");
                 foreach (FileInfo file in di.EnumerateFiles())
                 {
                     file.Delete();
                 }
                 foreach (var itemObjets in Principal.Children)
                 {
+                    bool esTabla;
                     string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
                     if (SeModificaControl(nombreControl) || nombreControl.Equals("Fondo") || nombreControl.Equals("Base") || nombreControl.Equals("Borde"))
                     {
+                        switch (itemObjets.GetType().Name.ToString())
+                        {
+                            case "DataGrid":
+                                esTabla = true;
+                                ((DataGrid)itemObjets).ItemsSource = null;
+                                break;
+                            default:
+                                esTabla = false;
+                                break;
+                        }
+
                         StringBuilder outstr = new StringBuilder();
 
                         XmlWriterSettings settings = new XmlWriterSettings();
@@ -923,7 +982,13 @@ namespace Precios_Turnos
                         XamlWriter.Save(itemObjets, dsm);
                         string savedControls = outstr.ToString();
                         Seguridad vSeguridad = new Seguridad();
-                        File.WriteAllText(@"objetosTurno\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(MainWindow.nombreApp, savedControls));
+                        File.WriteAllText(@"objetosSplash\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(MainWindow.nombreApp, savedControls));
+                        if (esTabla)
+                        {
+                            ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString())[0].DefaultView;
+                            //((DataGrid)itemObjets).UpdateLayout();
+                            ColorFuenteFondoTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString());
+                        }
                     }
                 }
             }
@@ -934,7 +999,7 @@ namespace Precios_Turnos
         {
             try
             {
-                DirectoryInfo info = new DirectoryInfo(@"objetosTurno\");
+                DirectoryInfo info = new DirectoryInfo(@"objetosSplash\");
                 foreach (var file in info.GetFiles().OrderBy(x => int.Parse(x.Name.Substring(0, x.Name.IndexOf('-')))).ToArray())
                 {
 
@@ -989,6 +1054,35 @@ namespace Precios_Turnos
                                         item.MouseEnter += objetoMedia_MouseEnter;
                                         break;
                                     case "Image":
+                                        item.MouseLeave += objetoMedia_MouseLeave;
+                                        item.MouseEnter += objetoMedia_MouseEnter;
+                                        break;
+                                    case "DataGrid":
+                                        string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                                        DataGrid control = (DataGrid)FindName(item.GetValue(NameProperty).ToString());
+                                        if (datos[2].Equals("V"))
+                                        {
+                                            control.CellStyle = new Style(typeof(DataGridCell))
+                                            {
+                                                Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center)
+                    }
+                                            };
+                                        }
+                                        else
+                                        {
+                                            control.CellStyle = new Style(typeof(DataGridCell))
+                                            {
+                                                Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
+                    }
+                                            };
+                                        }
+                                        List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
+                                        if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
+                                            control.ItemsSource = list[0].DefaultView;
+                                        //control.UpdateLayout();
+                                        ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                         item.MouseLeave += objetoMedia_MouseLeave;
                                         item.MouseEnter += objetoMedia_MouseEnter;
                                         break;
@@ -1223,7 +1317,7 @@ namespace Precios_Turnos
             TransformGroup myTransformGroup = new TransformGroup();
 
             string lectura = string.Empty;
-            DirectoryInfo info = new DirectoryInfo(@"objetosTurno\animaciones");
+            DirectoryInfo info = new DirectoryInfo(@"objetosSplash\animaciones");
             foreach (var file in info.GetFiles())
             {
                 if (@file.Name.Equals(pNombreControl + ".anim"))
@@ -1416,5 +1510,467 @@ namespace Precios_Turnos
         {
             new Recursos().GuardarNumeroTurno(numeroTurno);
         }
+
+        private void AgregarTablaDatos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var mousePosition = e.GetPosition(Principal);
+
+
+            if (mousePosition.X + dialog.Width >= MaxWidth)
+                dialog.Left = mousePosition.X - dialog.Width;
+            else
+                dialog.Left = mousePosition.X;
+
+            if (mousePosition.Y + dialog.Height >= MaxHeight)
+                dialog.Top = mousePosition.Y - dialog.Height;
+            else
+                dialog.Top = mousePosition.Y;
+
+            dialog.lblTexto.Content = "Titulo";
+            dialog.Titulo.Content = "Agregar tabla";
+            dialog.btnAbrir.Visibility = Visibility.Hidden;
+            if (dialog.ShowDialog() == true)
+            {
+                DataGrid obj = new DataGrid();
+                obj.Name = dialog.NombreText.ToUpper();
+                obj.ToolTip = dialog.NombreText.ToUpper();
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 28;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.CellStyle = new Style(typeof(DataGridCell))
+                {
+                    Setters = {
+                        new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
+                    }
+                };
+                obj.HeadersVisibility = DataGridHeadersVisibility.None;
+                obj.CanUserAddRows = false;
+                obj.Tag = "2|15|H|15";
+                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
+                obj.MouseLeave += objetoMedia_MouseLeave;
+                obj.MouseEnter += objetoMedia_MouseEnter;
+
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+
+            }
+        }
+        
+        public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false)
+        {
+            string[] datos = pTag.Split('|');
+            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
+            try
+            {
+                Seguridad vSeguridad = new Seguridad();
+                //Create the object
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                string odbc = config.AppSettings.Settings["ODBC"].Value;
+                string usuario = config.AppSettings.Settings["UsuarioODBC"].Value;
+                string contrasena = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
+                string consulta = string.Empty;
+                string nombreIndex = string.Empty;
+
+                DirectoryInfo info = new DirectoryInfo(@".\objetosSplash\consultasSQL");
+
+                foreach (var file in info.GetFiles())
+                {
+                    if (@file.Name.Equals(pNombre + ".sql"))
+                    {
+                        StreamReader sR = new StreamReader(@file.FullName);
+                        string lectura = sR.ReadToEnd();
+                        sR.Close();
+                        string[] datosC = vSeguridad.DecryptString(MainWindow.nombreApp, lectura).Split('|');
+                        consulta = datosC[0];
+                        if (datosC.Length > 1)
+                            nombreIndex = datosC[1];
+
+                        OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                        connection.Open();
+                        OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                        OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                        if (MyDataReader.HasRows)
+                        {
+                            DataTable dt = new DataTable();
+                            dt.Load(MyDataReader);
+                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
+
+                        }
+                        connection.Close();
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (pMostrarMensaje)
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Error al cargar la consulta: \n" + ex.Message; ;
+                    dialog.ShowDialog();
+                }
+                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
+            }
+            return ListaTablas;
+        }
+
+        public List<DataTable> LlenarListaTablas(int bloques, int cantFilas, DataTable dt, string orientacion, string pNombreControl, string pNombreIndex = "")
+        {
+            int index = 0;
+            bool tieneCampoOrganizar = false;
+            if (pNombreIndex.Length > 0)
+            {
+                index = dt.Columns.IndexOf(pNombreIndex);
+                tieneCampoOrganizar = true;
+            }
+            List<DataTable> ListTablas = new List<DataTable>();
+            int x = 1;
+            int rowCont = 0;
+            int rowContTotal = 0;
+
+            DataTable dtFinal = new DataTable();
+            for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
+                dtFinal.Columns.Add();
+
+            object[] arrayTemp = new object[0];
+            object[] arrayResult = new object[0];
+            foreach (DataRow row in dt.Rows)
+            {
+                bool seAgrego = false;
+                rowCont++;
+                rowContTotal++;
+                if (x <= cantFilas)
+                {
+                    switch (bloques)
+                    {
+                        case 1:
+                            seAgrego = true;
+                            dtFinal.Rows.Add(row.ItemArray);
+                            x++;
+                            break;
+                        case 2:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 2 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 3:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 3 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 4:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 4 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 5:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 5 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 6:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 6 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 7:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 7 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 8:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 8 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 9:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 9 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        case 10:
+                            arrayResult = arrayTemp.Concat(row.ItemArray).ToArray();
+                            arrayTemp = arrayResult.Concat(new object[1] { "     " }.ToArray()).ToArray();
+                            if (rowCont == 10 || rowContTotal == dt.Rows.Count)
+                            {
+                                seAgrego = true;
+                                dtFinal.Rows.Add(arrayResult);
+                                arrayTemp = new object[0];
+                                x++;
+                                rowCont = 0;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    bool cambioCampoOrganizar = false;
+                    if (tieneCampoOrganizar)
+                    {
+                        try
+                        {
+                            if (!row[index].ToString().Equals(dt.Rows[rowContTotal][index].ToString()))
+                            {
+                                cambioCampoOrganizar = true;
+                                if (!seAgrego)
+                                {
+                                    dtFinal.Rows.Add(arrayResult);
+                                    arrayTemp = new object[0];
+                                    x++;
+                                    rowCont = 0;
+                                }
+
+                            }
+
+                        }
+                        catch { }
+                    }
+
+                    if (x == cantFilas + 1 || rowContTotal == dt.Rows.Count || cambioCampoOrganizar)
+                    {
+                        while (x < cantFilas + 1)
+                        {
+                            dtFinal.Rows.Add();
+                            x++;
+                        }
+                        rowCont = 0;
+
+                        if (tieneCampoOrganizar)
+                        {
+                            dtFinal.TableName = row[index].ToString();
+                            switch (bloques)
+                            {
+                                case 1:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    break;
+                                case 2:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    break;
+                                case 3:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    break;
+                                case 4:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    break;
+                                case 5:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    break;
+                                case 6:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 5) + (index));
+                                    break;
+                                case 7:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 5) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 6) + (index));
+                                    break;
+                                case 8:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 5) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 6) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 7) + (index));
+                                    break;
+                                case 9:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 5) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 6) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 7) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 8) + (index));
+                                    break;
+                                case 10:
+                                    dtFinal.Columns.RemoveAt(index);
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 2) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 3) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 4) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 5) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 6) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 7) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 8) + (index));
+                                    dtFinal.Columns.RemoveAt((dt.Columns.Count * 9) + (index));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (orientacion.Equals("V"))
+                        {
+
+                            ListTablas.Add(PivotTable(dtFinal));
+                        }
+                        else
+                        {
+
+                            ListTablas.Add(dtFinal);
+                        }
+                        dtFinal = new DataTable();
+                        for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
+                        {
+                            dtFinal.Columns.Add();
+                        }
+                        x = 1;
+                    }
+
+                }
+            }
+            if (ListTablas.Count == 0)
+            {
+                dtFinal.Columns.Add();
+                dtFinal.Rows.Add(new object[1] { "Sin datos" }.ToArray());
+                ListTablas.Add(dtFinal);
+            }
+            return ListTablas;
+        }
+        
+        private DataTable PivotTable(DataTable origTable)
+        {
+
+            DataTable newTable = new DataTable();
+            DataRow dr = null;
+
+            //Add Columns to new Table
+            for (int i = 0; i < origTable.Rows.Count; i++)
+            {
+                newTable.Columns.Add();
+            }
+
+            //Execute the Pivot Method
+            for (int cols = 0; cols < origTable.Columns.Count; cols++)
+            {
+                dr = newTable.NewRow();
+                for (int rows = 0; rows < origTable.Rows.Count; rows++)
+                {
+                    dr[rows] = origTable.Rows[rows][cols];
+                }
+                newTable.Rows.Add(dr); //add the DataRow to the new Table rows collection
+            }
+            return newTable;
+        }
+
+        public void ColorFuenteFondoTabla(string pNombre, string pTag)
+        {
+            string[] datos = pTag.Split('|');
+            DataGrid control = (DataGrid)FindName(pNombre);
+            if (datos.Length == 8)
+            {
+                foreach (DataRowView item in control.ItemsSource)
+                {
+                    DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
+
+                    if (row != null)
+                        if (row.GetIndex() % 2 == 0)
+                        {
+                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                        }
+                        else
+                        {
+                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
+                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
+                        }
+                }
+            }
+            else
+            {
+                control.Foreground = control.Foreground;
+                control.Background = control.Background;
+                control.RowStyle = new Style(typeof(DataGridRow))
+                {
+                    Setters = {
+                        new Setter(BackgroundProperty, control.Background)
+                    }
+                };
+            }
+            //control.UpdateLayout();
+        }
+
     }
 }

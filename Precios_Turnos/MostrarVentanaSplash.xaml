@@ -5,16 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Turno" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="Splash" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Agregar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Agregar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Agregar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-            <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="Turnero" Header="Turnero">
+                <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Agregar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
+                <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Agregar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Agregar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
+                <Separator />
+                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            </MenuItem>
+            <MenuItem x:Name="Verificador" Header="Verificador">
+                <MenuItem x:Name="AgregarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>
+            </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades fondo" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
