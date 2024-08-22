@@ -66,6 +66,7 @@ namespace Precios_Turnos
         internal static List<StateObject> listaTurnosKretz = new List<StateObject>();
         private SolidColorBrush? ultimoColor;
         private double ultimaOpacidad;
+        private string datosVerificador;
 
         public MainWindow()
         {
@@ -312,6 +313,17 @@ namespace Precios_Turnos
                             Task.Run(() => ProcesarTecla(e));
                         break;
                     case "V":
+                        switch (e.Key)
+                        {
+                            case Key.Enter:
+                                string datoEnviar = datosVerificador;
+                                Task.Run(() => ProcesarVerificador(datoEnviar));
+                                datosVerificador = string.Empty;
+                                break;
+                            default:
+                                datosVerificador += (char)KeyInterop.VirtualKeyFromKey(e.Key);
+                                break;
+                        }
                         break;
                     case "C":
                         break;
@@ -319,6 +331,18 @@ namespace Precios_Turnos
                 }
             }
 
+        }
+
+        internal void ProcesarVerificador(string pvStrDatosVerificador)
+        {
+            Application.Current.Dispatcher.InvokeAsync(new Action(() =>
+            {
+                MostrarVentanaSplash mostrarTurno = new MostrarVentanaSplash(false, this, pvStrDatosVerificador);
+            mostrarTurno.WindowStyle = WindowStyle.None;
+            mostrarTurno.ShowInTaskbar = false;
+            mostrarTurno.CargarControles();
+            mostrarTurno.ShowDialog();
+            }));
         }
 
         internal void ProcesarTecla(KeyEventArgs e)

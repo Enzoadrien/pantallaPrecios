@@ -574,6 +574,16 @@ namespace Precios_Turnos
                             if (file.Name.Equals(pNombre + ".anim"))
                                 File.Delete(file.FullName);
                         }
+
+                        info = new DirectoryInfo(@"objetosSplash\consultasSQL");
+
+
+                        foreach (var file in info.GetFiles())
+                        {
+                            if (file.Name.Equals(pNombre + ".sql"))
+                                File.Delete(file.FullName);
+                        }
+
                         switch (item.GetType().Name.ToString())
                         {
                             case "Image":
@@ -1087,7 +1097,7 @@ namespace Precios_Turnos
                                             };
                                         }
                                         List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(), false, datoVerificador);
-                                        if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
+                                        //if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                             control.ItemsSource = list[0].DefaultView;
                                       
                                         ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
@@ -1568,7 +1578,7 @@ namespace Precios_Turnos
                     };
                     obj.HeadersVisibility = DataGridHeadersVisibility.None;
                     obj.CanUserAddRows = false;
-                    obj.Tag = "2|15|H|15";
+                    obj.Tag = "1|1|H|15";
                     obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
                     obj.MouseLeave += objetoMedia_MouseLeave;
                     obj.MouseEnter += objetoMedia_MouseEnter;
@@ -1634,6 +1644,10 @@ namespace Precios_Turnos
                             dt.Load(MyDataReader);
                             ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
 
+                        }
+                        else
+                        {
+                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
                         }
                         connection.Close();
                         break;

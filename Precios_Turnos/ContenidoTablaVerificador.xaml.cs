@@ -122,7 +122,6 @@ namespace Precios_Turnos
                 List<DataTable> tablas = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true);
                 control.ItemsSource = tablas[0].DefaultView;
                 //control.UpdateLayout();
-                    
 
                 mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
                 return true;
