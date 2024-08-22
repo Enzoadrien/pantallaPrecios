@@ -8,8 +8,8 @@
         Title="Tipo" Background="#FFD2CBCB" WindowStyle="None" Height="170" Width="500" KeyDown="Window_KeyDown" ResizeMode="NoResize"  MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="60*"/>
-            <ColumnDefinition Width="80*"/>
+            <ColumnDefinition Width="43*"/>
+            <ColumnDefinition Width="57*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="30*"/>
@@ -21,17 +21,16 @@
                     Background="#FF989090" Grid.ColumnSpan="2">
             <Label x:Name="lblNombre" Content="Configurar voz"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
             <TextBox x:Name="lblTexto" FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,5,5,0"/>
         </ScrollViewer>
-        <Label x:Name="Turno"  Content="*NumeroTurno          *NumeroEquipo           *NombreEquipo" Grid.ColumnSpan="2" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top"/>
-        <Label x:Name="TurnoAnt" Content="*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt" Grid.ColumnSpan="2" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Bottom"/>
-        <ComboBox x:Name="cbxTipoVoz" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="2" Margin="15,5,5,5" HorizontalAlignment="Right" Width="190" SelectionChanged="cbxTipoVoz_SelectionChanged">
-        </ComboBox>
+        <Label x:Name="Texto1"  Content="" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+        <Label x:Name="Texto2" Content="" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top" Margin="0,12,0,0" Grid.ColumnSpan="2"/>
+        <ComboBox x:Name="cbxTipoVoz" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="2" Margin="90,5,0,5" HorizontalAlignment="Left" Width="190" SelectionChanged="cbxTipoVoz_SelectionChanged" SelectedIndex="0" Grid.Column="1"/>
         <StackPanel Grid.Row="3"
-                HorizontalAlignment="Right"
+                HorizontalAlignment="Left"
                 Orientation="Horizontal"
-                Margin="0,5,5,5" Grid.Column="1" >
+                Margin="220,5,0,5" Grid.Column="1" >
             <Button x:Name="btnOK"
               Content="Aceptar"
               Click="btnOK_Click"
@@ -65,9 +64,9 @@
             </Button>
         </StackPanel>
         <StackPanel Grid.Row="3"
-                HorizontalAlignment="Right"
+                HorizontalAlignment="Left"
                 Orientation="Horizontal"
-                Margin="0,5,70,5" Grid.Column="1" >
+                Margin="150,5,0,5" Grid.Column="1" >
             <Button x:Name="btnCancelar"
               Content="Cancelar"
               Click="btnCancelar_Click"
@@ -100,7 +99,7 @@
                 </Button.Style>
             </Button>
         </StackPanel>
-        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="1" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" Grid.Column="1" >
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="#FF989090"/>

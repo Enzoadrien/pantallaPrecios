@@ -145,7 +145,7 @@ namespace Precios_Turnos
             {
                 await Application.Current.Dispatcher.InvokeAsync(new Action(() =>
               {
-                  MostrarTurno mostrarTurno = new MostrarTurno(false, parentWindow);
+                  MostrarVentanaSplash mostrarTurno = new MostrarVentanaSplash(false, parentWindow);
                   mostrarTurno.WindowStyle = WindowStyle.None;
                   mostrarTurno.ShowInTaskbar = false;
                   mostrarTurno.CargarControles();

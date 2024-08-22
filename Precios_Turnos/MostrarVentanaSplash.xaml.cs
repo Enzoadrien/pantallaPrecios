@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -27,7 +28,7 @@ namespace Precios_Turnos
     /// <summary>
     /// Lógica de interacción para MostrarTurno.xaml
     /// </summary>
-    public partial class MostrarTurno : Window
+    public partial class MostrarVentanaSplash : Window
     {
         private Point _positionInBlock;
         private TranslateTransform? _currentTT;
@@ -41,12 +42,16 @@ namespace Precios_Turnos
         private string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+        private string datoVerificador;
 
-        public MostrarTurno(bool pEsDiseno = false, MainWindow? parentWindow = null)
+        public MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "")
         {
             Owner = parentWindow;
             mainWindow = parentWindow;
             esDiseno = pEsDiseno;
+            datoVerificador = pvSrtDatoVerificador;
+
+
             InitializeComponent();
             try
             {
@@ -62,7 +67,6 @@ namespace Precios_Turnos
                 Coordenadas.Visibility = Visibility.Hidden;
                 StartCloseTimer();
             }
-
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -263,7 +267,11 @@ namespace Precios_Turnos
                     else
                         ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Agregar equipo anterior";
 
-
+                    DataGrid control2 = (DataGrid)FindName("TablaDatos");
+                    if (control2 != null)
+                        ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Eliminar tabla de datos";
+                    else
+                        ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Agregar tabla de datos";
 
                     MenuItem itemCm = (MenuItem)cm.Items[5];
                     itemCm.Items.Clear();
@@ -907,7 +915,7 @@ namespace Precios_Turnos
                 catch { }
                 esDiseno = false;
                 Close();
-                MostrarTurno dialog2 = new MostrarTurno(true);
+                MostrarVentanaSplash dialog2 = new MostrarVentanaSplash(true);
                 dialog2.ShowDialog();
             }
         }
@@ -1078,10 +1086,10 @@ namespace Precios_Turnos
                     }
                                             };
                                         }
-                                        List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
+                                        List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(), false, datoVerificador);
                                         if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                             control.ItemsSource = list[0].DefaultView;
-                                        //control.UpdateLayout();
+                                      
                                         ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                         item.MouseLeave += objetoMedia_MouseLeave;
                                         item.MouseEnter += objetoMedia_MouseEnter;
@@ -1513,53 +1521,67 @@ namespace Precios_Turnos
 
         private void AgregarTablaDatos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            CapturaTextoDialogo dialog = new CapturaTextoDialogo(this);
-            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
-            var mousePosition = e.GetPosition(Principal);
+            MenuItem itemCm = (MenuItem)sender;
+            DataGrid control = (DataGrid)FindName("TablaDatos");
 
-
-            if (mousePosition.X + dialog.Width >= MaxWidth)
-                dialog.Left = mousePosition.X - dialog.Width;
-            else
-                dialog.Left = mousePosition.X;
-
-            if (mousePosition.Y + dialog.Height >= MaxHeight)
-                dialog.Top = mousePosition.Y - dialog.Height;
-            else
-                dialog.Top = mousePosition.Y;
-
-            dialog.lblTexto.Content = "Titulo";
-            dialog.Titulo.Content = "Agregar tabla";
-            dialog.btnAbrir.Visibility = Visibility.Hidden;
-            if (dialog.ShowDialog() == true)
+            if (control != null)
             {
-                DataGrid obj = new DataGrid();
-                obj.Name = dialog.NombreText.ToUpper();
-                obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.FontSize = 28;
-                obj.FontFamily = new FontFamily("Arial");
-                obj.CellStyle = new Style(typeof(DataGridCell))
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar tabla de datos";
+            }
+            else
+            {
+                CapturaTextoDialogo dialog = new CapturaTextoDialogo(this,false);
+                dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+                var mousePosition = e.GetPosition(Principal);
+
+
+                if (mousePosition.X + dialog.Width >= MaxWidth)
+                    dialog.Left = mousePosition.X - dialog.Width;
+                else
+                    dialog.Left = mousePosition.X;
+
+                if (mousePosition.Y + dialog.Height >= MaxHeight)
+                    dialog.Top = mousePosition.Y - dialog.Height;
+                else
+                    dialog.Top = mousePosition.Y;
+
+                dialog.lblTexto.Content = "Titulo";
+                dialog.Titulo.Content = "Agregar tabla de datos";
+                dialog.NombreText = "TablaDatos";
+                dialog.btnAbrir.Visibility = Visibility.Hidden;
+                if (dialog.ShowDialog() == true)
                 {
-                    Setters = {
+                    DataGrid obj = new DataGrid();
+                    obj.Name = dialog.NombreText;
+                    obj.ToolTip = dialog.NombreText;
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 28;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.CellStyle = new Style(typeof(DataGridCell))
+                    {
+                        Setters = {
                         new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left)
                     }
-                };
-                obj.HeadersVisibility = DataGridHeadersVisibility.None;
-                obj.CanUserAddRows = false;
-                obj.Tag = "2|15|H|15";
-                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
-                obj.MouseLeave += objetoMedia_MouseLeave;
-                obj.MouseEnter += objetoMedia_MouseEnter;
+                    };
+                    obj.HeadersVisibility = DataGridHeadersVisibility.None;
+                    obj.CanUserAddRows = false;
+                    obj.Tag = "2|15|H|15";
+                    obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
+                    obj.MouseLeave += objetoMedia_MouseLeave;
+                    obj.MouseEnter += objetoMedia_MouseEnter;
 
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
 
+                    itemCm.Header = "Agregar tabla de datos";
+                }
             }
         }
         
-        public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false)
+        public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false, string pStrDatoBuscar = "")
         {
             string[] datos = pTag.Split('|');
             List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
@@ -1584,9 +1606,22 @@ namespace Precios_Turnos
                         string lectura = sR.ReadToEnd();
                         sR.Close();
                         string[] datosC = vSeguridad.DecryptString(MainWindow.nombreApp, lectura).Split('|');
-                        consulta = datosC[0];
+                       
                         if (datosC.Length > 1)
-                            nombreIndex = datosC[1];
+                        {
+                            if (pStrDatoBuscar.Length==0)
+                                pStrDatoBuscar = datosC[2];
+
+                            switch(datosC[1]){
+                                case "N":
+                                    consulta = datosC[0] + pStrDatoBuscar;
+                                    break;
+                                case "T":
+                                    consulta = datosC[0] + "'" +pStrDatoBuscar + "'";
+                                    break;
+                            }
+                        }
+                            
 
                         OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
 
@@ -1941,9 +1976,10 @@ namespace Precios_Turnos
             DataGrid control = (DataGrid)FindName(pNombre);
             if (datos.Length == 8)
             {
-                foreach (DataRowView item in control.ItemsSource)
+                foreach (var item in control.ItemsSource as IEnumerable)
                 {
                     DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
+
 
                     if (row != null)
                         if (row.GetIndex() % 2 == 0)

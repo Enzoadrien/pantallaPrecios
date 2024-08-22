@@ -1,4 +1,4 @@
-﻿<Window x:Class="Precios_Turnos.MostrarTurno"
+﻿<Window x:Class="Precios_Turnos.MostrarVentanaSplash"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -19,7 +19,7 @@
                 <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
             <MenuItem x:Name="Verificador" Header="Verificador">
-                <MenuItem x:Name="AgregarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>
+                <MenuItem x:Name="MenuMostrarOcultarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>
             </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>

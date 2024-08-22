@@ -577,7 +577,6 @@ namespace Precios_Turnos
                     }
                 }
             }
-            //control.UpdateLayout();
             ColorFuenteFondo();
         }
 

@@ -20,11 +20,11 @@ namespace Precios_Turnos
     /// </summary>
     public partial class PropiedadesMultimediaTurno : Window
     {
-        private MostrarTurno mainWindow;
+        private MostrarVentanaSplash mainWindow;
         public bool esInicio = true;
         private bool esCambio = true;
 
-        public PropiedadesMultimediaTurno(MostrarTurno pmainWindow)
+        public PropiedadesMultimediaTurno(MostrarVentanaSplash pmainWindow)
         {
             InitializeComponent();
             mainWindow = pmainWindow;

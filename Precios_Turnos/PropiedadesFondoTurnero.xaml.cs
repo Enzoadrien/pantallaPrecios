@@ -20,8 +20,8 @@ namespace Precios_Turnos
     /// </summary>
     public partial class PropiedadesFondoTurnero : Window
     {
-        private MostrarTurno mainWindow;
-        public PropiedadesFondoTurnero(MostrarTurno pMostrarTurno)
+        private MostrarVentanaSplash mainWindow;
+        public PropiedadesFondoTurnero(MostrarVentanaSplash pMostrarTurno)
         {
             InitializeComponent();
             mainWindow = pMostrarTurno;

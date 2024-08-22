@@ -51,14 +51,14 @@
         <ScrollViewer Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" Margin="5,0,5,0">
             <TextBox x:Name="Consulta"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap"/>
         </ScrollViewer>
-        <CheckBox x:Name="chkOrganizar" Content="Organizar por bloques" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkOrganizar_Checked" Unchecked="chkOrganizar_Unchecked"/>
-        <Label x:Name="lblOrganizar" Content="Campo para organizar:" Grid.Row="4" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Visibility="Hidden" />
-        <TextBox x:Name="Organizar" Grid.Row="4" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Visibility="Hidden" />
-        <CheckBox x:Name="chkMostrarTitulo" Content="Mostrar el campo" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkMostrarTitulo_Checked" Unchecked="chkMostrarTitulo_Unchecked" Visibility="Hidden" />
-        <Label x:Name="lblCampoTitulo" Content="Label para mostrar:" Grid.Row="5" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Visibility="Hidden" />
-        <ComboBox x:Name="cbxLabels"
-                  FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.Row="5" Margin="0,0,5,0" Visibility="Hidden">
+        <Label x:Name="lblTipoDato" Content="Tipo de dato:" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14"  />
+        <ComboBox x:Name="cbxTipoCampo"
+                  FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="4" SelectedValuePath="Tag" SelectedIndex="0" >
+            <ComboBoxItem Content="Numérico" Tag="N"/>
+            <ComboBoxItem Content="Texto" Tag="T"/>
         </ComboBox>
+        <Label x:Name="lblDatoPrueba" Content="Dato para prueba:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"  />
+        <TextBox x:Name="DatoPrueba" Grid.Row="5" Text="" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" />
         <StackPanel Grid.Row="45"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

@@ -22,11 +22,20 @@ namespace Precios_Turnos
     {
         private Window mainWindow;
         public bool esVideo = false;
-        public CapturaTextoDialogo(Window pMainWindow)
+        public CapturaTextoDialogo(Window pMainWindow, bool pvBoolSeEditaNombre=true)
         {
             InitializeComponent();
             mainWindow = pMainWindow;
-            FocusManager.SetFocusedElement(this, NombreTextBox);
+            if (pvBoolSeEditaNombre)
+            {
+                FocusManager.SetFocusedElement(this, NombreTextBox);
+            }
+            else
+            {
+                FocusManager.SetFocusedElement(this, ContenidoTextBox);
+                NombreTextBox.IsEnabled = false;
+            }
+            
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)

@@ -27,14 +27,13 @@ namespace Precios_Turnos
     /// </summary>
     public partial class ContenidoTablaVerificador : Window
     {
-        private MostrarTurno mainWindow;
+        private MostrarVentanaSplash mainWindow;
         private string NombreControl;
-        public ContenidoTablaVerificador(MostrarTurno pMainWindow, string pNombreControl)
+        public ContenidoTablaVerificador(MostrarVentanaSplash pMainWindow, string pNombreControl)
         {
             InitializeComponent();
             mainWindow = pMainWindow;
             NombreControl = pNombreControl;
-            CargarComboCampoMostrar();
             CargarInfo();
             
             FocusManager.SetFocusedElement(this, Consulta);
@@ -61,21 +60,7 @@ namespace Precios_Turnos
                     Close();
             }
         }
-        private void CargarComboCampoMostrar()
-        {
-            foreach (var itemObjets in mainWindow.Principal.Children)
-            {
-                
-                switch (itemObjets.GetType().Name)
-                {
-                    case "Label":
-                        string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                        if (mainWindow.SeModificaControl(nombreControl))
-                            cbxLabels.Items.Add(nombreControl);
-                        break;
-                }
-            }
-        }
+    
 
         private void CargarInfo()
         {
@@ -88,21 +73,12 @@ namespace Precios_Turnos
                     string lectura = sR.ReadToEnd();
                     sR.Close();
                     string[] datos = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('|');
-                    Consulta.Text = datos[0];
                     if (datos.Length > 1)
                     {
-                        chkOrganizar.IsChecked = true;
-                        Organizar.Text = datos[1];
-                        if (datos.Length > 2)
-                        {
-                            chkMostrarTitulo.IsChecked = true;
-                            cbxLabels.SelectedItem = datos[2];
-                        }
-                    }
-                    else
-                    {
-                        lblOrganizar.Visibility = Visibility.Hidden;
-                        Organizar.Visibility = Visibility.Hidden;
+                        Consulta.Text = datos[0];
+                        cbxTipoCampo.SelectedValue = datos[1];
+                        DatoPrueba.Text = datos[2];
+                       
                     }
                 }
             }
@@ -115,25 +91,13 @@ namespace Precios_Turnos
        
         private bool CargarTabla()
         {
-            if (chkOrganizar.IsChecked == false || (chkOrganizar.IsChecked == true && Organizar.Text.Length > 0 && Consulta.Text.Contains(Organizar.Text)))
-            {
-
                 Seguridad vSeguridad = new Seguridad();
 
                 string cadenaGuardar = string.Empty;
-
-                if (chkOrganizar.IsChecked == true)
-                {
-                    cadenaGuardar = Consulta.Text + "|" + Organizar.Text;
-                    if(chkMostrarTitulo.IsChecked == true)
-                        cadenaGuardar += "|" + cbxLabels.SelectedItem;
-                }  
-                else
-                    cadenaGuardar = Consulta.Text;
-
+          
+                cadenaGuardar = Consulta.Text + "|" + ((ComboBoxItem)cbxTipoCampo.SelectedItem).Tag.ToString() +"|" + DatoPrueba.Text;
 
                 GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, cadenaGuardar), NombreControl);
-
 
                 DataGrid control = (DataGrid)mainWindow.FindName(NombreControl);
                 string[] datos = control.Tag.ToString().Split('|');
@@ -158,28 +122,10 @@ namespace Precios_Turnos
                 List<DataTable> tablas = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true);
                 control.ItemsSource = tablas[0].DefaultView;
                 //control.UpdateLayout();
-                if (chkMostrarTitulo.IsChecked == true)
-                {
-                    if (cbxLabels.SelectedIndex != -1)
-                    {
-                       Label item = (Label)mainWindow.FindName(cbxLabels.SelectedItem.ToString());
-                        item.Content = tablas[0].TableName;
-                    }
-                    
-                }
                     
 
                 mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
                 return true;
-            }
-            else
-            {
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "El campo a organizar no existe en la consulta.";
-                dialog.ShowDialog();
-            }
-            return false;
         }
 
         private bool GuardarInfo(string pvStrConsulta, string pvStrNombreObjeto)
@@ -196,23 +142,6 @@ namespace Precios_Turnos
                 }
             }
             catch { return false; }
-        }
-
-        private void chkOrganizar_Checked(object sender, RoutedEventArgs e)
-        {
-            lblOrganizar.Visibility = Visibility.Visible;
-            Organizar.Visibility = Visibility.Visible;
-            chkMostrarTitulo.Visibility = Visibility.Visible;
-
-        }
-
-        private void chkOrganizar_Unchecked(object sender, RoutedEventArgs e)
-        {
-            lblOrganizar.Visibility = Visibility.Hidden;
-            Organizar.Visibility = Visibility.Hidden;
-            Organizar.Text = "";
-            chkMostrarTitulo.IsChecked = false;
-            chkMostrarTitulo.Visibility = Visibility.Hidden;
         }
         
         private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -249,18 +178,6 @@ namespace Precios_Turnos
             // more error handling would be needed here - this is asking for trouble!
             string s = (string)e.DataObject.GetData(typeof(string));
             if (!TextAllowed(s)) e.CancelCommand();
-        }
-
-        private void chkMostrarTitulo_Checked(object sender, RoutedEventArgs e)
-        {
-            lblCampoTitulo.Visibility = Visibility.Visible;
-            cbxLabels.Visibility= Visibility.Visible;
-        }
-
-        private void chkMostrarTitulo_Unchecked(object sender, RoutedEventArgs e)
-        {
-            lblCampoTitulo.Visibility = Visibility.Hidden;
-            cbxLabels.Visibility = Visibility.Hidden;
         }
 
     }

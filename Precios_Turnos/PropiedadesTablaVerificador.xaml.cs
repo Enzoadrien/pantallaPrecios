@@ -25,10 +25,10 @@ namespace Precios_Turnos
     /// </summary>
     public partial class PropiedadesTablaVerificador : Window
     {
-        private MostrarTurno mainWindow;
+        private MostrarVentanaSplash mainWindow;
         bool esInicio = true;
         private bool esCambio = true;
-        public PropiedadesTablaVerificador(MostrarTurno pmainWindow)
+        public PropiedadesTablaVerificador(MostrarVentanaSplash pmainWindow)
         {
             InitializeComponent();
             mainWindow = pmainWindow;

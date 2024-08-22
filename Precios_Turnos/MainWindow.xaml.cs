@@ -56,6 +56,7 @@ namespace Precios_Turnos
         private bool animaciones = false;
         private bool maximizado = false;
         private bool activarSplash = false;
+        private string tipoSplash;
         private bool estaSaliendo = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
@@ -227,8 +228,22 @@ namespace Precios_Turnos
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
+                tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
                 if (activarSplash)
-                    EscucharTurnos();
+                {
+                    switch (tipoSplash)
+                    {
+                        case "T":
+                            EscucharTurnos();
+                        break;
+                        case "V":
+                            break;
+                        case "C":
+                            break;
+
+                    }
+                }
+                    
 
             }
 
@@ -288,9 +303,20 @@ namespace Precios_Turnos
             }
             else if (maximizado && activarSplash)
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings["ProtocoloTurnero"].Value.Equals("T"))
-                    Task.Run(() => ProcesarTecla(e));
+
+                switch (tipoSplash)
+                {
+                    case "T":
+                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                        if (config.AppSettings.Settings["ProtocoloTurnero"].Value.Equals("T"))
+                            Task.Run(() => ProcesarTecla(e));
+                        break;
+                    case "V":
+                        break;
+                    case "C":
+                        break;
+
+                }
             }
 
         }
@@ -407,7 +433,7 @@ namespace Precios_Turnos
             new Recursos().GuardarNumeroTurno(turno);
             new Recursos().GuardarTurnoAnt(turno, equipo);
             await new Recursos().MostrarTurno(turno, equipo, turnosAnteriores, this);
-            MostrarTurno.synthesizer.SpeakAsyncCancelAll();
+            MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
             CargarTurnosPrincipal();
         }
 
@@ -440,7 +466,7 @@ namespace Precios_Turnos
                     {
                         var first = listaTurnosKretz.First();
                         await new Recursos().MostrarTurno(first.GetTurno().GetNumTurno(), first.GetTurno().GetNumEquipo(), first.GetTurno().GetTurnosAnt(), this);
-                        MostrarTurno.synthesizer.SpeakAsyncCancelAll();
+                        MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
                         CargarTurnosPrincipal();
                         listaTurnosKretz.Remove(first);
                     }
@@ -3391,7 +3417,7 @@ namespace Precios_Turnos
 
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                MostrarTurno dialog = new MostrarTurno(true);
+                MostrarVentanaSplash dialog = new MostrarVentanaSplash(true);
                 dialog.ShowDialog();
             }
             else

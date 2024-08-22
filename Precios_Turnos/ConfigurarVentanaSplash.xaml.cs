@@ -135,6 +135,7 @@ namespace Precios_Turnos
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             chkActivarSplash.IsChecked = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true")? true : false;
+            cbxTipoSplash.SelectedValue = config.AppSettings.Settings["TipoSplash"].Value;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
@@ -159,6 +160,7 @@ namespace Precios_Turnos
             //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["ActivarSplash"].Value = chkActivarSplash.IsChecked == true ? "true" : "false";
+            config.AppSettings.Settings["TipoSplash"].Value = ((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
@@ -341,8 +343,25 @@ namespace Precios_Turnos
 
         private void btnVoz_Click(object sender, RoutedEventArgs e)
         {
-
+            Task.Run(() => vozDemo());
             ConfigurarVoz dialog = new ConfigurarVoz();
+            if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
+            {
+                dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
+                dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
+
+            }
+            else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
+            {
+                dialog.Texto1.Content = "*Codigo                       *Nombre                         *Precio";
+                dialog.Texto2.Content = "*Texto1                        *Texto2                           *Texto3";
+
+            }
+            else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
+            {
+                dialog.Texto1.Content = "";
+                dialog.Texto2.Content = "";
+            }
             dialog.ShowDialog();
         }
 
@@ -350,7 +369,30 @@ namespace Precios_Turnos
         {
             btnVoz.Visibility = Visibility.Visible;
             if (!esInicio)
+            {
                 Task.Run(() => vozDemo());
+                ConfigurarVoz dialog = new ConfigurarVoz();
+                if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
+                {
+                    dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
+                    dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
+
+                }
+                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
+                {
+                    dialog.Texto1.Content = "*Codigo                       *Nombre                         *Precio";
+                    dialog.Texto2.Content = "*Texto1                        *Texto2                           *Texto3";
+
+                }
+                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
+                {
+                    dialog.Texto1.Content = "";
+                    dialog.Texto2.Content = "";
+                }
+
+                dialog.ShowDialog();
+            }
+                
         }
 
         private void vozDemo() 
@@ -378,6 +420,31 @@ namespace Precios_Turnos
         {
             synthesizer.SpeakAsyncCancelAll();
             btnVoz.Visibility = Visibility.Hidden;
+        }
+
+        private void cbxTipoSplash_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        { 
+            if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
+                {
+                    TiposVentana.SelectedIndex = 0;
+                    Turnero.IsEnabled = true;
+                    Verificador.IsEnabled = false;
+                    CajeroATM.IsEnabled = false;
+                }
+                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
+                {
+                    TiposVentana.SelectedIndex = 1;
+                    Turnero.IsEnabled = false;
+                    Verificador.IsEnabled = true;
+                    CajeroATM.IsEnabled = false;
+                }
+                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
+                {
+                    TiposVentana.SelectedIndex = 2;
+                    Turnero.IsEnabled = false;
+                    Verificador.IsEnabled = false;
+                    CajeroATM.IsEnabled = true;
+                }
         }
     }
     public class ViewModelAudio
