@@ -15,8 +15,6 @@
     <None Remove="ColorSwatchSquare2.png" />
     <None Remove="logo.png" />
     <None Remove="logoapp.png" />
-    <None Remove="Recursos\logo.png" />
-    <None Remove="Recursos\logoapp.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,12 +38,6 @@
     <Resource Include="ColorSwatchSquare2.png" />
     <Resource Include="logo.png" />
     <Resource Include="logoapp.png" />
-    <Resource Include="Recursos\logo.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Recursos\logoapp.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -130,7 +122,16 @@
     <None Update="Recursos\icono.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Recursos\logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Recursos\logoapp.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Recursos\nombreEquipos.3k">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Recursos\server.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\turnoAnt.3k">

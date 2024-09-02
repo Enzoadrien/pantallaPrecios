@@ -349,18 +349,21 @@ namespace Precios_Turnos
             {
                 dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
                 dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
+                dialog.Texto3.Content = "";
 
             }
             else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
             {
-                dialog.Texto1.Content = "*Codigo                       *Nombre                         *Precio";
-                dialog.Texto2.Content = "*Texto1                        *Texto2                           *Texto3";
+                dialog.Texto1.Content = "* Para agregar campos recuperados de una tabla de datos";
+                dialog.Texto2.Content = "   se deberá agregar la palabra TextoVoz seguido de la";
+                dialog.Texto3.Content = "   posición del dato recuperado.(TextoVoz1, TextoVoz2, ...)";
 
             }
             else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
             {
                 dialog.Texto1.Content = "";
                 dialog.Texto2.Content = "";
+                dialog.Texto3.Content = "";
             }
             dialog.ShowDialog();
         }
@@ -376,18 +379,21 @@ namespace Precios_Turnos
                 {
                     dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
                     dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
+                    dialog.Texto3.Content = "";
 
                 }
                 else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
                 {
-                    dialog.Texto1.Content = "*Codigo                       *Nombre                         *Precio";
-                    dialog.Texto2.Content = "*Texto1                        *Texto2                           *Texto3";
+                    dialog.Texto1.Content = "* Para agregar campos recuperados de una tabla de datos";
+                    dialog.Texto2.Content = "   se deberá agregar la palabra TextoVoz seguido de la";
+                    dialog.Texto3.Content = "   posición del dato recuperado.(TextoVoz1, TextoVoz2, ...)";
 
                 }
                 else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
                 {
                     dialog.Texto1.Content = "";
                     dialog.Texto2.Content = "";
+                    dialog.Texto3.Content = "";
                 }
 
                 dialog.ShowDialog();

@@ -979,6 +979,22 @@ namespace Precios_Turnos
                         else
                             ((MenuItem)((MenuItem)cm.Items[7]).Items[1]).Header = "Agregar equipos anteriores";
 
+                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
+
+                        if (tipoSplash.Equals("T"))
+                        {
+                        }
+                        else if (tipoSplash.Equals("V"))
+                        {
+                            ((MenuItem)cm.Items[7]).IsEnabled = false;
+                        }
+                        else if (tipoSplash.Equals("C"))
+                        {
+                            ((MenuItem)cm.Items[7]).IsEnabled = false;
+                        }
+
+
                         MenuItem itemCm = (MenuItem)cm.Items[9];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)

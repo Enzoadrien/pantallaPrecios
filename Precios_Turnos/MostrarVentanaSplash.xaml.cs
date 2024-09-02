@@ -11,17 +11,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
-using static Precios_Turnos.Recursos;
 
 namespace Precios_Turnos
 {
@@ -43,6 +40,7 @@ namespace Precios_Turnos
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         private string datoVerificador;
+        private string tipoVentana;
 
         public MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "")
         {
@@ -58,6 +56,7 @@ namespace Precios_Turnos
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 Width = double.Parse(config.AppSettings.Settings["Ancho"].Value);
                 Height = double.Parse(config.AppSettings.Settings["Alto"].Value);
+                tipoVentana = config.AppSettings.Settings["TipoSplash"].Value;
             }
             catch { }
             if (!esDiseno)
@@ -108,6 +107,7 @@ namespace Precios_Turnos
                 catch { }
                 Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
+                    //Datos para voz de turnero 
                     Label NumeroTurno = (Label)FindName("NumeroTurno");
                     if(NumeroTurno != null)
                         line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
@@ -123,12 +123,20 @@ namespace Precios_Turnos
                     Label NumeroEquipoAnt = (Label)FindName("NumeroEquipoAnt");
                     if (NumeroEquipoAnt != null)
                         line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
+                    
+                    //Datos para Verificador de precios
+                    DataGrid control = (DataGrid)FindName("TablaDatos");
+                    if (control != null)
+                    {
+                        int i = 1;
+                        foreach (DataRowView o in (control).Items)
+                            line = line.Replace(@"TextoVoz" + (i++), o[0].ToString());
+                    }
                 }));
 
                 synthesizer.SpeakAsync(line);
             }
             catch { }
-            
         }
 
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -236,6 +244,23 @@ namespace Precios_Turnos
                 {
                     ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
+                    if (tipoVentana.Equals("T"))
+                    {
+                        ((MenuItem)cm.Items[3]).IsEnabled= false;
+                        ((MenuItem)cm.Items[4]).IsEnabled = false;
+
+                    }
+                    else if (tipoVentana.Equals("V"))
+                    {
+                        ((MenuItem)cm.Items[2]).IsEnabled = false;
+                        ((MenuItem)cm.Items[4]).IsEnabled = false;
+                    }
+                    else if (tipoVentana.Equals("C"))
+                    {
+                        ((MenuItem)cm.Items[2]).IsEnabled = false;
+                        ((MenuItem)cm.Items[3]).IsEnabled = false;
+                    }
+
                     Label control = (Label)FindName("NumeroTurno");
                     if (control != null)
                         ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Eliminar turno";
@@ -273,7 +298,7 @@ namespace Precios_Turnos
                     else
                         ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Agregar tabla de datos";
 
-                    MenuItem itemCm = (MenuItem)cm.Items[5];
+                    MenuItem itemCm = (MenuItem)cm.Items[6];
                     itemCm.Items.Clear();
                     foreach (var itemObjets in Principal.Children)
                     {

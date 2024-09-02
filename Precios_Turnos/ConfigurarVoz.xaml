@@ -26,6 +26,7 @@
         </ScrollViewer>
         <Label x:Name="Texto1"  Content="" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
         <Label x:Name="Texto2" Content="" Grid.Row="2" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top" Margin="0,12,0,0" Grid.ColumnSpan="2"/>
+        <Label x:Name="Texto3" Content="" Grid.Row="3" FontSize="10" FontFamily="Arial Rounded MT" VerticalAlignment="Top" Margin="0,-10,0,0" Grid.ColumnSpan="2"/>
         <ComboBox x:Name="cbxTipoVoz" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="2" Margin="90,5,0,5" HorizontalAlignment="Left" Width="190" SelectionChanged="cbxTipoVoz_SelectionChanged" SelectedIndex="0" Grid.Column="1"/>
         <StackPanel Grid.Row="3"
                 HorizontalAlignment="Left"

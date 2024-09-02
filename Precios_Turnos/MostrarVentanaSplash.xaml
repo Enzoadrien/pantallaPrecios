@@ -21,6 +21,9 @@
             <MenuItem x:Name="Verificador" Header="Verificador">
                 <MenuItem x:Name="MenuMostrarOcultarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>
             </MenuItem>
+            <MenuItem x:Name="CajeroATM" Header="Cajero ATM">
+                <MenuItem x:Name="MenuMostrarOcultarTablaDatosCajeroATM" Header="Agregar tabla de datos"/>
+            </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades fondo" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
