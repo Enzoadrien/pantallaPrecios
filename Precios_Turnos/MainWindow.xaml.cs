@@ -1,6 +1,7 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
+using Priceio;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -3489,6 +3490,21 @@ namespace Precios_Turnos
             {
                 SalirMaximizar();
             }
+        }
+
+        private void Sobre_Click(object sender, RoutedEventArgs e)
+        {
+            Sobre dialog = new Sobre(this);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+            dialog.ShowDialog();
         }
     }
 }

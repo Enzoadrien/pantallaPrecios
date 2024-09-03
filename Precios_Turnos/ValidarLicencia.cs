@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.IO;
 using static Precios_Turnos.StateObject;
 using System.Windows;
-using MySqlX.XDevAPI;
 using System.Numerics;
 using Microsoft.Data.SqlClient;
 

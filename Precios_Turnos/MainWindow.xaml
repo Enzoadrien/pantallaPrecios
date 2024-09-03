@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Icon="/logoapp.png" Activated="VentanaPrincipal_Activated">
+        Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed"  Activated="VentanaPrincipal_Activated" Icon="/logoapp.png">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -56,13 +56,13 @@
                 <MenuItem x:Name="EditarDisenoVentanaSplash" Header="Editar diseño ventana splash" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
             </MenuItem>
             <MenuItem x:Name="Ayuda" Header="Ayuda" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
-                <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT" Click="Sobre_Click"/>
             </MenuItem>
         </Menu>
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="PantallaCompleta" Panel.ZIndex="1000"/>
-        <Button x:Name="LogoPrincipal"  Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
+        <Button x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
             <Button.Background>
                 <ImageBrush ImageSource="/logo.png"/>
             </Button.Background>

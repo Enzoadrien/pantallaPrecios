@@ -15,12 +15,12 @@
     <None Remove="ColorSwatchSquare2.png" />
     <None Remove="logo.png" />
     <None Remove="logoapp.png" />
+    <None Remove="logoPriceio.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
-    <PackageReference Include="MySql.Data" Version="8.3.0" />
     <PackageReference Include="System.Data.Odbc" Version="8.0.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="System.Speech" Version="8.0.0" />
@@ -33,11 +33,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="ColorSwatchCircle.png" />
-    <Resource Include="ColorSwatchSquare1.png" />
-    <Resource Include="ColorSwatchSquare2.png" />
-    <Resource Include="logo.png" />
-    <Resource Include="logoapp.png" />
+    <Resource Include="ColorSwatchCircle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="ColorSwatchSquare1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="ColorSwatchSquare2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="logoapp.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="logoPriceio.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -116,16 +129,28 @@
     <None Update="Recursos\audios\vuvuzela.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Recursos\ColorSwatchCircle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Recursos\ColorSwatchSquare1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Recursos\ColorSwatchSquare2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Recursos\controlTurno.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Recursos\icono.ico">
+    <None Update="Recursos\ICONO.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\logoapp.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Recursos\logoPriceio.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\nombreEquipos.3k">
