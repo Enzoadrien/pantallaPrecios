@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed"  Activated="VentanaPrincipal_Activated" Icon="/logoapp.png">
+        Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Activated="VentanaPrincipal_Activated" Icon="/logoapp.png">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
@@ -32,6 +32,23 @@
             <Separator />
             <MenuItem x:Name="MenuEliminar" Header="Eliminar" PreviewMouseLeftButtonDown="MenuEliminar_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
+        <Style x:Key="MyButton" TargetType="Button">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
         <Grid x:Name="Base" />
@@ -62,7 +79,7 @@
         <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Label x:Name="ModoEdicion" Grid.Column="0" Content="Vista previa" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000"/>
         <Grid x:Name="PantallaCompleta" Panel.ZIndex="1000"/>
-        <Button x:Name="LogoPrincipal" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick">
+        <Button x:Name="LogoPrincipal" Style="{StaticResource MyButton}" Height="90" Width="90" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.5" Panel.ZIndex="1000" BorderThickness="0,0,0,0" MouseDoubleClick="LogoPrincipal_MouseDoubleClick" Focusable="False" Click="LogoPrincipal_Click">
             <Button.Background>
                 <ImageBrush ImageSource="/logo.png"/>
             </Button.Background>

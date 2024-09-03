@@ -3482,7 +3482,10 @@ namespace Precios_Turnos
         {
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
-            dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
+            if(!editar)
+                dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
+            else
+                dialog.lblTexto.Text = "Esta a punto salir del modo edición, ¿Está seguro que desea continuar?.";
             dialog.btnCancelar.Visibility = Visibility.Visible;
             new Recursos().ventanaMensajesGrande800x600(dialog);
             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -3490,6 +3493,7 @@ namespace Precios_Turnos
             {
                 SalirMaximizar();
             }
+            Principal.Focus();
         }
 
         private void Sobre_Click(object sender, RoutedEventArgs e)
@@ -3505,6 +3509,11 @@ namespace Precios_Turnos
             dialog.Left = centerParent.X - hCenterChild;
             dialog.Top = centerParent.Y - vCenterChild;
             dialog.ShowDialog();
+        }
+
+        private void LogoPrincipal_Click(object sender, RoutedEventArgs e)
+        {
+            Principal.Focus();
         }
     }
 }
