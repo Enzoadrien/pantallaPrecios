@@ -57,7 +57,7 @@ namespace Precios_Turnos
         private bool animaciones = false;
         private bool maximizado = false;
         private bool activarSplash = false;
-        private string tipoSplash;
+        private string? tipoSplash;
         private bool estaSaliendo = false;
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
@@ -67,7 +67,7 @@ namespace Precios_Turnos
         internal static List<StateObject> listaTurnosKretz = new List<StateObject>();
         private SolidColorBrush? ultimoColor;
         private double ultimaOpacidad;
-        private string datosVerificador;
+        private string? datosVerificador;
 
         public MainWindow()
         {
