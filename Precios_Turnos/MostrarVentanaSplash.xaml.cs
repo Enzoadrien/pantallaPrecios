@@ -35,8 +35,8 @@ namespace Precios_Turnos
         private bool estaSaliendo = false;
         private bool esDiseno;
         private SolidColorBrush ultimoColor;
-        private double ultimaOpacidad;
-        private string? controlSelectedName;
+        internal double ultimaOpacidad;
+        internal string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         private string datoVerificador;
@@ -351,6 +351,7 @@ namespace Precios_Turnos
                 case "Principal":
                 case "Fondo":
                 case "Borde":
+                case "ImgTablaDatos":
                     seElimina = false;
                     break;
                 default:
@@ -576,7 +577,7 @@ namespace Precios_Turnos
                 var item = FindName(pNombre) as UIElement;
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
                 dialog.lblNombre.Content = "¡Advertencia!";
-                dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto " + pNombre+ "("+ item.GetType().Name + ").";
+                dialog.lblTexto.Text = "Se eliminará de forma permanente el objeto " + pNombre+ "("+ item.GetType().Name + ").";
 
                 if (dialog.ShowDialog() == true)
                 {
@@ -1122,12 +1123,12 @@ namespace Precios_Turnos
                                             };
                                         }
                                         List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(), false, datoVerificador);
-                                        //if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
-                                            control.ItemsSource = list[0].DefaultView;
+                                        control.ItemsSource = list[0].DefaultView;
                                       
                                         ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                         item.MouseLeave += objetoMedia_MouseLeave;
                                         item.MouseEnter += objetoMedia_MouseEnter;
+
                                         break;
                                 }
                             }
@@ -1135,6 +1136,40 @@ namespace Precios_Turnos
                         }
                     }
                     catch (Exception) { }
+                }
+                string pNombre = "ImgTablaDatos";
+                var itemImg = FindName(pNombre) as UIElement;
+                if (itemImg != null)
+                {
+                    try
+                    {
+                        BitmapImage bitmapImage = new BitmapImage();
+                        bitmapImage.BeginInit();
+                        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmapImage.UriSource = new Uri(@".\objetosSplash\TablaDatos\" + datoVerificador + ".png", UriKind.RelativeOrAbsolute);
+                        bitmapImage.EndInit();
+                        ((Image)itemImg).Source = bitmapImage;
+
+                        ((Image)itemImg).Visibility = Visibility.Visible;
+                    }
+                    catch
+                    {
+                        if(datoVerificador.Length > 0)
+                            ((Image)itemImg).Visibility = Visibility.Hidden;
+                        else
+                        {
+                            BitmapImage bitmapImage = new BitmapImage();
+                            bitmapImage.BeginInit();
+                            bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmapImage.UriSource = new Uri(@".\Recursos\pictureAdd.png", UriKind.RelativeOrAbsolute);
+                            bitmapImage.EndInit();
+
+                            ((Image)itemImg).Source = bitmapImage;
+                            ((Image)itemImg).Visibility = Visibility.Visible;
+                        }
+                    }
                 }
             }
             catch (Exception) { }
@@ -1603,7 +1638,7 @@ namespace Precios_Turnos
                     };
                     obj.HeadersVisibility = DataGridHeadersVisibility.None;
                     obj.CanUserAddRows = false;
-                    obj.Tag = "1|1|H|15";
+                    obj.Tag = "1|1|V|15";
                     obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
                     obj.MouseLeave += objetoMedia_MouseLeave;
                     obj.MouseEnter += objetoMedia_MouseEnter;
@@ -1649,10 +1684,10 @@ namespace Precios_Turnos
 
                             switch(datosC[1]){
                                 case "N":
-                                    consulta = datosC[0] + pStrDatoBuscar;
+                                    consulta = datosC[0].Replace("DatoBuscar_", pStrDatoBuscar);
                                     break;
                                 case "T":
-                                    consulta = datosC[0] + "'" +pStrDatoBuscar + "'";
+                                    consulta = datosC[0].Replace("DatoBuscar_", "'"+pStrDatoBuscar+"'");
                                     break;
                             }
                         }

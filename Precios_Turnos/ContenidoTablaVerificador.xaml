@@ -59,6 +59,44 @@
         </ComboBox>
         <Label x:Name="lblDatoPrueba" Content="Dato para prueba:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"  />
         <TextBox x:Name="DatoPrueba" Grid.Row="5" Text="" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" />
+        <CheckBox x:Name="chkImagen" Content="Mostrar imagen" Grid.Row="4" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0" Checked="chkImagen_Checked" Unchecked="chkImagen_Unchecked"/>
+        <Label Content="Se debe remplazar el campo a buscar por la palabra reservada DatoBuscar_" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="10" Grid.ColumnSpan="2"  />
+        <Label Content="Ejemplo: SELECT * FROM ARTICULOS WHERE ID=DatoBuscar_" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="10" Grid.ColumnSpan="2" VerticalAlignment="Bottom"  />
+        <StackPanel Grid.Row="5"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal"
+        Margin="5,5,5,5" Grid.Column="2" >
+            <Button x:Name="btnAbrir"
+      Content="Abrir carpeta imagenes"
+      IsDefault="True"
+      Width="170"
+      Height="20"
+      Margin="0,0,0,0"
+      TabIndex="4"
+      FontFamily="Arial Rounded MT" 
+      FontSize="14" Click="btnAbrir_Click" Visibility="Hidden">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF0E596D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
         <StackPanel Grid.Row="45"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"

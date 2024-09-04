@@ -1894,7 +1894,7 @@ namespace Precios_Turnos
                     var item = FindName(pNombre) as UIElement;
                     Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
                     dialog.lblNombre.Content = "¡Advertencia!";
-                    dialog.lblTexto.Text = "Se eliminará de forma permanete el objeto " + pNombre + "(" + item.GetType().Name + ").";
+                    dialog.lblTexto.Text = "Se eliminará de forma permanente el objeto " + pNombre + "(" + item.GetType().Name + ").";
                     if (dialog.ShowDialog() == true)
                         seBorra = true;
 
@@ -2655,6 +2655,7 @@ namespace Precios_Turnos
                     }
                     catch (Exception) { }
                 }
+
             }
             catch (Exception) { }
         }

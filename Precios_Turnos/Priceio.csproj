@@ -156,6 +156,9 @@
     <None Update="Recursos\nombreEquipos.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Recursos\pictureAdd.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Recursos\server.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

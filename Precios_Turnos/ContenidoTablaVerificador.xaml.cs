@@ -1,11 +1,17 @@
-﻿using System;
+﻿using Priceio;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Precios_Turnos
 {
@@ -65,7 +71,7 @@ namespace Precios_Turnos
                         Consulta.Text = datos[0];
                         cbxTipoCampo.SelectedValue = datos[1];
                         DatoPrueba.Text = datos[2];
-                       
+                        chkImagen.IsChecked = bool.Parse(datos[3]);
                     }
                 }
             }
@@ -82,7 +88,7 @@ namespace Precios_Turnos
 
                 string cadenaGuardar = string.Empty;
           
-                cadenaGuardar = Consulta.Text + "|" + ((ComboBoxItem)cbxTipoCampo.SelectedItem).Tag.ToString() +"|" + DatoPrueba.Text;
+                cadenaGuardar = Consulta.Text + "|" + ((ComboBoxItem)cbxTipoCampo.SelectedItem).Tag.ToString() +"|" + DatoPrueba.Text +"|" + chkImagen.IsChecked;
 
                 GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, cadenaGuardar), NombreControl);
 
@@ -166,5 +172,99 @@ namespace Precios_Turnos
             if (!TextAllowed(s)) e.CancelCommand();
         }
 
+        private void chkImagen_Checked(object sender, RoutedEventArgs e)
+        {
+            btnAbrir.Visibility = Visibility.Visible;
+            //Carpetas de animaciones
+            if (!Directory.Exists(@".\objetosSplash\TablaDatos"))
+            {
+                Directory.CreateDirectory(@".\objetosSplash\TablaDatos");
+            }
+            string pNombre = "ImgTablaDatos";
+            var item = mainWindow.FindName(pNombre) as UIElement;
+
+            if (item == null)
+            {
+                Image obj = new Image();
+                obj.Name = "ImgTablaDatos";
+                obj.ToolTip = "ImgTablaDatos";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.Stretch = Stretch.Uniform;
+
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.UriSource = new Uri(@".\Recursos\pictureAdd.png", UriKind.RelativeOrAbsolute);
+                bitmapImage.EndInit();
+
+                obj.Source = bitmapImage;
+                obj.Height = bitmapImage.Height;
+                obj.Tag = "";
+                obj.MouseLeave += objetoMedia_MouseLeave;
+                obj.MouseEnter += objetoMedia_MouseEnter;
+
+                NameScope.GetNameScope(mainWindow).RegisterName(obj.Name, obj);
+                mainWindow.Principal.Children.Add(obj);
+            } 
+
+        }
+
+        private void objetoMedia_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            control.SetValue(OpacityProperty, mainWindow.ultimaOpacidad);
+        }
+
+        private void objetoMedia_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var control = e.Source as UIElement;
+            mainWindow.ultimaOpacidad = control.Opacity;
+            control.SetValue(OpacityProperty, mainWindow.ultimaOpacidad > .5 ? mainWindow.ultimaOpacidad - .3 : mainWindow.ultimaOpacidad + .3);
+            mainWindow.controlSelectedName = control.GetValue(NameProperty).ToString();
+        }
+
+        private void chkImagen_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "Se eliminará de forma permanente todas las imágenes agregadas para mostrar en la tabla. ¿Está seguro que desea continuar?.";
+
+            if (dialog.ShowDialog() == true)
+            {
+                btnAbrir.Visibility = Visibility.Hidden;
+                string pNombre = "ImgTablaDatos";
+                var item = mainWindow.FindName(pNombre) as UIElement;
+               
+                try
+                {
+                    DirectoryInfo di = new DirectoryInfo(@".\objetosSplash\TablaDatos");
+                    foreach (FileInfo file in di.EnumerateFiles())
+                    {
+                        file.Delete();
+                    }
+                    di.Delete();
+
+                    mainWindow.Principal.Children.Remove(item);
+                    NameScope.GetNameScope(mainWindow).UnregisterName(pNombre);
+                }
+                catch{ }
+             }
+            else
+                chkImagen.IsChecked = true;
+
+
+        }
+
+        private void btnAbrir_Click(object sender, RoutedEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA);
+            dialog.lblNombre.Content = "¡Alerta!";
+            dialog.lblTexto.Text = "Las imágenes cargadas deberán tener por nombre el campo a buscar y deberán estar en formato png";
+            dialog.ShowDialog();
+
+            Process.Start("explorer.exe", @".\objetosSplash\TablaDatos");
+        }
     }
 }

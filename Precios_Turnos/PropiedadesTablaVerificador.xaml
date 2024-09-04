@@ -184,7 +184,7 @@
             <ComboBoxItem Content="25 Registros" Tag="25"/>
         </ComboBox>
         <Label x:Name="lblOrientacion" Content="Orientación:" Grid.ColumnSpan="2" Grid.Row="9" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ComboBox x:Name="cbxOrientacion" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxOrientacion_SelectionChanged">
+        <ComboBox x:Name="cbxOrientacion" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxOrientacion_SelectionChanged" IsEnabled="False">
             <ComboBoxItem Content="Horizontal" Tag="H"/>
             <ComboBoxItem Content="Vertical" Tag="V"/>
         </ComboBox>
