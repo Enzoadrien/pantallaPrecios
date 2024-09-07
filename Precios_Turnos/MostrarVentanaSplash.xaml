@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Splash" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="Splash" Height="800" Width="600" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" Activated="Window_Activated">
     <Window.Resources>
         <ContextMenu x:Key="cmdPrincipalContexMenu">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>

@@ -167,6 +167,7 @@ namespace Precios_Turnos
             {
                 foreach (var item in control.ItemsSource as IEnumerable)
                 {
+                    control.ScrollIntoView(item);
                     DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
 
                     if (row != null)

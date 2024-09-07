@@ -167,6 +167,7 @@ namespace Precios_Turnos
             {
                 foreach (var item in control.ItemsSource as IEnumerable)
                 {
+                    control.ScrollIntoView(item);
                     DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
 
                     if (row != null)
@@ -504,7 +505,23 @@ namespace Precios_Turnos
             else
                 dialog.Left = mousePosition.X;
 
+            if (cbxCBloques.SelectedValue.ToString().Equals("1") && cbxCRegistros.SelectedValue.ToString().Equals("1"))
+                dialog.chkImagen.Visibility = Visibility.Visible;
+
             dialog.ShowDialog();
+
+            var itemImg = mainWindow.FindName("Img_" + NombreControl.Text) as UIElement;
+            if (itemImg != null)
+            {
+                cbxCBloques.IsEnabled = false;
+                cbxCRegistros.IsEnabled = false;
+            }
+            else
+            {
+                cbxCBloques.IsEnabled = true;
+                cbxCRegistros.IsEnabled = true;
+            }
+
             ColorFuenteFondo();
             Opacity = 0.9;
         }
@@ -556,22 +573,22 @@ namespace Precios_Turnos
                     }
                 };
             }
-            List<DataTable> ListTablas = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString());
+            List<DataTable> ListTablas = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString(),"");
             control.ItemsSource = ListTablas[0].DefaultView;
 
             DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
             foreach (var file in info.GetFiles())
             {
-                if (@file.Name.Equals(NombreControl + ".sql"))
+                if (file.Name.Equals(NombreControl.Text + ".sql"))
                 {
                     StreamReader sR = new StreamReader(@file.FullName);
                     string lectura = sR.ReadToEnd();
                     sR.Close();
                     string[] datos = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('|');
 
-                    if (datos.Length > 2)
+                    if (datos.Length > 4)
                     {
-                        Label item = (Label)FindName(datos[2]);
+                        Label item = (Label)FindName(datos[4]);
                         if (item != null)
                             item.Content = ListTablas[0].TableName;
                     }

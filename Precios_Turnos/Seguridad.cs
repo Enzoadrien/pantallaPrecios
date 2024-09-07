@@ -107,17 +107,20 @@ namespace Precios_Turnos
 
                             try
                             {
-                                SerialNumber += HardDisk["SerialNumber"].ToString();
+                                if (HardDisk["SerialNumber"] != null)
+                                    SerialNumber += HardDisk["SerialNumber"].ToString();
                             }
                             catch { }
                             try
                             {
-                                SerialNumber += HardDisk["Model"].ToString();
+                                if (HardDisk["Model"] != null)
+                                    SerialNumber += HardDisk["Model"].ToString();
                             }
                             catch { }
                             try
                             {
-                                SerialNumber += HardDisk["Type"].ToString();
+                                if (HardDisk["Type"] != null)
+                                    SerialNumber += HardDisk["Type"].ToString();
                             }
                             catch { }
 

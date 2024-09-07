@@ -1,4 +1,5 @@
-﻿using Priceio;
+﻿using Azure;
+using Priceio;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -54,7 +55,6 @@ namespace Precios_Turnos
             }
         }
     
-
         private void CargarInfo()
         {
             DirectoryInfo info = new DirectoryInfo(@".\objetosSplash\consultasSQL");
@@ -114,9 +114,39 @@ namespace Precios_Turnos
                 }
                 List<DataTable> tablas = mainWindow.CargarListaTablas(NombreControl, control.Tag.ToString(), true);
                 control.ItemsSource = tablas[0].DefaultView;
-                //control.UpdateLayout();
 
-                mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
+            string pNombre = "ImgTablaDatos";
+            var item = mainWindow.FindName(pNombre) as UIElement;
+
+            if (item != null)
+            {
+
+                try 
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.UriSource = new Uri(@".\objetosSplash\TablaDatos\" + DatoPrueba.Text + ".png", UriKind.RelativeOrAbsolute);
+                    bitmapImage.EndInit();
+
+                    ((Image)item).Source = bitmapImage;
+                }
+                catch
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.UriSource = new Uri(@".\Recursos\pictureAdd.png", UriKind.RelativeOrAbsolute);
+                    bitmapImage.EndInit();
+
+                    ((Image)item).Source = bitmapImage;
+                }
+               
+            }
+
+            mainWindow.ColorFuenteFondoTabla(NombreControl, control.Tag.ToString());
                 return true;
         }
 
@@ -236,20 +266,17 @@ namespace Precios_Turnos
                 btnAbrir.Visibility = Visibility.Hidden;
                 string pNombre = "ImgTablaDatos";
                 var item = mainWindow.FindName(pNombre) as UIElement;
-               
-                try
-                {
-                    DirectoryInfo di = new DirectoryInfo(@".\objetosSplash\TablaDatos");
-                    foreach (FileInfo file in di.EnumerateFiles())
-                    {
-                        file.Delete();
-                    }
-                    di.Delete();
 
+                if (item != null)
+                {
                     mainWindow.Principal.Children.Remove(item);
                     NameScope.GetNameScope(mainWindow).UnregisterName(pNombre);
+
+                    if (Directory.Exists(@".\objetosSplash\TablaDatos"))
+                    {
+                        Directory.Delete(@".\objetosSplash\TablaDatos", true);
+                    }
                 }
-                catch{ }
              }
             else
                 chkImagen.IsChecked = true;

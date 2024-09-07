@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Precios_Turnos"
         mc:Ignorable="d"
-        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="220" Width="600" WindowStyle="None" KeyDown="Window_KeyDown" AllowsTransparency="True" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Title="Contenido consulta SQL" Background="#FFD2CBCB" Opacity="0.9" Height="280" Width="600" WindowStyle="None" KeyDown="Window_KeyDown" AllowsTransparency="True" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -14,6 +14,8 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -51,15 +53,52 @@
         <ScrollViewer Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto" Margin="5,0,5,0">
             <TextBox x:Name="Consulta"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" TextWrapping="Wrap"/>
         </ScrollViewer>
+        <CheckBox x:Name="chkImagen" Content="Mostrar imagen" Grid.Row="4" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0" Checked="chkImagen_Checked" Unchecked="chkImagen_Unchecked" Visibility="Hidden"/>
+        <Label x:Name="lblID" Content="Campo a buscar de la imagen:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="12" Grid.Column="2" Margin="0,0,5,0" Visibility="Hidden"/>
+        <TextBox x:Name="ID" Grid.Row="6" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Visibility="Hidden" />
+       <StackPanel Grid.Row="7"
+  HorizontalAlignment="Right"
+  Orientation="Horizontal"
+  Margin="5,5,5,5" Grid.Column="2" >
+            <Button x:Name="btnAbrir"
+Content="Abrir carpeta imagenes"
+IsDefault="True"
+Width="170"
+Height="20"
+Margin="0,0,0,0"
+TabIndex="4"
+FontFamily="Arial Rounded MT" 
+FontSize="14" Click="btnAbrir_Click" Visibility="Hidden">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF0E596D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
         <CheckBox x:Name="chkOrganizar" Content="Organizar por bloques" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkOrganizar_Checked" Unchecked="chkOrganizar_Unchecked"/>
-        <Label x:Name="lblOrganizar" Content="Campo para organizar:" Grid.Row="4" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Visibility="Hidden" />
-        <TextBox x:Name="Organizar" Grid.Row="4" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Visibility="Hidden" />
-        <CheckBox x:Name="chkMostrarTitulo" Content="Mostrar el campo" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkMostrarTitulo_Checked" Unchecked="chkMostrarTitulo_Unchecked" Visibility="Hidden" />
-        <Label x:Name="lblCampoTitulo" Content="Label para mostrar:" Grid.Row="5" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" Visibility="Hidden" />
+        <Label x:Name="lblOrganizar" Content="Campo para organizar:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Visibility="Hidden" />
+        <TextBox x:Name="Organizar" Grid.Row="5" Text="" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Visibility="Hidden" />
+        <CheckBox x:Name="chkMostrarTitulo" Content="Mostrar el campo" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkMostrarTitulo_Checked" Unchecked="chkMostrarTitulo_Unchecked" Visibility="Hidden" />
+        <Label x:Name="lblCampoTitulo" Content="Label para mostrar:" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Visibility="Hidden" />
         <ComboBox x:Name="cbxLabels"
-                  FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.Row="5" Margin="0,0,5,0" Visibility="Hidden">
-        </ComboBox>
-        <StackPanel Grid.Row="45"
+                  FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="7" Margin="0,0,5,0" Visibility="Hidden"/>
+        <StackPanel Grid.Row="8"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="2" >

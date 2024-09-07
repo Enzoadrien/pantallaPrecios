@@ -3,6 +3,7 @@ using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
 using Priceio;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -62,11 +63,11 @@ namespace Precios_Turnos
         public Color ultimoColorLetra;
         public Color ultimoColorFondo;
         private string? controlClickName;
-        private string? controlSelectedName;
+        internal string? controlSelectedName;
         public Dictionary<long, Dictionary<bool, string>> listaTurnosTeclas = new Dictionary<long, Dictionary<bool, string>>();
         internal static List<StateObject> listaTurnosKretz = new List<StateObject>();
         private SolidColorBrush? ultimoColor;
-        private double ultimaOpacidad;
+        internal double ultimaOpacidad;
         private string? datosVerificador;
 
         public MainWindow()
@@ -339,10 +340,10 @@ namespace Precios_Turnos
             Application.Current.Dispatcher.InvokeAsync(new Action(() =>
             {
                 MostrarVentanaSplash mostrarTurno = new MostrarVentanaSplash(false, this, pvStrDatosVerificador);
-            mostrarTurno.WindowStyle = WindowStyle.None;
-            mostrarTurno.ShowInTaskbar = false;
-            mostrarTurno.CargarControles();
-            mostrarTurno.ShowDialog();
+                mostrarTurno.WindowStyle = WindowStyle.None;
+                mostrarTurno.ShowInTaskbar = false;
+                mostrarTurno.CargarControles();
+                mostrarTurno.ShowDialog();
             }));
         }
 
@@ -898,7 +899,10 @@ namespace Precios_Turnos
                     seElimina = false;
                     break;
                 default:
-                    seElimina = true;
+                    if (name.Contains("Img_"))
+                        seElimina = false;
+                    else
+                        seElimina = true;
                     break;
             }
             return seElimina;
@@ -1056,6 +1060,7 @@ namespace Precios_Turnos
                 try
                 {
                     var controlSelected = FindName(controlSelectedName) as UIElement;
+                    if(controlSelected != null)
                     switch (controlSelected.GetType().Name.ToString())
                     {
                         case "Image":
@@ -1791,6 +1796,14 @@ namespace Precios_Turnos
                     propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
                     propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count * 2;
                     propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
+
+                    var itemImg = FindName("Img_" + item.GetValue(NameProperty).ToString()) as UIElement;
+                    if (itemImg != null)
+                    {
+                        propiedadesTabla.cbxCBloques.IsEnabled=false;
+                        propiedadesTabla.cbxCRegistros.IsEnabled = false;
+                    }
+
                     string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
                     propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
                     propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
@@ -1936,6 +1949,27 @@ namespace Precios_Turnos
                             if (file.Name.Equals(pNombre + ".sql"))
                                 File.Delete(file.FullName);
                         }
+
+                        switch (item.GetType().Name.ToString())
+                        {
+                            case "DataGrid":
+                                var itemImg = FindName("Img_"+ pNombre) as UIElement;
+
+                                if (itemImg != null)
+                                {
+                                    Principal.Children.Remove(itemImg);
+                                    NameScope.GetNameScope(this).UnregisterName("Img_"+ pNombre);
+                                    if (Directory.Exists(@".\objetos\"+ pNombre))
+                                    {
+                                        Directory.Delete(@".\objetos\"+ pNombre, true);
+                                    }
+                                }
+                                break;
+
+                            default:
+                                break;
+                        }
+
                     }
 
                     catch { }
@@ -2126,7 +2160,7 @@ namespace Precios_Turnos
                 obj.HeadersVisibility = DataGridHeadersVisibility.None;
                 obj.CanUserAddRows = false;
                 obj.Tag = "2|15|H|15";
-                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString())[0].DefaultView;
+                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString(),"")[0].DefaultView;
                 obj.MouseLeave += objetoMedia_MouseLeave;
                 obj.MouseEnter += objetoMedia_MouseEnter;
 
@@ -2136,7 +2170,7 @@ namespace Precios_Turnos
             }
         }
 
-        public List<DataTable> LlenarListaTablas(int bloques, int cantFilas, DataTable dt, string orientacion, string pNombreControl, string pNombreIndex = "")
+        public List<DataTable> LlenarListaTablas(int bloques, int cantFilas, DataTable dt, string orientacion, string pNombreControl, string pCampoImagen, string pNombreIndex = "")
         {
             int index = 0;
             bool tieneCampoOrganizar = false;
@@ -2152,7 +2186,13 @@ namespace Precios_Turnos
 
             DataTable dtFinal = new DataTable();
             for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
-                dtFinal.Columns.Add();
+            {
+                if(pCampoImagen.Length > 0)
+                    dtFinal.Columns.Add(dt.Columns[z].ColumnName);
+                else
+                    dtFinal.Columns.Add();
+            }
+                
 
             object[] arrayTemp = new object[0];
             object[] arrayResult = new object[0];
@@ -2400,8 +2440,7 @@ namespace Precios_Turnos
                         }
                         if (orientacion.Equals("V"))
                         {
-
-                            ListTablas.Add(PivotTable(dtFinal));
+                            ListTablas.Add(PivotTable(dtFinal, pCampoImagen));
                         }
                         else
                         {
@@ -2411,7 +2450,10 @@ namespace Precios_Turnos
                         dtFinal = new DataTable();
                         for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
                         {
-                            dtFinal.Columns.Add();
+                            if (pCampoImagen.Length > 0)
+                                dtFinal.Columns.Add(dt.Columns[z].ColumnName);
+                            else
+                                dtFinal.Columns.Add();
                         }
                         x = 1;
                     }
@@ -2436,7 +2478,7 @@ namespace Precios_Turnos
             return memStream.ToArray();
         }
 
-        private DataTable PivotTable(DataTable origTable)
+        private DataTable PivotTable(DataTable origTable, string pCampoImagen)
         {
 
             DataTable newTable = new DataTable();
@@ -2445,7 +2487,11 @@ namespace Precios_Turnos
             //Add Columns to new Table
             for (int i = 0; i < origTable.Rows.Count; i++)
             {
-                newTable.Columns.Add();
+
+                if (pCampoImagen.Length > 0)
+                    newTable.Columns.Add(origTable.Rows[0][pCampoImagen].ToString());
+                else
+                    newTable.Columns.Add();
             }
 
             //Execute the Pivot Method
@@ -2544,7 +2590,7 @@ namespace Precios_Turnos
                         File.WriteAllText(@"objetos\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(nombreApp, savedControls));
                         if (esTabla)
                         {
-                            ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString())[0].DefaultView;
+                            ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString(),"")[0].DefaultView;
                             //((DataGrid)itemObjets).UpdateLayout();
                             ColorFuenteFondoTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString());
                         }
@@ -2616,13 +2662,15 @@ namespace Precios_Turnos
                     }
                                         };
                                     }
-                                    List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString());
+                                    List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(),"");
                                     if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                         control.ItemsSource = list[0].DefaultView;
+
                                     //control.UpdateLayout();
-                                    ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
+                                    //ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                     item.MouseLeave += objetoMedia_MouseLeave;
                                     item.MouseEnter += objetoMedia_MouseEnter;
+
                                     break;
                                 case "MediaElement":
                                     MediaElement media = (MediaElement)FindName(item.GetValue(NameProperty).ToString());
@@ -2655,15 +2703,14 @@ namespace Precios_Turnos
                     }
                     catch (Exception) { }
                 }
-
             }
             catch (Exception) { }
         }
 
-        public List<DataTable> CargarListaTablas(string pNombre, string pTag, bool pMostrarMensaje = false)
+        public List<DataTable> CargarListaTablas(string pNombre, string pTag, string pCampoImagen, bool pMostrarMensaje = false )
         {
             string[] datos = pTag.Split('|');
-            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
+            List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre, pCampoImagen);
             try
             {
                 Seguridad vSeguridad = new Seguridad();
@@ -2686,8 +2733,8 @@ namespace Precios_Turnos
                         sR.Close();
                         string[] datosC = vSeguridad.DecryptString(nombreApp, lectura).Split('|');
                         consulta = datosC[0];
-                        if (datosC.Length > 1)
-                            nombreIndex = datosC[1];
+                        if (datosC.Length > 3)
+                            nombreIndex = datosC[3];
 
                         OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
 
@@ -2698,7 +2745,7 @@ namespace Precios_Turnos
                         {
                             DataTable dt = new DataTable();
                             dt.Load(MyDataReader);
-                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
+                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, datosC[2], nombreIndex);
 
                         }
                         connection.Close();
@@ -2715,7 +2762,7 @@ namespace Precios_Turnos
                     dialog.lblTexto.Text = "Error al cargar la consulta: \n" + ex.Message; ;
                     dialog.ShowDialog();
                 }
-                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
+                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre, "");
             }
             return ListaTablas;
         }
@@ -2726,21 +2773,31 @@ namespace Precios_Turnos
             DataGrid control = (DataGrid)FindName(pNombre);
             if (datos.Length == 8)
             {
-                foreach (DataRowView item in control.ItemsSource)
+                foreach (var item in control.ItemsSource as IEnumerable)
                 {
+                    control.ScrollIntoView(item);
                     DataGridRow row = (DataGridRow)control.ItemContainerGenerator.ContainerFromItem(item);
 
                     if (row != null)
-                        if (row.GetIndex() % 2 == 0)
+                    {
+                        var array2 = (((DataRowView)row.Item).Row).ItemArray;
+                        
+                        if(!array2.All(i => i is DBNull))
                         {
-                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
-                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                            if (row.GetIndex() % 2 == 0)
+                            {
+                                row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                                row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                            }
+                            else
+                            {
+                                row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
+                                row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
+                            }
                         }
-                        else
-                        {
-                            row.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
-                            row.Background = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
-                        }
+
+                    }
+                        
                 }
             }
             else
@@ -2754,7 +2811,6 @@ namespace Precios_Turnos
                     }
                 };
             }
-            //control.UpdateLayout();
         }
 
         private void SaveFrameworkElementToPng(FrameworkElement frameworkElement,
@@ -2831,7 +2887,7 @@ namespace Precios_Turnos
                 int tamano;
                 while (animaciones && maximizado && !editar)
                 {
-                    List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag);
+                    List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag,"");
                     tamano = LisTablas.Count;
                     if (x < tamano)
                         CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
@@ -2943,12 +2999,55 @@ namespace Precios_Turnos
                         string lectura = sR.ReadToEnd();
                         sR.Close();
                         string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
-                        if (datos.Length > 2)
+                        if (datos.Length > 4)
                         {
-                            Label item = (Label)FindName(datos[2]);
+                            Label item = (Label)FindName(datos[4]);
                             if (item != null)
                                 item.Content = pLisTablas[x].TableName;
                         }
+
+                            string pNombreImg = "Img_" + pNombre;
+                            var item2 = FindName(pNombreImg) as UIElement;
+
+                            if (item2 != null)
+                            {
+                                try
+                                {
+                                        string[] datosTag = pTag.ToString().Split('|');
+
+                                        if (datosTag[2].Equals("V"))
+                                        {
+                                            String imagenBuscar = pLisTablas[x].Columns[0].ColumnName;
+                                            BitmapImage bitmapImage = new BitmapImage();
+                                            bitmapImage.BeginInit();
+                                            bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                            bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                            bitmapImage.EndInit();
+
+                                            ((Image)item2).Source = bitmapImage;
+                                        }
+                                        else
+                                        {
+
+                                                    String imagenBuscar = pLisTablas[x].Rows[0][datos[2]].ToString();
+                                                    BitmapImage bitmapImage = new BitmapImage();
+                                                    bitmapImage.BeginInit();
+                                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                                    bitmapImage.EndInit();
+
+                                                    ((Image)item2).Source = bitmapImage;
+                                    }
+                                }
+                                catch
+                                {
+                                    ((Image)item2).Source = null;
+                                }
+                            }
+
+
                         break;
                     }
                 }
@@ -3422,34 +3521,16 @@ namespace Precios_Turnos
                 Directory.CreateDirectory(@".\objetos\animaciones");
             }
 
-            if (!Directory.Exists(@".\objetosSplash\animaciones"))
-            {
-                Directory.CreateDirectory(@".\objetosSplash\animaciones");
-            }
-
             //Carpeta de consultas sql
             if (!Directory.Exists(@".\objetos\consultasSQL"))
             {
                 Directory.CreateDirectory(@".\objetos\consultasSQL");
             }
 
-
-            //Carpeta de consultas sql Splah
-            if (!Directory.Exists(@".\objetosSplash\consultasSQL"))
-            {
-                Directory.CreateDirectory(@".\objetosSplash\consultasSQL");
-            }
-
             //Carpeta multimedia principal
             if (!Directory.Exists(@".\objetos\multimedia"))
             {
                 Directory.CreateDirectory(@".\objetos\multimedia");
-            }
-
-            //Carpeta multimedia Splah
-            if (!Directory.Exists(@".\objetosSplash\multimedia"))
-            {
-                Directory.CreateDirectory(@".\objetosSplash\multimedia");
             }
 
         }
