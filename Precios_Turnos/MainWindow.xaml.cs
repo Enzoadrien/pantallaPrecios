@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.WebView2.Core;
+﻿using Microsoft.Identity.Client.NativeInterop;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
 using Priceio;
@@ -16,6 +17,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
@@ -27,8 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -48,7 +48,7 @@ namespace Precios_Turnos
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string nombreApp = "Precios_Turnos";
+        public static string nombreApp = "App_Priceio";
         private Seguridad seguridad = new Seguridad();
         private Licencia licencia = new Licencia();
         private Point _positionInBlock;
@@ -135,7 +135,12 @@ namespace Precios_Turnos
                 string[] subs = cadena.Split('|');
                 if (subs.Length > 0)
                 {
-                    if (subs[0].Equals(seguridad.DecryptString(licencia.Codigo, licencia.Correo))
+                    string correo = seguridad.DecryptString(licencia.Codigo, licencia.Correo);
+                    string codigo = seguridad.EncryptString(correo, seguridad.numeroSerieHD() + "|" +
+                                                                   seguridad.numeroSeriePlacaBase() + "|" +
+                                                                   MainWindow.nombreApp);
+
+                    if (subs[0].Equals(correo)
                         && subs[3].Equals(seguridad.numeroSerieHD()) && subs[4].Equals(seguridad.numeroSeriePlacaBase())
                         && subs[5].Equals(nombreApp))
                     {
@@ -153,16 +158,83 @@ namespace Precios_Turnos
                                 {
                                     if (seguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                     {
-                                        ActivarControlesMenu();
-                                        return true;
+                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
+                                        if (licencia.Llave.Equals(llave))
+                                        {
+                                            ActivarControlesMenu();
+                                            return true;
+                                        }
+                                        else
+                                        {
+                                            if (actualizaLlave(codigo, llave, correo))
+                                            {
+                                                ActivarControlesMenu();
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                dialog.lblTexto.Text = "La licencia ha caducado.";
+                                                dialog.ShowDialog();
+                                            }
+                                        }
                                     }
-                                    dialog.lblTexto.Text = "La licencia ha caducado.";
-                                    dialog.ShowDialog();
+                                    else
+                                    {
+                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
+                                        if (licencia.Llave.Equals(llave))
+                                        {
+                                            dialog.lblTexto.Text = "La licencia ha caducado.";
+                                            dialog.ShowDialog();
+                                        }
+                                        else
+                                        {
+                                            if (actualizaLlave(codigo, llave, correo))
+                                            {
+                                                ActivarControlesMenu();
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                dialog.lblTexto.Text = "La licencia ha caducado.";
+                                                dialog.ShowDialog();
+                                            }
+
+                                        }
+
+                                    }
                                 }
                                 else
                                 {
-                                    ActivarControlesMenu();
-                                    return true;
+                                    if (seguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                                    {
+                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
+                                        if (licencia.Llave.Equals(llave))
+                                        {
+
+                                            ActivarControlesMenu();
+                                            return true;
+                                        }
+                                        else
+                                        {
+
+                                            if (actualizaLlave(codigo, llave, correo))
+                                            {
+                                                ActivarControlesMenu();
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                dialog.lblTexto.Text = "La licencia ha caducado.";
+                                                dialog.ShowDialog();
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        ActivarControlesMenu();
+                                        return true;
+                                    }
                                 }
                             }
                         }
@@ -182,6 +254,78 @@ namespace Precios_Turnos
 
             BloquearControlesMenu();
             return false;
+        }
+
+        private bool actualizaLlave(string codigo, string llave, string correo)
+        {
+            string cadena = seguridad.DecryptString(codigo, llave);
+            string[] subs = cadena.Split('|');
+            if (subs.Length > 0)
+            {
+                if (subs[0].Equals(correo) && subs[3].Equals(seguridad.numeroSerieHD()) && subs[4].Equals(seguridad.numeroSeriePlacaBase())
+                    && subs[5].Equals(MainWindow.nombreApp))
+                {
+                    string strKey = seguridad.EncryptString(codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
+                    if (!subs[1].Equals("0"))
+                    {
+                        if (seguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                        {
+                            Licencia licencia = new Licencia();
+                            try
+                            {
+                                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Lista de precios 3K", true);
+                                string LlaveReg = key.GetValue("Key").ToString();
+                                licencia = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
+                            }
+                            catch { }
+                            if (correo.Equals(seguridad.DecryptString(codigo, licencia.Correo)) && codigo.Equals(licencia.Codigo) && llave.Equals(licencia.Llave))
+                            {
+                                return false;
+                            }
+                            else
+                            {
+                                GuardarLicencia(correo, codigo, llave, strKey);
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        GuardarLicencia(correo, codigo, llave, strKey);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void GuardarLicencia(string correo, string codigo, string llave, string pStrKey)
+        {
+            var Licencia = new Licencia
+            {
+                Correo = seguridad.EncryptString(codigo, correo),
+                Codigo = codigo,
+                Llave = llave,
+                Key = pStrKey
+            };
+
+            string jsonString = JsonSerializer.Serialize(Licencia);
+
+            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
+            key.SetValue("Key", jsonString);
+
+            using (Stream stream = new FileStream(@".\Llave.key", FileMode.Create))
+            {
+                stream.SetLength(0);
+                byte[] bytes = Encoding.UTF8.GetBytes(jsonString);
+                stream.Write(bytes, 0, bytes.Length);
+                stream.Close();
+            }
+
         }
 
         private void BloquearControlesMenu()
@@ -3596,6 +3740,20 @@ namespace Precios_Turnos
         private void LogoPrincipal_Click(object sender, RoutedEventArgs e)
         {
             Principal.Focus();
+        }
+    
+        private void EcribirErroresLog(string error)
+        {
+            DateTime dt = DateTime.Now;
+            if (!File.Exists(@".\Log_" + dt.ToString("dd-MM-yyyy") + ".3k"))
+            {
+                using (File.Create(@".\Log_" + dt.ToString("dd-MM-yyyy") + ".3k")) { }
+            }
+            using (StreamWriter stream = new StreamWriter(@".\Log_" + dt.ToString("dd-MM-yyyy") + ".3k", true))
+            {
+                stream.WriteLine(this.Name + "_Error: " + error + " - " + dt.ToShortTimeString());
+                stream.Close();
+            }
         }
     }
 }

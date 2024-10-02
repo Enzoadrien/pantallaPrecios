@@ -110,7 +110,6 @@ namespace Precios_Turnos
                                         Correo.IsReadOnly = true;
                                         Llave.IsReadOnly = true;
                                         btnGenerar.IsEnabled = false;
-                                        btnOK.IsEnabled = false;
                                         lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                                         lblFecha.Content = "Licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
 
@@ -128,7 +127,6 @@ namespace Precios_Turnos
                                     Correo.IsReadOnly = true;
                                     Llave.IsReadOnly = true;
                                     btnGenerar.IsEnabled = false;
-                                    btnOK.IsEnabled = false;
                                     lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
                                     lblFecha.Content = "Licencia: Permanente";
                                 }
@@ -177,16 +175,14 @@ namespace Precios_Turnos
                             if (Correo.Text.Equals(vSeguridad.DecryptString(Codigo.Text, licencia.Correo)) && Codigo.Text.Equals(licencia.Codigo) && Llave.Text.Equals(licencia.Llave))
                             {
 
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                                dialog.lblNombre.Content = "¡Error!";
-                                dialog.lblTexto.Text = "Esta licencia ya se utilizó en este equipo.";
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA);
+                                dialog.lblNombre.Content = "¡Advertencia!";
+                                dialog.lblTexto.Text = "Su licencia ya se encuentra activa. Si adquirió una nueva licencia y no la puede activar, por favor póngase en contacto con su proveedor.";
                                 dialog.ShowDialog();
+                                return true;
                             }
                             else
                             {
-                                ValidarLicencia validarLicencia = new ValidarLicencia();
-                                if(validarLicencia.activarLicenciaApp(Correo.Text, Codigo.Text))
-                                {
                                     GuardarLicencia(strKey);
                                     mainWindow.Conexion.IsEnabled = true;
                                     mainWindow.VentanaSplash.IsEnabled = true;
@@ -202,7 +198,6 @@ namespace Precios_Turnos
                                     dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
                                     dialog.ShowDialog();
                                     return true;
-                                }
                             }
                         }
                         else
@@ -215,11 +210,7 @@ namespace Precios_Turnos
                     }
                     else
                     {
-                        ValidarLicencia validarLicencia = new ValidarLicencia();
-                        if (validarLicencia.activarLicenciaApp(Correo.Text, Codigo.Text))
-                        {
                             GuardarLicencia(strKey);
-
                             mainWindow.Conexion.IsEnabled = true;
                             mainWindow.VentanaSplash.IsEnabled = true;
                             mainWindow.EditarDiseno.IsEnabled = true;
@@ -235,7 +226,6 @@ namespace Precios_Turnos
                             dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
                             dialog.ShowDialog();
                             return true;
-                        }
                     }
                 }
             }

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <serverConfiguration>
-		<server>p1gIYlQrwDhsMRvM+zQuE81fbvoUEJW95Hdk3gqm9EI=</server>
-		<database>SZyR7PFo+e4M5+REASEQsA==</database>
-		<user>mezdDgFMjzlgs37o0Iyxtg==</user>
-		<password>y1IV8Qdpl94NBtHjcxM/dygcx6se449QZvVaLFNbzmk=</password>
+	<server>RTJ40aDl85P3rKxOY3z02KI44/N7jVVLh+RAnmbMrBw=</server>
+	<port>mSS166i8nk721hqsfn3jkQ==</port>
+	<database>98X3gQpIr6gEaspG1REfAw==</database>
+	<user>mezdDgFMjzlgs37o0Iyxtg==</user>
+	<password>y1IV8Qdpl94NBtHjcxM/dygcx6se449QZvVaLFNbzmk=</password>
 </serverConfiguration>

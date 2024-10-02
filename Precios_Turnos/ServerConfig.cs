@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,23 +17,24 @@ namespace Precios_Turnos
         private readonly string serverKey = "Aplicaciones_3K_Mto_Prof";
         private Seguridad vSeguridad = new Seguridad();
 
-        internal SqlConnection connection()
+        internal MySqlConnection connection()
         {
-            
-            SqlConnection connection;
+
+            MySqlConnection connection;
             try
             {
-                var builder = new SqlConnectionStringBuilder
+                var builder = new MySqlConnectionStringBuilder
                 {
-                    DataSource = vSeguridad.DecryptString(serverKey, recuperarValorServer("server")),
-                    InitialCatalog = vSeguridad.DecryptString(serverKey, recuperarValorServer("database")),
+                    Server = vSeguridad.DecryptString(serverKey, recuperarValorServer("server")),
+                    Port = uint.Parse(vSeguridad.DecryptString(serverKey, recuperarValorServer("port"))),
+                    Database = vSeguridad.DecryptString(serverKey, recuperarValorServer("database")),
                     UserID = vSeguridad.DecryptString(serverKey, recuperarValorServer("user")),
                     Password = vSeguridad.DecryptString(serverKey, recuperarValorServer("password")),
                 };
 
-                connection = new SqlConnection(builder.ConnectionString);
+                connection = new MySqlConnection(builder.ConnectionString);
             } catch (Exception ex) {
-                connection = new SqlConnection();
+                connection = new MySqlConnection();
             }
             return connection;
         }
