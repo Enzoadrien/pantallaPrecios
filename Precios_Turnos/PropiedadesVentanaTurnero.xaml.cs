@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,23 +17,25 @@ using System.Windows.Shapes;
 namespace Precios_Turnos
 {
     /// <summary>
-    /// Lógica de interacción para PropiedadesFondoTurnero.xaml
+    /// Lógica de interacción para PropiedadesFondo.xaml
     /// </summary>
-    public partial class PropiedadesFondoTurnero : Window
+    public partial class PropiedadesVentanaTurnero : Window
     {
         private MostrarVentanaSplash mainWindow;
-        public PropiedadesFondoTurnero(MostrarVentanaSplash pMostrarTurno)
+        internal string nombreControl;
+        public PropiedadesVentanaTurnero(MostrarVentanaSplash pmainWindow)
         {
+            mainWindow = pmainWindow;
             InitializeComponent();
-            mainWindow = pMostrarTurno;
+            CargarDatos();
             FocusManager.SetFocusedElement(this, btnColorFondo);
         }
-
+        
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
-
+        
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
@@ -44,6 +47,105 @@ namespace Precios_Turnos
             {
                 Close();
             }
+        }
+
+        private void CargarDatos()
+        {
+            Ancho.Text = mainWindow.Width.ToString();
+            Alto.Text = mainWindow.Height.ToString();
+        }
+
+        private void btnColorFondoBorde_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Border control = (Border)mainWindow.FindName(nombreControl);
+            ColorPicker colorPicker = new ColorPicker(mainWindow, mainWindow.ultimoColorLetra, mainWindow.ultimoColorFondo, (control.BorderBrush as SolidColorBrush).Color);
+            // get the parent container
+
+            // get the position within the container
+            var mousePosition = e.GetPosition(mainWindow.Principal);
+
+            if (mousePosition.Y + colorPicker.Height >= mainWindow.MaxHeight)
+                colorPicker.Top = mousePosition.Y - colorPicker.Height;
+            else
+                colorPicker.Top = mousePosition.Y;
+
+            if (mousePosition.X + colorPicker.Width >= mainWindow.MaxWidth)
+                colorPicker.Left = mousePosition.X - colorPicker.Width;
+            else
+                colorPicker.Left = mousePosition.X;
+
+            if ((bool)colorPicker.ShowDialog())
+            {
+                btnColorBorde.Fill = new SolidColorBrush(colorPicker.SelectedColor);
+                control.BorderBrush = new SolidColorBrush(colorPicker.SelectedColor);
+                mainWindow.ultimoColorFondo = colorPicker.SelectedColor;
+            }
+        }
+
+        private void cbxGrosor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Border control = (Border)mainWindow.FindName(nombreControl);
+            control.BorderThickness = new Thickness(int.Parse(((ComboBoxItem)cbxGrosor.SelectedItem).Tag.ToString()));
+        }
+
+        private void Ancho_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                double ancho = double.Parse(Ancho.Text);
+                if (mainWindow.Width != ancho)
+                {
+                    mainWindow.Width = ancho;
+                }
+            }
+            catch{}
+           
+                
+
+        }
+
+        private void Alto_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                double alto = double.Parse(Alto.Text);
+            if (mainWindow.Height != alto)
+            {
+                mainWindow.Height = alto;
+            }
+               }
+            catch{}
+           
+        }
+
+        private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+                e.Handled = !TextAllowed(e.Text);
+        }
+
+        private void PastingHandler(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+
+            if (e.Key == Key.Space && cajaTexto.IsFocused == true)
+                e.Handled = true;
+        }
+        private Boolean TextAllowed(String s)
+        {
+            foreach (Char c in s.ToCharArray())
+            {
+                if (Char.IsDigit(c)) continue;
+                else return false;
+            }
+            return true;
         }
 
         private void btnColorFondo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -117,16 +219,12 @@ namespace Precios_Turnos
                 // Open document 
                 ContenidoTextBox.Text = Img.Name;
                 ContenidoTextBox.ToolTip = Img.Name;
-                btnColorFondo.Fill = new SolidColorBrush(Colors.White);
-                ImageBrush myBrush = new ImageBrush();
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
                 image.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 image.EndInit();
-                myBrush.ImageSource = image;
-                mainWindow.Base.Background = new SolidColorBrush(Colors.White);
                 mainWindow.Fondo.Source = image;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;

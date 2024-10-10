@@ -118,14 +118,12 @@ namespace Precios_Turnos
                 // Open document 
                 ContenidoTextBox.Text = Img.Name;
                 ContenidoTextBox.ToolTip = Img.Name;
-                btnColorFondo.Fill = new SolidColorBrush(Colors.White);
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
                 image.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 image.EndInit();
-                mainWindow.Base.Background = new SolidColorBrush(Colors.White);
                 mainWindow.Fondo.Source = image;
                 Opacidad.IsEnabled = true;
                 Opacidad.Value = 1;

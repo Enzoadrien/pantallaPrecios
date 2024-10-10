@@ -32,8 +32,6 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
-            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
@@ -69,15 +67,8 @@
         <Label x:Name="lblDurar" Content="Durar:" Grid.Row="3" FontFamily="Arial Rounded MT" FontSize="14"/>
         <TextBox x:Name="Durar" Grid.Row="3" Text="" Grid.Column="1" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" />
         <Label x:Name="lblSeg" Content="s" Grid.Row="3" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblTamano" Content="Tamaño ventana" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblAncho" Content="Ancho:" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ancho" Grid.Row="5" Text="" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="60,0,50,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
-        <Label x:Name="lblAlto" Content="Alto:" Grid.Row="5" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Alto" Grid.Row="5" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="60,0,50,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
-        <Label x:Name="lblLargoPX" Content="px" Grid.Row="5" Grid.Column="1" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Margin="10,0,0,0"/>
-        <Label x:Name="lblAnchoPX" Content="px" Grid.Row="5" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Margin="10,0,0,0"/>
-        <CheckBox x:Name="chkVoz" Content="Voz de Windows" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,0,0" Checked="chkVoz_Checked" Unchecked="chkVoz_Unchecked"/>
-        <StackPanel Grid.Row="6"
+        <CheckBox x:Name="chkVoz" Content="Voz de Windows" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center" FontWeight="Bold" Margin="5,0,0,0" Checked="chkVoz_Checked" Unchecked="chkVoz_Unchecked"/>
+        <StackPanel Grid.Row="4"
   HorizontalAlignment="Right"
   Orientation="Horizontal"
   Margin="0,5,5,5" Grid.Column="2" Grid.ColumnSpan="2">
@@ -112,7 +103,7 @@ FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <TabControl x:Name="TiposVentana" Grid.Row="7" Grid.RowSpan="10" Grid.ColumnSpan="4" Margin="5,0,5,0">
+        <TabControl x:Name="TiposVentana" Grid.Row="5" Grid.RowSpan="10" Grid.ColumnSpan="4" Margin="5,0,5,0">
             <TabItem x:Name="Turnero" Header="Turnero" FontFamily="Arial Rounded MT" FontSize="14">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -283,8 +274,8 @@ FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
                 </Grid>
             </TabItem>
         </TabControl>
-        <CheckBox x:Name="chkActivarSplash" Content="Activar" Grid.Row="17" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
-        <StackPanel Grid.Row="17"
+        <CheckBox x:Name="chkActivarSplash" Content="Activar" Grid.Row="15" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
+        <StackPanel Grid.Row="15"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="3" >

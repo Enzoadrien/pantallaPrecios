@@ -11,6 +11,7 @@ using System.Security.Policy;
 using System.Net.NetworkInformation;
 using System.Windows;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Precios_Turnos
 {
@@ -208,6 +209,19 @@ namespace Precios_Turnos
                 return new DateTime(1900, 1, 1);
             }
 
+        }
+
+        internal bool CheckInternetConnecition()
+        {
+                try
+                {
+                    IPHostEntry i = Dns.GetHostEntry("www.google.com");
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
         }
 
         internal string GenerarCheckSum(int campoInicio, string comando, bool tieneCheckSum)

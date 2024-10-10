@@ -140,8 +140,6 @@ namespace Precios_Turnos
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
             Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
             Durar.Text = config.AppSettings.Settings["Duracion"].Value;
-            Ancho.Text = config.AppSettings.Settings["Ancho"].Value;
-            Alto.Text = config.AppSettings.Settings["Alto"].Value;
             cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
             chkVoz.IsChecked = config.AppSettings.Settings["Voz"].Value.Equals("true") ? true : false;
@@ -165,8 +163,6 @@ namespace Precios_Turnos
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
             config.AppSettings.Settings["Duracion"].Value = Durar.Text;
-            config.AppSettings.Settings["Ancho"].Value = Ancho.Text;
-            config.AppSettings.Settings["Alto"].Value = Alto.Text;
             config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
             config.AppSettings.Settings["Voz"].Value = chkVoz.IsChecked == true ? "true" : "false";

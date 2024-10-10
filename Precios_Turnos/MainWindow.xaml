@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Priceio" Height="600" Width="920" SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" WindowStartupLocation="CenterScreen" FontFamily="Arial Rounded MT" MouseRightButtonUp="Principal_MouseRightButtonUp" MinWidth="920" MinHeight="600" Closed="Window_Closed" Activated="VentanaPrincipal_Activated" Icon="/logoapp.png">
     <Window.Resources>
-        <ContextMenu x:Key="cmdPrincipalContexMenu">
+        <ContextMenu x:Key="cmdPrincipalContexMenu" FontFamily="Arial Rounded MT">
             <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarVideo" Header="Agregar video/audio" PreviewMouseLeftButtonDown="MenuAgregarVideo_PreviewMouseLeftButtonDown"/>
@@ -15,9 +15,12 @@
             <MenuItem x:Name="MenuAgregarWEB" Header="Agregar web" PreviewMouseLeftButtonDown="MenuAgregarWEB_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarFecha" Header="Agregar fecha" PreviewMouseLeftButtonDown="MenuAgregarFecha_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuAgregarReloj" Header="Agregar reloj" PreviewMouseLeftButtonDown="MenuAgregarReloj_PreviewMouseLeftButtonDown"/>
-            <MenuItem x:Name="MenuTurnos" Header="Turnos">
-                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            <Separator/>
+            <MenuItem x:Name="VentanaSplash" Header="Configurar ventana splash" Click="VentanaSplash_Click"/>
+            <MenuItem x:Name="MenuVentanaSplash" Header="Editar ventana splash" PreviewMouseLeftButtonDown="MenuVentanaSplash_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuTurnos" Header="Agregar objetos turnero">
+                    <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                    <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
@@ -26,7 +29,7 @@
             <MenuItem x:Name="MenuReiniciarDiseno" Header="Reiniciar diseño" PreviewMouseLeftButtonDown="MenuReiniciarDiseno_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
         </ContextMenu>
-        <ContextMenu x:Key="cmdContexMenu">
+        <ContextMenu x:Key="cmdContexMenu" FontFamily="Arial Rounded MT">
             <MenuItem x:Name="MenuTraerFrente" Header="Traer al frente" PreviewMouseLeftButtonDown="MenuTraerFrente_PreviewMouseLeftButtonDown" />
             <MenuItem x:Name="MenuPropiedades" Header="Propiedades" PreviewMouseLeftButtonDown="MenuPropiedades_PreviewMouseLeftButtonDown"/>
             <Separator />
@@ -60,17 +63,15 @@
                 <Separator />
                 <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                     <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
-                    <MenuItem x:Name="VentanaSplash" Header="Configurar ventana splash" FontFamily="Arial Rounded MT" Click="VentanaSplash_Click"/>
                 </MenuItem>
-                <Separator />
-                <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
             <MenuItem x:Name="Editar" Header="Editar" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <MenuItem x:Name="EditarDisenoVentanaSplash" Header="Editar diseño ventana splash" FontFamily="Arial Rounded MT" Click="EditarDisenoTurnero_Click"/>
+                <Separator />
+                <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
             <MenuItem x:Name="Ayuda" Header="Ayuda" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT" Click="Sobre_Click"/>

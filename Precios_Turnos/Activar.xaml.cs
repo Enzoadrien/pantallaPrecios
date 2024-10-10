@@ -185,9 +185,7 @@ namespace Precios_Turnos
                             {
                                     GuardarLicencia(strKey);
                                     mainWindow.Conexion.IsEnabled = true;
-                                    mainWindow.VentanaSplash.IsEnabled = true;
                                     mainWindow.EditarDiseno.IsEnabled = true;
-                                    mainWindow.EditarDisenoVentanaSplash.IsEnabled = true;
                                     mainWindow.ImportarDiseno.IsEnabled = true;
                                     mainWindow.ExportarDiseno.IsEnabled = true;
                                     mainWindow.ResizeMode = ResizeMode.CanResize;
@@ -212,9 +210,7 @@ namespace Precios_Turnos
                     {
                             GuardarLicencia(strKey);
                             mainWindow.Conexion.IsEnabled = true;
-                            mainWindow.VentanaSplash.IsEnabled = true;
                             mainWindow.EditarDiseno.IsEnabled = true;
-                            mainWindow.EditarDisenoVentanaSplash.IsEnabled = true;
                             mainWindow.ImportarDiseno.IsEnabled = true;
                             mainWindow.ExportarDiseno.IsEnabled = true;
 

@@ -45,7 +45,7 @@ namespace Precios_Turnos
 
                 return llave;
             }
-            catch (SqlException e)
+            catch (MySqlException e)
             {
                 Console.WriteLine(e.Message);
                 Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
@@ -86,7 +86,7 @@ namespace Precios_Turnos
 
                 return true;
             }
-            catch (SqlException e)
+            catch (MySqlException e)
             {
                 Console.WriteLine(e.Message);
                 Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
@@ -127,7 +127,7 @@ namespace Precios_Turnos
 
                 return llave;
             }
-            catch (SqlException e)
+            catch (MySqlException e)
             {
                 Console.WriteLine(e.Message);
                 Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
@@ -137,5 +137,30 @@ namespace Precios_Turnos
                 return string.Empty;
             }
         }
+
+        internal void actualizaUltimaConexion(string Correo, string Codigo, bool LicenciaValida)
+        {
+            MySqlConnection connection = new ServerConfig().connection();
+            try
+            {
+
+                using (MySqlCommand cmd = connection.CreateCommand())
+                {    //watch out for this SQL injection vulnerability below
+                    cmd.CommandText = string.Format("UPDATE  licencias set ultimaConexion='"+  DateTime.Parse(DateTime.Now.ToString()).ToString("yyyy-MM-dd HH:mm:ss") + "' " + (LicenciaValida==true? ", licenciaValida=1 " : ", licenciaValida=0 ") + " WHERE correo='" + Correo + "' AND codigo='" + Codigo +"';");
+                    connection.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+            catch (MySqlException e)
+            {
+                Console.WriteLine(e.Message);
+                Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
+                dialogError.lblNombre.Content = "¡Error!";
+                dialogError.lblTexto.Text = "Ocurrio un error al sincronizar con el servidor, consulte al administrador.";
+                dialogError.ShowDialog();
+            }
+        }
+
     }
 }

@@ -42,6 +42,8 @@ namespace Precios_Turnos
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         private string datoVerificador;
         private string tipoVentana;
+        private double anchoAnt = 0;
+        private double altoAnt = 0;
 
         public MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "")
         {
@@ -52,21 +54,62 @@ namespace Precios_Turnos
 
             InitializeComponent();
             crearDirectorios();
+
             try
             {
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                Width = double.Parse(config.AppSettings.Settings["Ancho"].Value);
-                Height = double.Parse(config.AppSettings.Settings["Alto"].Value);
+                double Ancho = double.Parse(config.AppSettings.Settings["Ancho"].Value);
+                double Alto = double.Parse(config.AppSettings.Settings["Alto"].Value);
+                if (Ancho == 0 & Alto == 0) {
+                    Width = SystemParameters.VirtualScreenWidth / 2;
+                    Height = SystemParameters.VirtualScreenHeight / 2;
+
+                    config.AppSettings.Settings["Ancho"].Value = Width.ToString();
+                    config.AppSettings.Settings["Alto"].Value = Height.ToString();
+                    config.Save(ConfigurationSaveMode.Modified);
+                    ConfigurationManager.RefreshSection("appSettings");
+                }
+                else
+                {
+                    Width = double.Parse(config.AppSettings.Settings["Ancho"].Value);
+                    Height = double.Parse(config.AppSettings.Settings["Alto"].Value);
+                }
+
+                MinWidth = 300;
+                MaxWidth = SystemParameters.VirtualScreenWidth;
+                MinHeight = 300;
+                MaxHeight = SystemParameters.VirtualScreenHeight;
+
                 tipoVentana = config.AppSettings.Settings["TipoSplash"].Value;
             }
             catch { }
             if (!esDiseno)
             {
                 IsHitTestVisible = false;
+                BarraMenus.Visibility = Visibility.Hidden;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
                 StartCloseTimer();
             }
+
+            CenterWindowOnScreen();
+        }
+
+        private void CenterWindowOnScreen()
+        {
+            double screenWidth = SystemParameters.VirtualScreenWidth;
+            double screenHeight = SystemParameters.VirtualScreenHeight;
+            double windowWidth = this.Width;
+            double windowHeight = this.Height;
+            Left = (screenWidth / 2) - (windowWidth / 2);
+            Top = (screenHeight / 2) - (windowHeight / 2);
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try { DragMove(); } catch (Exception) { }
+
+
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -299,6 +342,27 @@ namespace Precios_Turnos
                     else
                         ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Agregar tabla de datos";
 
+                    control = (Label)FindName("CantidadTotal");
+                    if (control != null)
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Eliminar cantidad total";
+                    else
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Agregar cantidad total";
+                    control = (Label)FindName("CantidadIngresada");
+                    if (control != null)
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Eliminar cantidad ingresada";
+                    else
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Agregar cantidad ingresada";
+                    control = (Label)FindName("CantidadFaltante");
+                    if (control != null)
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Eliminar cantidad faltante";
+                    else
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Agregar cantidad faltante";
+                    control = (Label)FindName("Cambio");
+                    if (control != null)
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Eliminar cambio";
+                    else
+                        ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Agregar cambio";
+
                     MenuItem itemCm = (MenuItem)cm.Items[6];
                     itemCm.Items.Clear();
                     foreach (var itemObjets in Principal.Children)
@@ -353,6 +417,11 @@ namespace Precios_Turnos
                 case "Fondo":
                 case "Borde":
                 case "ImgTablaDatos":
+                case "BarraMenus":
+                case "TituloMenu":
+                case "Salir":
+                case "Maximizar":
+                case "VentanaSplash":
                     seElimina = false;
                     break;
                 default:
@@ -373,6 +442,11 @@ namespace Precios_Turnos
                 case "Principal":
                 case "Fondo":
                 case "Borde":
+                case "BarraMenus":
+                case "TituloMenu":
+                case "Salir":
+                case "Maximizar":
+                case "VentanaSplash":
                     seModifica = false;
                     break;
                 default:
@@ -553,6 +627,7 @@ namespace Precios_Turnos
             if (!esDiseno)
             {
 
+               
                 CargarAnimaciones();
 
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
@@ -571,16 +646,22 @@ namespace Precios_Turnos
 
         }
 
-        public bool BorarObjeto(string pNombre)
+        public bool BorarObjeto(string pNombre, bool pMuestraMensaje = true)
         {
             if (SeEliminaControl(pNombre))
             {
                 var item = FindName(pNombre) as UIElement;
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
-                dialog.lblNombre.Content = "¡Advertencia!";
-                dialog.lblTexto.Text = "Se eliminará de forma permanente el objeto " + pNombre+ "("+ item.GetType().Name + ").";
 
-                if (dialog.ShowDialog() == true)
+                bool seBorra = false;
+                if (pMuestraMensaje)
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                    dialog.lblNombre.Content = "¡Advertencia!";
+                    dialog.lblTexto.Text = "Se eliminará de forma permanente el objeto " + pNombre+ "("+ item.GetType().Name + ").";
+                        if (dialog.ShowDialog() == true)
+                            seBorra = true;
+                }
+                if (seBorra || !pMuestraMensaje)
                 {
                     Principal.Children.Remove(item);
                     NameScope.GetNameScope(this).UnregisterName(pNombre);
@@ -603,7 +684,6 @@ namespace Precios_Turnos
                         }
 
                         info = new DirectoryInfo(@"objetosSplash\consultasSQL");
-
 
                         foreach (var file in info.GetFiles())
                         {
@@ -632,26 +712,25 @@ namespace Precios_Turnos
                                     }
                                 }
                                 break;
-
                             default:
                                 break;
                         }
-
                     }
                     catch { }
                     return true;
                 }
-                return false;
-
             }
             else
             {
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Este objeto no puede ser borrado.";
-                dialog.ShowDialog();
-                return false;
+                if (pMuestraMensaje)
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Este objeto no puede ser borrado.";
+                    dialog.ShowDialog();
+                }
             }
+            return false;
         }
 
         private void objeto_MouseLeave(object sender, MouseEventArgs e)
@@ -682,65 +761,48 @@ namespace Precios_Turnos
             controlSelectedName = control.GetValue(NameProperty).ToString();
         }
 
-        private void Propiedades_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void PropiedadesVentana_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             // get the position within the container
             var mousePosition = e.GetPosition(this);
-            PropiedadesFondoTurnero propiedadesFondo = new PropiedadesFondoTurnero(this);
-            propiedadesFondo.WindowStartupLocation = WindowStartupLocation.Manual;
+            PropiedadesVentanaTurnero propiedadesVentanaTurnero = new PropiedadesVentanaTurnero(this);
+            propiedadesVentanaTurnero.WindowStartupLocation = WindowStartupLocation.Manual;
 
-            if (mousePosition.X + propiedadesFondo.Width >= MaxWidth)
-                propiedadesFondo.Left = mousePosition.X - propiedadesFondo.Width;
+            if (mousePosition.X + propiedadesVentanaTurnero.Width >= MaxWidth)
+                propiedadesVentanaTurnero.Left = mousePosition.X - propiedadesVentanaTurnero.Width;
             else
-                propiedadesFondo.Left = mousePosition.X;
+                propiedadesVentanaTurnero.Left = mousePosition.X;
 
-            if (mousePosition.Y + propiedadesFondo.Height >= MaxHeight)
-                propiedadesFondo.Top = mousePosition.Y - propiedadesFondo.Height;
+            if (mousePosition.Y + propiedadesVentanaTurnero.Height >= MaxHeight)
+                propiedadesVentanaTurnero.Top = mousePosition.Y - propiedadesVentanaTurnero.Height;
             else
-                propiedadesFondo.Top = mousePosition.Y;
-            try
-            {
-                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
-            }
-            catch (Exception)
-            {
-                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(Colors.White);
-            }
-            try
-            {
-                propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
-                propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
-                propiedadesFondo.Opacidad.IsEnabled = true;
-                propiedadesFondo.Opacidad.Value = Fondo.Opacity;
-            }
-            catch { }
-            propiedadesFondo.ShowDialog();
-        }
-
-        private void PropiedadesBorde_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // get the position within the container
-            var mousePosition = e.GetPosition(this);
-            PropiedadesBordeTurnero propiedadesBordeTurnero = new PropiedadesBordeTurnero(this);
-            propiedadesBordeTurnero.WindowStartupLocation = WindowStartupLocation.Manual;
-
-            if (mousePosition.X + propiedadesBordeTurnero.Width >= MaxWidth)
-                propiedadesBordeTurnero.Left = mousePosition.X - propiedadesBordeTurnero.Width;
-            else
-                propiedadesBordeTurnero.Left = mousePosition.X;
-
-            if (mousePosition.Y + propiedadesBordeTurnero.Height >= MaxHeight)
-                propiedadesBordeTurnero.Top = mousePosition.Y - propiedadesBordeTurnero.Height;
-            else
-                propiedadesBordeTurnero.Top = mousePosition.Y;
+                propiedadesVentanaTurnero.Top = mousePosition.Y;
 
             var item = FindName("Borde") as UIElement;
 
-            propiedadesBordeTurnero.NombreControl.Text = item.GetValue(NameProperty).ToString();
-            propiedadesBordeTurnero.TipoControl.Text = item.GetType().Name;
-            propiedadesBordeTurnero.btnColorBorde.Fill = new SolidColorBrush((((Border)item).BorderBrush as SolidColorBrush).Color);
-            propiedadesBordeTurnero.cbxGrosor.SelectedValue = ((Border)item).BorderThickness.Left;
-            propiedadesBordeTurnero.ShowDialog();
+            propiedadesVentanaTurnero.nombreControl = item.GetValue(NameProperty).ToString();
+            propiedadesVentanaTurnero.btnColorBorde.Fill = new SolidColorBrush((((Border)item).BorderBrush as SolidColorBrush).Color);
+            propiedadesVentanaTurnero.cbxGrosor.SelectedValue = ((Border)item).BorderThickness.Left;
+
+
+            try
+            {
+                propiedadesVentanaTurnero.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
+            }
+            catch (Exception)
+            {
+                propiedadesVentanaTurnero.btnColorFondo.Fill = new SolidColorBrush(Colors.White);
+            }
+            try
+            {
+                propiedadesVentanaTurnero.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesVentanaTurnero.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesVentanaTurnero.Opacidad.IsEnabled = true;
+                propiedadesVentanaTurnero.Opacidad.Value = Fondo.Opacity;
+            }
+            catch { }
+
+            propiedadesVentanaTurnero.ShowDialog();
         }
 
         private void MenuAgregarTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -950,18 +1012,52 @@ namespace Precios_Turnos
             dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente. ¿Está seguro que desea continuar?";
             if (dialog.ShowDialog() == true)
             {
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                config.AppSettings.Settings["Ancho"].Value = (SystemParameters.VirtualScreenWidth / 2).ToString();
+                config.AppSettings.Settings["Alto"].Value = (SystemParameters.VirtualScreenHeight / 2).ToString();
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+
+                Width = SystemParameters.VirtualScreenWidth / 2;
+                Height = SystemParameters.VirtualScreenHeight / 2;
+
+                List<string> objEliminar = new List<string>();
                 try
                 {
-                    if (Directory.Exists(@".\objetosSplash"))
+                    foreach (var itemObjets in Principal.Children)
                     {
-                        Directory.Delete(@".\objetosSplash", true);
+                        string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                        if (SeEliminaControl(nombreControl))
+                        {
+                            objEliminar.Add(nombreControl);
+                        }
+                        else if (nombreControl.Equals("Fondo"))
+                        {
+                            Fondo.Source = null;
+                        }
+                        else if (nombreControl.Equals("Base"))
+                        {
+                            Base.Background = new SolidColorBrush(Colors.White);
+                        }
+                        else if (nombreControl.Equals("Borde"))
+                        {
+                            Border control = (Border)FindName(nombreControl);
+                            control.BorderBrush = new SolidColorBrush(Colors.Black);
+                            control.BorderThickness = new Thickness(3);
+                        }
+                    }
+
+                    foreach (string ob in objEliminar)
+                    {
+                        BorarObjeto(ob, false);
+                    }
+                    foreach (var item in Directory.GetFiles(@".\objetosSplash\multimedia", "*.*"))
+                    {
+                        File.SetAttributes(item, FileAttributes.Normal);
+                        File.Delete(item);
                     }
                 }
                 catch { }
-                esDiseno = false;
-                Close();
-                MostrarVentanaSplash dialog2 = new MostrarVentanaSplash(true);
-                dialog2.ShowDialog();
             }
         }
 
@@ -975,6 +1071,7 @@ namespace Precios_Turnos
         {
             try
             {
+                GuardarDatos();
                 var controlSelected = FindName(controlSelectedName) as UIElement;
                 if(controlSelected != null)
                 switch (controlSelected.GetType().Name.ToString())
@@ -1049,6 +1146,17 @@ namespace Precios_Turnos
             catch (Exception) { }
         }
 
+        private void GuardarDatos()
+        {
+            //Create the object
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings["Ancho"].Value = Width.ToString();
+            config.AppSettings.Settings["Alto"].Value = Height.ToString();
+
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+        
         public void CargarControles()
         {
             try
@@ -1188,8 +1296,11 @@ namespace Precios_Turnos
 
         private void SalirEdicion()
         {
-            if(esDiseno)
-                GuardarControles();
+            Close();
+        }
+       
+        private void Salir_Click(object sender, RoutedEventArgs e)
+        {
             Close();
         }
 
@@ -1205,7 +1316,15 @@ namespace Precios_Turnos
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (esDiseno)
+            {
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                config.AppSettings.Settings["Ancho"].Value = Width.ToString();
+                config.AppSettings.Settings["Alto"].Value = Height.ToString();
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
                 GuardarControles();
+            }
+                
         }
 
         private void MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -2124,6 +2243,149 @@ namespace Precios_Turnos
                     ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
             }
             catch { }
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+
+            Coordenadas.Content = "Tamaño ventana: " + Width.ToString() + "X, " + Height.ToString() + "Y";
+        }
+
+        private void Maximizar_Click(object sender, RoutedEventArgs e)
+        {
+            if (Width == SystemParameters.VirtualScreenWidth && Height == SystemParameters.VirtualScreenHeight)
+            {
+                Width = anchoAnt;
+                Height = altoAnt;
+                CenterWindowOnScreen();
+            }
+            else
+            {
+                anchoAnt = Width;
+                altoAnt = Height;
+                Width = SystemParameters.VirtualScreenWidth;
+                Height = SystemParameters.VirtualScreenHeight;
+                Left = 0;
+                Top = 0;
+            }
+          
+        }
+
+        private void MenuMostrarOcultarCantidadTotal_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("CantidadTotal");
+
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar cantidad total";
+            }
+            else
+            {
+                Label obj = new Label();
+                obj.Name = "CantidadTotal";
+                obj.ToolTip = "CantidadTotal";
+                obj.Content = "CantidadTotal";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar cantidad total";
+            }
+
+        }
+
+        private void MenuMostrarOcultarCantidadIngresada_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("CantidadIngresada");
+
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar cantidad ingresada";
+            }
+            else
+            {
+                Label obj = new Label();
+                obj.Name = "CantidadIngresada";
+                obj.ToolTip = "CantidadIngresada";
+                obj.Content = "CantidadIngresada";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar cantidad ingresada";
+            }
+        }
+
+        private void MenuMostrarOcultarCantidadFaltante_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("CantidadFaltante");
+
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar cantidad faltante";
+            }
+            else
+            {
+                Label obj = new Label();
+                obj.Name = "CantidadFaltante";
+                obj.ToolTip = "CantidadFaltante";
+                obj.Content = "CantidadFaltante";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar cantidad faltante";
+            }
+        }
+
+        private void MenuMostrarOcultarCambio_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("Cambio");
+
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar cantidad cambio";
+            }
+            else
+            {
+                Label obj = new Label();
+                obj.Name = "Cambio";
+                obj.ToolTip = "Cambio";
+                obj.Content = "Cambio";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar cantidad cambio";
+            }
         }
     }
 }

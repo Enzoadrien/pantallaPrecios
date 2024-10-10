@@ -76,10 +76,19 @@ namespace Precios_Turnos
             crearDirectorios();
             Coordenadas.Visibility = Visibility.Hidden;
             CargarVistaPrevia();
-
+            
             MaxHeight = SystemParameters.VirtualScreenHeight;
-            MaxWidth = SystemParameters.VirtualScreenWidth;
+            MinHeight = Height = MaxHeight / 1.5;
 
+            MaxWidth = SystemParameters.VirtualScreenWidth;
+            MinWidth = Width = MaxWidth / 1.5;
+
+            try
+            {
+                if (seguridad.CheckInternetConnecition())
+                    actualizaLlave();
+            }
+            catch { }
             try
             {
                 if (ValidarActivar())
@@ -158,83 +167,19 @@ namespace Precios_Turnos
                                 {
                                     if (seguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                     {
-                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
-                                        if (licencia.Llave.Equals(llave))
-                                        {
-                                            ActivarControlesMenu();
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            if (actualizaLlave(codigo, llave, correo))
-                                            {
-                                                ActivarControlesMenu();
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                dialog.lblTexto.Text = "La licencia ha caducado.";
-                                                dialog.ShowDialog();
-                                            }
-                                        }
+                                        ActivarControlesMenu();
+                                        return true;
                                     }
                                     else
                                     {
-                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
-                                        if (licencia.Llave.Equals(llave))
-                                        {
-                                            dialog.lblTexto.Text = "La licencia ha caducado.";
-                                            dialog.ShowDialog();
-                                        }
-                                        else
-                                        {
-                                            if (actualizaLlave(codigo, llave, correo))
-                                            {
-                                                ActivarControlesMenu();
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                dialog.lblTexto.Text = "La licencia ha caducado.";
-                                                dialog.ShowDialog();
-                                            }
-
-                                        }
-
+                                        dialog.lblTexto.Text = "La licencia ha caducado.";
+                                        dialog.ShowDialog();
                                     }
                                 }
                                 else
                                 {
-                                    if (seguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
-                                    {
-                                        string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
-                                        if (licencia.Llave.Equals(llave))
-                                        {
-
-                                            ActivarControlesMenu();
-                                            return true;
-                                        }
-                                        else
-                                        {
-
-                                            if (actualizaLlave(codigo, llave, correo))
-                                            {
-                                                ActivarControlesMenu();
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                dialog.lblTexto.Text = "La licencia ha caducado.";
-                                                dialog.ShowDialog();
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-
-                                        ActivarControlesMenu();
-                                        return true;
-                                    }
+                                   ActivarControlesMenu();
+                                   return true;
                                 }
                             }
                         }
@@ -256,51 +201,63 @@ namespace Precios_Turnos
             return false;
         }
 
-        private bool actualizaLlave(string codigo, string llave, string correo)
+        private void actualizaLlave()
         {
-            string cadena = seguridad.DecryptString(codigo, llave);
-            string[] subs = cadena.Split('|');
-            if (subs.Length > 0)
+
+            try
             {
-                if (subs[0].Equals(correo) && subs[3].Equals(seguridad.numeroSerieHD()) && subs[4].Equals(seguridad.numeroSeriePlacaBase())
-                    && subs[5].Equals(MainWindow.nombreApp))
+                using (Stream stream = new FileStream(@".\Llave.key", FileMode.Open))
                 {
-                    string strKey = seguridad.EncryptString(codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
-                    if (!subs[1].Equals("0"))
+                    var sr = new StreamReader(stream);
+
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        if (seguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
+                        try
                         {
-                            Licencia licencia = new Licencia();
-                            try
-                            {
-                                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Lista de precios 3K", true);
-                                string LlaveReg = key.GetValue("Key").ToString();
-                                licencia = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
-                            }
-                            catch { }
-                            if (correo.Equals(seguridad.DecryptString(codigo, licencia.Correo)) && codigo.Equals(licencia.Codigo) && llave.Equals(licencia.Llave))
-                            {
-                                return false;
-                            }
-                            else
-                            {
-                                GuardarLicencia(correo, codigo, llave, strKey);
-                                return true;
-                            }
+                            licencia = JsonSerializer.Deserialize<Licencia>(line)!;
                         }
-                        else
-                        {
-                            return false;
-                        }
+                        catch { }
+
+                    }
+                    stream.Close();
+                }
+            }
+            catch { }
+
+            if (licencia.Correo != null && licencia.Codigo != null && licencia.Llave != null && licencia.Key != null)
+            {
+
+                string correo = seguridad.DecryptString(licencia.Codigo, licencia.Correo);
+                string codigo = seguridad.EncryptString(correo, seguridad.numeroSerieHD() + "|" +
+                                                                   seguridad.numeroSeriePlacaBase() + "|" +
+                                                                   MainWindow.nombreApp);
+
+
+                string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
+
+                if (!licencia.Llave.Equals(llave))
+                {
+                    new ValidarLicencia().actualizaUltimaConexion(correo, codigo, false);
+
+                    string cadena = seguridad.DecryptString(codigo, llave);
+
+                    string[] subs = cadena.Split('|');
+                    if (subs.Length > 1)
+                    {
+                        string strKey = seguridad.EncryptString(codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
+                        GuardarLicencia(correo, codigo, llave, strKey);
+
                     }
                     else
                     {
-                        GuardarLicencia(correo, codigo, llave, strKey);
-                        return true;
+                        GuardarLicencia(correo, codigo, llave, string.Empty);
                     }
                 }
+                else
+                    new ValidarLicencia().actualizaUltimaConexion(correo, codigo, true);
+
             }
-            return false;
         }
 
         private void GuardarLicencia(string correo, string codigo, string llave, string pStrKey)
@@ -331,22 +288,18 @@ namespace Precios_Turnos
         private void BloquearControlesMenu()
         {
             Conexion.IsEnabled = false;
-            VentanaSplash.IsEnabled = false;
             ImportarDiseno.IsEnabled = false;
             ExportarDiseno.IsEnabled = false;
             EditarDiseno.IsEnabled = false;
-            EditarDisenoVentanaSplash.IsEnabled = false;
             ResizeMode = ResizeMode.NoResize;
         }
 
         private void ActivarControlesMenu()
         {
             Conexion.IsEnabled = true;
-            VentanaSplash.IsEnabled = true;
             ImportarDiseno.IsEnabled = true;
             ExportarDiseno.IsEnabled = true;
             EditarDiseno.IsEnabled = true;
-            EditarDisenoVentanaSplash.IsEnabled = true;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -401,6 +354,7 @@ namespace Precios_Turnos
                 animaciones = false;
                 //Principal.IsHitTestVisible = true;
                 ModoEdicion.Visibility = Visibility.Visible;
+                Coordenadas.Content = "Tamaño ventana: " + Width.ToString() + "X, " + Height.ToString() + "Y";
                 WindowStyle = WindowStyle.None;
                 ResizeMode = ResizeMode.NoResize;
                 Visibility = Visibility.Collapsed;
@@ -484,9 +438,7 @@ namespace Precios_Turnos
             Application.Current.Dispatcher.InvokeAsync(new Action(() =>
             {
                 MostrarVentanaSplash mostrarTurno = new MostrarVentanaSplash(false, this, pvStrDatosVerificador);
-                mostrarTurno.WindowStyle = WindowStyle.None;
                 mostrarTurno.ShowInTaskbar = false;
-                mostrarTurno.CargarControles();
                 mostrarTurno.ShowDialog();
             }));
         }
@@ -707,17 +659,28 @@ namespace Precios_Turnos
         {
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
-                editar = true;
-                WindowState = WindowState.Maximized;
-                Coordenadas.Visibility = Visibility.Visible;
-                ModoEdicion.Content = "Modo edición";
-                ModoEdicion.FontSize = 24;
+                actualizaLlave();
+                if (ValidarActivar())
+                {
+                    editar = true;
+                    WindowState = WindowState.Maximized;
+                    Coordenadas.Visibility = Visibility.Visible;
+                    ModoEdicion.Content = "Modo edición";
+                    ModoEdicion.FontSize = 24;
+                }
+                else
+                {
+                    Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialogError.lblNombre.Content = "¡Error!";
+                    dialogError.lblTexto.Text = "Licencia no válida. La aplicación se desactivo, consulte al administrador.";
+                    dialogError.ShowDialog();
+                }
             }
             else
             {
-                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog3.lblNombre.Content = "¡Error!";
-                dialog3.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
+                Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA);
+                dialog3.lblNombre.Content = "¡Advertencia!";
+                dialog3.lblTexto.Text = "Se requiere de una conexión con el servidor para entrar a modo edición, consulte al administrador.";
                 dialog3.ShowDialog();
             }
         }
@@ -817,14 +780,22 @@ namespace Precios_Turnos
                 if (result == true)
                 {
                     Mouse.OverrideCursor = Cursors.Wait;
-                    Directory.CreateDirectory(@".\temp\objetos");
-                    Directory.CreateDirectory(@".\temp\objetosSplash");
-
-                    CopyDirectory(@".\objetos", @".\temp\objetos", true);
-                    CopyDirectory(@".\objetosSplash", @".\temp\objetosSplash", true);
+                    //Carpeta multimedia principal
+                    if (Directory.Exists(@".\objetos"))
+                    {
+                        Directory.CreateDirectory(@".\temp\objetos");
+                        CopyDirectory(@".\objetos", @".\temp\objetos", true);
+                    }
+                    if (Directory.Exists(@".\objetosSplash"))
+                    {
+                        Directory.CreateDirectory(@".\temp\objetosSplash");
+                        CopyDirectory(@".\objetosSplash", @".\temp\objetosSplash", true);
+                    }
+                   
 
                     FileInfo fi = new FileInfo(@"./Principal.png");
-                    fi.CopyTo(@".\temp\Principal.png", true);
+                    if(fi.Exists)
+                        fi.CopyTo(@".\temp\Principal.png", true);
 
                     if (File.Exists(dlg.FileName))
                         File.Delete(dlg.FileName);
@@ -1056,10 +1027,11 @@ namespace Precios_Turnos
         {
             try
             {
+                var item = e.Source as UIElement;
+                controlClickName = item.GetValue(NameProperty).ToString();
+
                 if (e.ClickCount == 2)
                 {
-                    var item = e.Source as UIElement;
-
                     if (!editar && item.GetType().Name.Equals("DockPanel"))
                     {
                         DockPanel dockPanel = (DockPanel)FindName(item.GetValue(NameProperty).ToString());
@@ -1073,7 +1045,7 @@ namespace Precios_Turnos
                     }
                     else if (editar)
                     {
-                        controlClickName = item.GetValue(NameProperty).ToString();
+                       
                         if (SeModificaControl(controlClickName))
                         {
                             switch (item.GetType().Name.ToString())
@@ -1093,6 +1065,9 @@ namespace Precios_Turnos
                         }
                     }
                 }
+
+                if(!SeModificaControl(controlClickName))
+                    Coordenadas.Content = "Tamaño ventana: " + Width.ToString() + "X, " + Height.ToString() + "Y";
             }
             catch (Exception) { }
         }
@@ -1118,33 +1093,44 @@ namespace Precios_Turnos
 
                         Label control = (Label)FindName("NumeroTurnoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[7]).Items[0]).Header = "Eliminar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[0]).Header = "Eliminar turnos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[7]).Items[0]).Header = "Agregar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[0]).Header = "Agregar turnos anteriores";
 
                         control = (Label)FindName("NumeroEquipoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[7]).Items[1]).Header = "Eliminar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Eliminar equipos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[7]).Items[1]).Header = "Agregar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar equipos anteriores";
 
                         Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
-
-                        if (tipoSplash.Equals("T"))
+                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value; 
+                        activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
+                        if (activarSplash)
                         {
+                            ((MenuItem)cm.Items[9]).IsEnabled = true;
+                            if (tipoSplash.Equals("T"))
+                            {
+                                ((MenuItem)cm.Items[10]).IsEnabled = true;
+                            }
+                            else if (tipoSplash.Equals("V"))
+                            {
+                                ((MenuItem)cm.Items[10]).IsEnabled = false;
+                            }
+                            else if (tipoSplash.Equals("C"))
+                            {
+                                ((MenuItem)cm.Items[10]).IsEnabled = false;
+                            }
                         }
-                        else if (tipoSplash.Equals("V"))
+                        else
                         {
-                            ((MenuItem)cm.Items[7]).IsEnabled = false;
+                            ((MenuItem)cm.Items[9]).IsEnabled = false;
+                            ((MenuItem)cm.Items[10]).IsEnabled = false;
                         }
-                        else if (tipoSplash.Equals("C"))
-                        {
-                            ((MenuItem)cm.Items[7]).IsEnabled = false;
-                        }
+                       
 
 
-                        MenuItem itemCm = (MenuItem)cm.Items[9];
+                        MenuItem itemCm = (MenuItem)cm.Items[12];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -2045,10 +2031,11 @@ namespace Precios_Turnos
         {
             if (SeEliminaControl(pNombre))
             {
+
+                var item = FindName(pNombre) as UIElement;
                 bool seBorra = false;
                 if (pMuestraMensaje)
                 {
-                    var item = FindName(pNombre) as UIElement;
                     Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
                     dialog.lblNombre.Content = "¡Advertencia!";
                     dialog.lblTexto.Text = "Se eliminará de forma permanente el objeto " + pNombre + "(" + item.GetType().Name + ").";
@@ -2059,7 +2046,6 @@ namespace Precios_Turnos
 
                 if (seBorra || !pMuestraMensaje)
                 {
-                    var item = FindName(pNombre) as UIElement;
 
                     Principal.Children.Remove(item);
                     NameScope.GetNameScope(this).UnregisterName(pNombre);
@@ -3392,6 +3378,8 @@ namespace Precios_Turnos
                         File.SetAttributes(item, FileAttributes.Normal);
                         File.Delete(item);
                     }
+
+                    Directory.Delete(@".\objetosSplash", true);
                 }
                 catch { }
             }
@@ -3679,23 +3667,6 @@ namespace Precios_Turnos
 
         }
 
-        private void EditarDisenoTurnero_Click(object sender, RoutedEventArgs e)
-        {
-
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
-            {
-                MostrarVentanaSplash dialog = new MostrarVentanaSplash(true);
-                dialog.ShowDialog();
-            }
-            else
-            {
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, true);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Error en el servidor, consulte al administrador. ";
-                dialog.ShowDialog();
-            }
-        }
-
         private void VentanaPrincipal_Activated(object sender, EventArgs e)
         {
             if (WindowState == WindowState.Maximized && !editar)
@@ -3754,6 +3725,12 @@ namespace Precios_Turnos
                 stream.WriteLine(this.Name + "_Error: " + error + " - " + dt.ToShortTimeString());
                 stream.Close();
             }
+        }
+
+        private void MenuVentanaSplash_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MostrarVentanaSplash dialog = new MostrarVentanaSplash(true);
+            dialog.ShowDialog();
         }
     }
 }
