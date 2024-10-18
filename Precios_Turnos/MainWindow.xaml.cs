@@ -339,12 +339,10 @@ namespace Precios_Turnos
                         case "V":
                             break;
                         case "C":
+                            EscucharPagos();
                             break;
-
                     }
-                }
-                    
-
+                }    
             }
 
             else if (WindowState == WindowState.Maximized && editar)
@@ -3103,6 +3101,20 @@ namespace Precios_Turnos
                 }
             }
             catch { }
+        }
+        
+        private void EscucharPagos()
+        {
+            try
+            {
+                Task.Run(() => AsynchronousSocketListenerCajero.StartListening());
+            }
+            catch {
+                Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
+                dialogError.lblNombre.Content = "¡Error!";
+                dialogError.lblTexto.Text = "Ocurrio un error al procesar pagos. Favor de consultar al administrador";
+                dialogError.ShowDialog();
+            }
         }
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)

@@ -12,12 +12,11 @@ using System.IO;
 
 namespace Precios_Turnos
 {
-    class AsynchronousSocketListener
+    class AsynchronousSocketListenerCajero
     {
         internal static ManualResetEvent allDone = new ManualResetEvent(false);
         internal static Socket? listener;
         internal static bool start;
-        internal static string? Protocolo;
 
         public static void StartListening()
         {
@@ -28,10 +27,9 @@ namespace Precios_Turnos
             // running the listener is "host.contoso.com".
             //  //Create the object
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Protocolo = config.AppSettings.Settings["ProtocoloTurnero"].Value;
-            int PuertoTurnero = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
+            int Puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
             IPAddress ipAddress = IPAddress.Any;
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PuertoTurnero);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, Puerto);
 
             // Create a TCP/IP socket.  
             listener = new Socket(ipAddress.AddressFamily,
@@ -89,11 +87,11 @@ namespace Precios_Turnos
 
                 Console.WriteLine("Conexion entrante de " + handler.RemoteEndPoint);
                 // Create the state object.  
-                StateObject state = new StateObject
+                StateObjectCajero state = new StateObjectCajero
                 {
                     workSocket = handler
                 };
-                handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                handler.BeginReceive(state.buffer, 0, StateObjectCajero.BufferSize, 0,
                     new AsyncCallback(ReadCallback), state);
             }
             catch (Exception) { }
@@ -103,48 +101,36 @@ namespace Precios_Turnos
         {
             // Retrieve the state object and the handler socket  
             // from the asynchronous state object.  
-            StateObject state = (StateObject)ar.AsyncState;
+            StateObjectCajero state = (StateObjectCajero)ar.AsyncState;
             Socket handler = state.workSocket;
             try
             {
-                byte[] msg = null;
+                bool datoCorrecto = false;
                 while (start)
                 {
-                    string data = null;
+                    string data = string.Empty;
                     // An incoming connection needs to be processed.  
                     while (start)
                     {
                         int bytesRec = handler.EndReceive(ar);
                         data += Encoding.ASCII.GetString(state.buffer, 0, bytesRec);
-                        if (data.IndexOf(new Seguridad().ConvertirHEXToASCII("4")) > -1)
+                        if (data.IndexOf('{') == 0)
                         {
+                            datoCorrecto = true;
                             break;
                         }
+                        else
+                            break;
                     }
-                    switch (Protocolo)
+                    if (datoCorrecto)
                     {
-                        case "K":
-                            ProcesarTurnoKretz PT = new ProcesarTurnoKretz();
-                            data = PT.ProcesarComando(data.Substring(1, data.Length - 2), state);
-                            Task.Run(async () =>
-                            {
-                                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                                if (config.AppSettings.Settings["TipoTurnero"].Value.Equals("S"))
-                                {
-                                    int puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
-                                    string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
-                                    if (clientes[0].Length > 0)
-                                        foreach (string cliente in clientes)
-                                            await new AsynchronousClient().StartClient(cliente, puerto, new Comunicacion().CrearComandoBascula(data));
-                                }
-                            });
-                                break;
-                        default: break;
+                        ProcesarPagoCajero PT = new ProcesarPagoCajero();
+                        data = PT.ProcesarComando(data, state);
+
+                        // Echo the data back to the client.
+                        byte[] msg = Encoding.ASCII.GetBytes(data);
+                        handler.Send(msg);
                     }
-                    // Echo the data back to the client.
-                    string[] dataSend = data.Split('-');
-                    msg = Encoding.ASCII.GetBytes(new Comunicacion().CrearComandoBascula(dataSend[0]));
-                    handler.Send(msg);
                     break;
                 }
                 handler.Shutdown(SocketShutdown.Both);
@@ -154,7 +140,7 @@ namespace Precios_Turnos
             {
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();
-            }catch (Exception ex) { }
+            }catch (Exception) { }
         }
     }
 }

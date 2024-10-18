@@ -138,7 +138,12 @@ namespace Precios_Turnos
             cbxTipoSplash.SelectedValue = config.AppSettings.Settings["TipoSplash"].Value;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
-            Puerto.Text = config.AppSettings.Settings["PuertoTurnero"].Value;
+            Puerto.Text = config.AppSettings.Settings["PuertoTCP"].Value;
+            PuertoTCPCajero.Text = config.AppSettings.Settings["PuertoTCP"].Value;
+            cbxPuertoComNV22.SelectedValue = config.AppSettings.Settings["COMNV22"].Value;
+            SSPNV22Spectral.Text = config.AppSettings.Settings["SSPNV22"].Value;
+            cbxPuertoComSMARTHopper.SelectedValue = config.AppSettings.Settings["COMHopper"].Value;
+            SSPSMARTHopper.Text = config.AppSettings.Settings["SSPHopper"].Value;
             Durar.Text = config.AppSettings.Settings["Duracion"].Value;
             cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
@@ -161,7 +166,15 @@ namespace Precios_Turnos
             config.AppSettings.Settings["TipoSplash"].Value = ((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["PuertoTurnero"].Value = Puerto.Text;
+            if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
+                config.AppSettings.Settings["PuertoTCP"].Value = PuertoTCPCajero.Text;
+        
+             else
+                config.AppSettings.Settings["PuertoTCP"].Value = Puerto.Text;
+            config.AppSettings.Settings["COMNV22"].Value = ((ComboBoxItem)cbxPuertoComNV22.SelectedItem).Tag.ToString();
+            config.AppSettings.Settings["SSPNV22"].Value = SSPNV22Spectral.Text;
+            config.AppSettings.Settings["COMHopper"].Value = ((ComboBoxItem)cbxPuertoComSMARTHopper.SelectedItem).Tag.ToString();
+            config.AppSettings.Settings["SSPHopper"].Value = SSPSMARTHopper.Text;
             config.AppSettings.Settings["Duracion"].Value = Durar.Text;
             config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
@@ -213,7 +226,7 @@ namespace Precios_Turnos
                     if (ipVal[0].Length>0 && ipVal[1].Length > 0 && ipVal[2].Length > 0 && ipVal[3].Length > 0)
                     {
                         Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        int puerto = int.Parse(config.AppSettings.Settings["PuertoTurnero"].Value);
+                        int puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
                         List<string> lista = new List<string>();
                         string IPBase = IP.Text;
                         btnBuscar.IsEnabled = false;
@@ -299,26 +312,30 @@ namespace Precios_Turnos
 
         private void cbxTipo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
+            try
             {
-                IP.IsEnabled = true;
-                string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
-                if (ip.Length == 4)
+                if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
                 {
-                    IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                    IP.IsEnabled = true;
+                    string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
+                    if (ip.Length == 4)
+                    {
+                        IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                    }
+                    btnBuscar.IsEnabled = true;
+                    cbxTurneros.IsEnabled = true;
+                    lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
                 }
-                btnBuscar.IsEnabled = true;
-                cbxTurneros.IsEnabled = true;
-                lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
+                else
+                {
+                    IP.IsEnabled = false;
+                    IP.Text = "";
+                    btnBuscar.IsEnabled = false;
+                    cbxTurneros.IsEnabled = false;
+                    lblEncontrados.Content = "Encontrados: 0";
+                }
             }
-            else
-            {
-                IP.IsEnabled = false;
-                IP.Text = "";
-                btnBuscar.IsEnabled = false;
-                cbxTurneros.IsEnabled = false;
-                lblEncontrados.Content = "Encontrados: 0";
-            }
+            catch { }
         }
 
         private void btnNombresEquipos_Click(object sender, RoutedEventArgs e)
@@ -425,28 +442,28 @@ namespace Precios_Turnos
         }
 
         private void cbxTipoSplash_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        { 
+        {
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
-                {
-                    TiposVentana.SelectedIndex = 0;
-                    Turnero.IsEnabled = true;
-                    Verificador.IsEnabled = false;
-                    CajeroATM.IsEnabled = false;
-                }
-                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
-                {
-                    TiposVentana.SelectedIndex = 1;
-                    Turnero.IsEnabled = false;
-                    Verificador.IsEnabled = true;
-                    CajeroATM.IsEnabled = false;
-                }
-                else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
-                {
-                    TiposVentana.SelectedIndex = 2;
-                    Turnero.IsEnabled = false;
-                    Verificador.IsEnabled = false;
-                    CajeroATM.IsEnabled = true;
-                }
+            {
+                TiposVentana.SelectedIndex = 0;
+                Turnero.IsEnabled = true;
+                Verificador.IsEnabled = false;
+                CajeroATM.IsEnabled = false;
+            }
+            else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
+            {
+                TiposVentana.SelectedIndex = 1;
+                Turnero.IsEnabled = false;
+                Verificador.IsEnabled = true;
+                CajeroATM.IsEnabled = false;
+            }
+            else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
+            {
+                TiposVentana.SelectedIndex = 2;
+                Turnero.IsEnabled = false;
+                Verificador.IsEnabled = false;
+                CajeroATM.IsEnabled = true;
+            }
         }
     }
     public class ViewModelAudio

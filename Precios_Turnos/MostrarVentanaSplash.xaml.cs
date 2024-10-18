@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Priceio;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
@@ -9,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Speech.Synthesis;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +22,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
+using ITLlib;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace Precios_Turnos
 {
@@ -35,17 +39,30 @@ namespace Precios_Turnos
         public Color ultimoColorFondo;
         private bool estaSaliendo = false;
         private bool esDiseno;
-        private SolidColorBrush ultimoColor;
+        private SolidColorBrush? ultimoColor;
         internal double ultimaOpacidad;
         internal string? controlSelectedName;
         private MainWindow? mainWindow;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
         private string datoVerificador;
-        private string tipoVentana;
+        private string tipoVentana = string.Empty;
         private double anchoAnt = 0;
         private double altoAnt = 0;
+        private Pago? pago;
+        //
+        bool RunningPayout = false;
+        bool RunningHopper = false;
+        int pollTimer = 250; // timer in ms
+        int reconnectionAttempts = 5;
+        CPayout Payout;
+        CHopper Hopper;
+        string logPagoNV22 = string.Empty;
+        string logPagoHopper = string.Empty;
+        string moneda = "MXN";
+        bool finalizarPagoHilo;
 
-        public MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "")
+
+        public MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "", Pago? pvPago = null)
         {
             Owner = parentWindow;
             mainWindow = parentWindow;
@@ -54,6 +71,7 @@ namespace Precios_Turnos
 
             InitializeComponent();
             crearDirectorios();
+            pago = pvPago;
 
             try
             {
@@ -85,14 +103,24 @@ namespace Precios_Turnos
             catch { }
             if (!esDiseno)
             {
-                IsHitTestVisible = false;
                 BarraMenus.Visibility = Visibility.Hidden;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
-                StartCloseTimer();
+         
+                if(!tipoVentana.Equals("C"))
+                {
+                    IsHitTestVisible = false;
+                    StartCloseTimer();
+                }
+                
             }
 
             CenterWindowOnScreen();
+        }
+
+        public Pago? recuperaPago()
+        {
+            return pago;
         }
 
         private void CenterWindowOnScreen()
@@ -185,219 +213,239 @@ namespace Precios_Turnos
 
         private void Principal_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            try
+            if (esDiseno)
             {
-                var item = e.Source as UIElement;
-                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                try
                 {
-                    var container = VisualTreeHelper.GetParent(item) as UIElement;
-                    _positionInBlock = e.GetPosition(container);
-                    _currentTT = item.RenderTransform as TranslateTransform;
-                    item.CaptureMouse();
+                    var item = e.Source as UIElement;
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    {
+                        var container = VisualTreeHelper.GetParent(item) as UIElement;
+                        _positionInBlock = e.GetPosition(container);
+                        _currentTT = item.RenderTransform as TranslateTransform;
+                        item.CaptureMouse();
+                    }
                 }
+                catch (Exception) { }
             }
-            catch (Exception) { }
 
         }
 
         private void Principal_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
-            try
+            if (esDiseno)
             {
-                var item = e.Source as UIElement;
-
-                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                try
                 {
-                    _currentTT = item.RenderTransform as TranslateTransform;
-                    // release this control.
-                    item.ReleaseMouseCapture();
+                    var item = e.Source as UIElement;
 
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                    {
+                        _currentTT = item.RenderTransform as TranslateTransform;
+                        // release this control.
+                        item.ReleaseMouseCapture();
+
+                    }
                 }
+                catch (Exception) { }
             }
-            catch (Exception) { }
 
         }
 
         private void Principal_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            try
+            if (esDiseno)
             {
-                var item = e.Source as UIElement;
-
-                if (SeModificaControl(item.GetValue(NameProperty).ToString()))
+                try
                 {
-                    if (item.IsMouseCaptured)
+                    var item = e.Source as UIElement;
+
+                    if (SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
-                        // get the parent container
-                        var container = VisualTreeHelper.GetParent(item) as UIElement;
+                        if (item.IsMouseCaptured)
+                        {
+                            // get the parent container
+                            var container = VisualTreeHelper.GetParent(item) as UIElement;
 
-                        // get the position within the container
-                        var mousePosition = e.GetPosition(container);
-                        Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-
-                        var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
-                        var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
+                            // get the position within the container
+                            var mousePosition = e.GetPosition(container);
+                            Point point = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
 
-                        Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
-                        // move the usercontrol.
+                            var offsetX = mousePosition.X - (_currentTT == null ? _positionInBlock.X : _positionInBlock.X - _currentTT.X);
+                            var offsetY = mousePosition.Y - (_currentTT == null ? _positionInBlock.Y : _positionInBlock.Y - _currentTT.Y);
 
-                        item.RenderTransform = new TranslateTransform(offsetX, offsetY);
+
+                            Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
+                            // move the usercontrol.
+
+                            item.RenderTransform = new TranslateTransform(offsetX, offsetY);
+                        }
                     }
                 }
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
 
         private void Principal_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            try
+            if (esDiseno)
             {
-                if (e.ClickCount == 2)
+                try
                 {
-                    var item = e.Source as UIElement;
-                    controlClickName = item.GetValue(NameProperty).ToString();
-
-                    if (SeModificaControl(controlClickName))
+                    if (e.ClickCount == 2)
                     {
-                        switch (item.GetType().Name.ToString())
+                        var item = e.Source as UIElement;
+                        controlClickName = item.GetValue(NameProperty).ToString();
+
+                        if (SeModificaControl(controlClickName))
                         {
-                            case "Label":
-                                item.SetValue(BackgroundProperty, ultimoColor);
-                                break;
-                            case "MediaElement":
-                            case "Image":
-                                item.SetValue(OpacityProperty, ultimaOpacidad);
-                                break;
+                            switch (item.GetType().Name.ToString())
+                            {
+                                case "Label":
+                                    item.SetValue(BackgroundProperty, ultimoColor);
+                                    break;
+                                case "MediaElement":
+                                case "Image":
+                                    item.SetValue(OpacityProperty, ultimaOpacidad);
+                                    break;
+                            }
+                            mostarPropiedadesObjetos(e.GetPosition(Principal));
                         }
-                        mostarPropiedadesObjetos(e);
                     }
                 }
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
 
         private void Principal_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            try
+            if (esDiseno)
             {
-                var item = e.Source as UIElement;
-
-                if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
+                try
                 {
-                    ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
+                    var item = e.Source as UIElement;
 
-                    if (tipoVentana.Equals("T"))
+                    if (!SeModificaControl(item.GetValue(NameProperty).ToString()))
                     {
-                        ((MenuItem)cm.Items[3]).IsEnabled= false;
-                        ((MenuItem)cm.Items[4]).IsEnabled = false;
+                        ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
-                    }
-                    else if (tipoVentana.Equals("V"))
-                    {
-                        ((MenuItem)cm.Items[2]).IsEnabled = false;
-                        ((MenuItem)cm.Items[4]).IsEnabled = false;
-                    }
-                    else if (tipoVentana.Equals("C"))
-                    {
-                        ((MenuItem)cm.Items[2]).IsEnabled = false;
-                        ((MenuItem)cm.Items[3]).IsEnabled = false;
-                    }
-
-                    Label control = (Label)FindName("NumeroTurno");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Eliminar turno";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Agregar turno";
-
-                    control = (Label)FindName("NumeroEquipo");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Eliminar equipo";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Agregar equipo";
-
-                    control = (Label)FindName("NombreEquipo");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Eliminar nombre equipo";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Agregar nombre equipo";
-
-
-                    control = (Label)FindName("NumeroTurnoAnt");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Eliminar turno anterior";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Agregar turno anterior";
-
-                    control = (Label)FindName("NumeroEquipoAnt");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Eliminar equipo anterior";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Agregar equipo anterior";
-
-                    DataGrid control2 = (DataGrid)FindName("TablaDatos");
-                    if (control2 != null)
-                        ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Eliminar tabla de datos";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Agregar tabla de datos";
-
-                    control = (Label)FindName("CantidadTotal");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Eliminar cantidad total";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Agregar cantidad total";
-                    control = (Label)FindName("CantidadIngresada");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Eliminar cantidad ingresada";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Agregar cantidad ingresada";
-                    control = (Label)FindName("CantidadFaltante");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Eliminar cantidad faltante";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Agregar cantidad faltante";
-                    control = (Label)FindName("Cambio");
-                    if (control != null)
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Eliminar cambio";
-                    else
-                        ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Agregar cambio";
-
-                    MenuItem itemCm = (MenuItem)cm.Items[6];
-                    itemCm.Items.Clear();
-                    foreach (var itemObjets in Principal.Children)
-                    {
-                        string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                        if (SeModificaControl(nombreControl) && (itemObjets as UIElement).Visibility == Visibility.Visible)
+                        if (tipoVentana.Equals("T"))
                         {
-                            MenuItem itemControl = new MenuItem();
-                            itemControl.Header = nombreControl + "-(" + (itemObjets as UIElement).GetType().Name + ")";
-                            itemControl.Tag = nombreControl;
-                            itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
-                            itemCm.Items.Add(itemControl);
+                            ((MenuItem)cm.Items[3]).IsEnabled = false;
+                            ((MenuItem)cm.Items[4]).IsEnabled = false;
+
                         }
+                        else if (tipoVentana.Equals("V"))
+                        {
+                            ((MenuItem)cm.Items[2]).IsEnabled = false;
+                            ((MenuItem)cm.Items[4]).IsEnabled = false;
+                        }
+                        else if (tipoVentana.Equals("C"))
+                        {
+                            ((MenuItem)cm.Items[2]).IsEnabled = false;
+                            ((MenuItem)cm.Items[3]).IsEnabled = false;
+                        }
+
+                        Label control = (Label)FindName("NumeroTurno");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Eliminar turno";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[0]).Header = "Agregar turno";
+
+                        control = (Label)FindName("NumeroEquipo");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Eliminar equipo";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[1]).Header = "Agregar equipo";
+
+                        control = (Label)FindName("NombreEquipo");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Eliminar nombre equipo";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[2]).Header = "Agregar nombre equipo";
+
+
+                        control = (Label)FindName("NumeroTurnoAnt");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Eliminar turno anterior";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[4]).Header = "Agregar turno anterior";
+
+                        control = (Label)FindName("NumeroEquipoAnt");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Eliminar equipo anterior";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[2]).Items[5]).Header = "Agregar equipo anterior";
+
+                        DataGrid control2 = (DataGrid)FindName("TablaDatos");
+                        if (control2 != null)
+                            ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Eliminar tabla de datos";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[3]).Items[0]).Header = "Agregar tabla de datos";
+
+                        control = (Label)FindName("CantidadTotal");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Eliminar cantidad total";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[0]).Header = "Agregar cantidad total";
+                        control = (Label)FindName("CantidadIngresada");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Eliminar cantidad ingresada";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[1]).Header = "Agregar cantidad ingresada";
+                        control = (Label)FindName("CantidadFaltante");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Eliminar cantidad faltante";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[2]).Header = "Agregar cantidad faltante";
+                        control = (Label)FindName("Cambio");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Eliminar cambio";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[3]).Header = "Agregar cambio";
+                        Button controlBtn = (Button)FindName("BtnCancelar");
+                        if (controlBtn != null)
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[4]).Header = "Eliminar botón cancelar";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[4]).Items[4]).Header = "Agregar botón cancelar";
+
+                        MenuItem itemCm = (MenuItem)cm.Items[6];
+                        itemCm.Items.Clear();
+                        foreach (var itemObjets in Principal.Children)
+                        {
+                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                            if (SeModificaControl(nombreControl) && (itemObjets as UIElement).Visibility == Visibility.Visible)
+                            {
+                                MenuItem itemControl = new MenuItem();
+                                itemControl.Header = nombreControl + "-(" + (itemObjets as UIElement).GetType().Name + ")";
+                                itemControl.Tag = nombreControl;
+                                itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
+                                itemCm.Items.Add(itemControl);
+                            }
+                        }
+                        cm.PlacementTarget = sender as Button;
+                        cm.IsOpen = true;
                     }
-                    cm.PlacementTarget = sender as Button;
-                    cm.IsOpen = true;
-                }
-                else
-                {
-                    controlClickName = item.GetValue(NameProperty).ToString();
-                    ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
-                    cm.PlacementTarget = sender as Button;
-                    cm.IsOpen = true;
+                    else
+                    {
+                        controlClickName = item.GetValue(NameProperty).ToString();
+                        ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
+                        cm.PlacementTarget = sender as Button;
+                        cm.IsOpen = true;
+
+                    }
 
                 }
-
+                catch (Exception) { }
             }
-            catch (Exception) { }
         }
 
         private void MenuListaObjetos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             MenuItem item = (MenuItem)e.Source;
             controlClickName = item.Tag.ToString();
-            mostarPropiedadesObjetos(e);
+            mostarPropiedadesObjetos(item.PointToScreen(new Point(((MenuItem)item).ActualWidth, ((MenuItem)item).ActualHeight)));
         }
 
         private void MenuEliminar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -456,167 +504,168 @@ namespace Precios_Turnos
             return seModifica;
         }
 
-        private void mostarPropiedadesObjetos(MouseButtonEventArgs e)
+        private void mostarPropiedadesObjetos(Point point)
         {
-            var item = FindName(controlClickName) as UIElement;
-            Point pointItem = item.TransformToAncestor(this).Transform(new Point(0, 0));
-
-            var mousePosition = e.GetPosition(Principal);
-            var point = PointToScreen(mousePosition);
-            switch (item.GetType().Name)
+            if (esDiseno)
             {
-                case "Label":
-                    PropiedadesLabelTurno propiedadesLabel = new PropiedadesLabelTurno(this);
-                    propiedadesLabel.WindowStartupLocation = WindowStartupLocation.Manual;
+                var item = FindName(controlClickName) as UIElement;
+                Point pointItem = item.TransformToAncestor(this).Transform(new Point(0, 0));
 
-                    if (point.X + propiedadesLabel.Width >= MaxWidth)
-                        propiedadesLabel.Left = point.X - propiedadesLabel.Width;
-                    else
-                        propiedadesLabel.Left = point.X;
+                switch (item.GetType().Name)
+                {
+                    case "Label":
+                        PropiedadesLabelTurno propiedadesLabel = new PropiedadesLabelTurno(this);
+                        propiedadesLabel.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (point.Y + propiedadesLabel.Height >= MaxHeight)
-                        propiedadesLabel.Top = point.Y - propiedadesLabel.Height;
-                    else
-                        propiedadesLabel.Top = point.Y;
+                        if (point.X + propiedadesLabel.Width >= MaxWidth)
+                            propiedadesLabel.Left = point.X - propiedadesLabel.Width;
+                        else
+                            propiedadesLabel.Left = point.X;
 
-                    propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesLabel.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
-                    propiedadesLabel.TipoControl.Text = item.GetType().Name;
-                    propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
-                    if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo") || item.GetValue(NameProperty).ToString().Equals("NombreEquipo")
-                        || item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt") || item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
-                        propiedadesLabel.Contenido.IsReadOnly = true;
-                    propiedadesLabel.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
-                    propiedadesLabel.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
-                    propiedadesLabel.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
-                    propiedadesLabel.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
-                    propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
-                    propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
-                    propiedadesLabel.Opacidad.Value = item.Opacity;
-                    propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
-                    propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
-                    propiedadesLabel.ShowDialog();
-                    break;
-                case "Image":
-                    PropiedadesMultimediaTurno propiedadesImagen = new PropiedadesMultimediaTurno(this);
-                    propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
+                        if (point.Y + propiedadesLabel.Height >= MaxHeight)
+                            propiedadesLabel.Top = point.Y - propiedadesLabel.Height;
+                        else
+                            propiedadesLabel.Top = point.Y;
 
-                    if (point.X + propiedadesImagen.Width >= MaxWidth)
-                        propiedadesImagen.Left = point.X - propiedadesImagen.Width;
-                    else
-                        propiedadesImagen.Left = point.X;
+                        propiedadesLabel.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                        propiedadesLabel.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
+                        propiedadesLabel.TipoControl.Text = item.GetType().Name;
+                        propiedadesLabel.Contenido.Text = ((Label)item).Content.ToString();
+                        if (item.GetValue(NameProperty).ToString().Equals("NumeroTurno") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipo") || item.GetValue(NameProperty).ToString().Equals("NombreEquipo")
+                            || item.GetValue(NameProperty).ToString().Equals("NumeroTurnoAnt") || item.GetValue(NameProperty).ToString().Equals("NumeroEquipoAnt") || item.GetValue(NameProperty).ToString().Equals("NombreEquipoAnt"))
+                            propiedadesLabel.Contenido.IsReadOnly = true;
+                        propiedadesLabel.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                        propiedadesLabel.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                        propiedadesLabel.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                        propiedadesLabel.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                        propiedadesLabel.btnColorFuente.Fill = new SolidColorBrush((((Label)item).Foreground as SolidColorBrush).Color);
+                        propiedadesLabel.btnColorFondo.Fill = new SolidColorBrush((((Label)item).Background as SolidColorBrush).Color);
+                        propiedadesLabel.Opacidad.Value = item.Opacity;
+                        propiedadesLabel.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                        propiedadesLabel.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
+                        propiedadesLabel.ShowDialog();
+                        break;
+                    case "Image":
+                        PropiedadesMultimediaTurno propiedadesImagen = new PropiedadesMultimediaTurno(this);
+                        propiedadesImagen.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (point.Y + propiedadesImagen.Height >= MaxHeight)
-                        propiedadesImagen.Top = point.Y - propiedadesImagen.Height;
-                    else
-                        propiedadesImagen.Top = point.Y;
+                        if (point.X + propiedadesImagen.Width >= MaxWidth)
+                            propiedadesImagen.Left = point.X - propiedadesImagen.Width;
+                        else
+                            propiedadesImagen.Left = point.X;
 
-                    propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
-                    propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesImagen.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
-                    propiedadesImagen.TipoControl.Text = item.GetType().Name;
-                    propiedadesImagen.Ruta.Text = Path.GetFileName(((Image)item).Source.ToString());
-                    propiedadesImagen.Ruta.ToolTip = Path.GetFileName(((Image)item).Source.ToString());
-                    propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
-                    propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
-                    propiedadesImagen.Opacidad.Value = item.Opacity;
-                    propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
-                    propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
-                    propiedadesImagen.chkRelacion.IsChecked = true;
-                    propiedadesImagen.esInicio = false;
-                    propiedadesImagen.ShowDialog();
-                    break;
+                        if (point.Y + propiedadesImagen.Height >= MaxHeight)
+                            propiedadesImagen.Top = point.Y - propiedadesImagen.Height;
+                        else
+                            propiedadesImagen.Top = point.Y;
 
-                case "MediaElement":
-                    PropiedadesMultimediaTurno propiedadesMultimedia = new PropiedadesMultimediaTurno(this);
-                    propiedadesMultimedia.WindowStartupLocation = WindowStartupLocation.Manual;
+                        propiedadesImagen.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                        propiedadesImagen.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                        propiedadesImagen.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
+                        propiedadesImagen.TipoControl.Text = item.GetType().Name;
+                        propiedadesImagen.Ruta.Text = Path.GetFileName(((Image)item).Source.ToString());
+                        propiedadesImagen.Ruta.ToolTip = Path.GetFileName(((Image)item).Source.ToString());
+                        propiedadesImagen.Alto.Text = Math.Round(((Image)item).ActualHeight).ToString();
+                        propiedadesImagen.Ancho.Text = Math.Round(((Image)item).ActualWidth).ToString();
+                        propiedadesImagen.Opacidad.Value = item.Opacity;
+                        propiedadesImagen.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                        propiedadesImagen.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
+                        propiedadesImagen.chkRelacion.IsChecked = true;
+                        propiedadesImagen.esInicio = false;
+                        propiedadesImagen.ShowDialog();
+                        break;
 
-                    if (point.X + propiedadesMultimedia.Width >= MaxWidth)
-                        propiedadesMultimedia.Left = point.X - propiedadesMultimedia.Width;
-                    else
-                        propiedadesMultimedia.Left = point.X;
+                    case "MediaElement":
+                        PropiedadesMultimediaTurno propiedadesMultimedia = new PropiedadesMultimediaTurno(this);
+                        propiedadesMultimedia.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (point.Y + propiedadesMultimedia.Height >= MaxHeight)
-                        propiedadesMultimedia.Top = point.Y - propiedadesMultimedia.Height;
-                    else
-                        propiedadesMultimedia.Top = point.Y;
+                        if (point.X + propiedadesMultimedia.Width >= MaxWidth)
+                            propiedadesMultimedia.Left = point.X - propiedadesMultimedia.Width;
+                        else
+                            propiedadesMultimedia.Left = point.X;
 
-                    propiedadesMultimedia.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
-                    propiedadesMultimedia.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesMultimedia.TipoControl.Text = item.GetType().Name;
-                    propiedadesMultimedia.Ruta.Text = ((MediaElement)item).Source.ToString();
-                    propiedadesMultimedia.Alto.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
-                    propiedadesMultimedia.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
-                    propiedadesMultimedia.Opacidad.Value = item.Opacity;
-                    propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
-                    propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
-                    propiedadesMultimedia.chkRelacion.IsChecked = true;
-                    propiedadesMultimedia.esInicio = false;
-                    propiedadesMultimedia.ShowDialog();
-                    break;
-                case "DataGrid":
-                    PropiedadesTablaVerificador propiedadesTabla = new PropiedadesTablaVerificador(this);
-                    propiedadesTabla.WindowStartupLocation = WindowStartupLocation.Manual;
+                        if (point.Y + propiedadesMultimedia.Height >= MaxHeight)
+                            propiedadesMultimedia.Top = point.Y - propiedadesMultimedia.Height;
+                        else
+                            propiedadesMultimedia.Top = point.Y;
 
-                    if (point.X + propiedadesTabla.Width >= MaxWidth)
-                        propiedadesTabla.Left = point.X - propiedadesTabla.Width;
-                    else
-                        propiedadesTabla.Left = point.X;
+                        propiedadesMultimedia.Titulo.Content = "Propiedades \"" + item.GetValue(NameProperty).ToString() + "\"";
+                        propiedadesMultimedia.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                        propiedadesMultimedia.TipoControl.Text = item.GetType().Name;
+                        propiedadesMultimedia.Ruta.Text = ((MediaElement)item).Source.ToString();
+                        propiedadesMultimedia.Alto.Text = Math.Round(((MediaElement)item).ActualHeight).ToString();
+                        propiedadesMultimedia.Ancho.Text = Math.Round(((MediaElement)item).ActualWidth).ToString();
+                        propiedadesMultimedia.Opacidad.Value = item.Opacity;
+                        propiedadesMultimedia.CoordenadaX.Text = Convert.ToInt32(pointItem.X).ToString();
+                        propiedadesMultimedia.CoordenadaY.Text = Convert.ToInt32(pointItem.Y).ToString();
+                        propiedadesMultimedia.chkRelacion.IsChecked = true;
+                        propiedadesMultimedia.esInicio = false;
+                        propiedadesMultimedia.ShowDialog();
+                        break;
+                    case "DataGrid":
+                        PropiedadesTablaVerificador propiedadesTabla = new PropiedadesTablaVerificador(this);
+                        propiedadesTabla.WindowStartupLocation = WindowStartupLocation.Manual;
 
-                    if (point.Y + propiedadesTabla.Height >= MaxHeight)
-                        propiedadesTabla.Top = point.Y - propiedadesTabla.Height;
-                    else
-                        propiedadesTabla.Top = point.Y;
+                        if (point.X + propiedadesTabla.Width >= MaxWidth)
+                            propiedadesTabla.Left = point.X - propiedadesTabla.Width;
+                        else
+                            propiedadesTabla.Left = point.X;
 
-                    propiedadesTabla.NombreControl.Text = item.GetValue(NameProperty).ToString();
-                    propiedadesTabla.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
-                    propiedadesTabla.TipoControl.Text = item.GetType().Name;
+                        if (point.Y + propiedadesTabla.Height >= MaxHeight)
+                            propiedadesTabla.Top = point.Y - propiedadesTabla.Height;
+                        else
+                            propiedadesTabla.Top = point.Y;
 
-                    propiedadesTabla.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
-                    propiedadesTabla.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
-                    propiedadesTabla.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
-                    propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
-                    propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count * 2;
-                    propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
-                    string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
-                    propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
-                    propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
-                    propiedadesTabla.cbxOrientacion.SelectedValue = datos[2];
-                    if (datos.Length == 8)
-                    {
-                        propiedadesTabla.chkDoble.IsChecked = true;
-                        propiedadesTabla.btnColorFuente.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
-                        propiedadesTabla.btnColorFondo.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
-                        propiedadesTabla.btnColorFuente2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
-                        propiedadesTabla.btnColorFondo2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
-                    }
-                    else
-                    {
-                        propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
-                        propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
-                        propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
-                        Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
-                        Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
+                        propiedadesTabla.NombreControl.Text = item.GetValue(NameProperty).ToString();
+                        propiedadesTabla.NombreControl.ToolTip = item.GetValue(NameProperty).ToString();
+                        propiedadesTabla.TipoControl.Text = item.GetType().Name;
 
-                        propiedadesTabla.btnColorFuente.Fill = ((DataGrid)item).Foreground;
-                        propiedadesTabla.btnColorFondo.Fill = ((DataGrid)item).Background;
-                        propiedadesTabla.btnColorFuente2.Fill = ((DataGrid)item).Foreground;
-                        propiedadesTabla.btnColorFondo2.Fill = ((DataGrid)item).Background;
-                    }
+                        propiedadesTabla.cbxFuente.SelectedItem = item.GetValue(FontFamilyProperty);
+                        propiedadesTabla.cbxTamano.SelectedValue = item.GetValue(FontSizeProperty);
+                        propiedadesTabla.chkNegrita.IsChecked = item.GetValue(FontWeightProperty).ToString().CompareTo("Bold") == 0 ? true : false;
+                        propiedadesTabla.chkCursiva.IsChecked = item.GetValue(FontStyleProperty).ToString().CompareTo("Italic") == 0 ? true : false;
+                        propiedadesTabla.cbxCRegistros.SelectedValue = ((DataGrid)item).Items.Count * 2;
+                        propiedadesTabla.chkLineas.IsChecked = ((DataGrid)item).GridLinesVisibility == DataGridGridLinesVisibility.All ? true : false;
+                        string[] datos = ((DataGrid)item).Tag.ToString().Split('|');
+                        propiedadesTabla.cbxCBloques.SelectedValue = datos[0];
+                        propiedadesTabla.cbxCRegistros.SelectedValue = datos[1];
+                        propiedadesTabla.cbxOrientacion.SelectedValue = datos[2];
+                        if (datos.Length == 8)
+                        {
+                            propiedadesTabla.chkDoble.IsChecked = true;
+                            propiedadesTabla.btnColorFuente.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[4]);
+                            propiedadesTabla.btnColorFondo.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[5]);
+                            propiedadesTabla.btnColorFuente2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[6]);
+                            propiedadesTabla.btnColorFondo2.Fill = (SolidColorBrush)new BrushConverter().ConvertFrom(datos[7]);
+                        }
+                        else
+                        {
+                            propiedadesTabla.btnColorFuente2.Visibility = Visibility.Hidden;
+                            propiedadesTabla.btnColorFondo2.Visibility = Visibility.Hidden;
+                            propiedadesTabla.lblCFuenteUno.Visibility = Visibility.Hidden;
+                            propiedadesTabla.lblCFuenteDos.Visibility = Visibility.Hidden;
+                            propiedadesTabla.lblCFondoUno.Visibility = Visibility.Hidden;
+                            propiedadesTabla.lblCFondoDos.Visibility = Visibility.Hidden;
+                            Grid.SetColumnSpan(propiedadesTabla.btnColorFuente, 3);
+                            Grid.SetColumnSpan(propiedadesTabla.btnColorFondo, 3);
 
-                    propiedadesTabla.Opacidad.Value = item.Opacity;
+                            propiedadesTabla.btnColorFuente.Fill = ((DataGrid)item).Foreground;
+                            propiedadesTabla.btnColorFondo.Fill = ((DataGrid)item).Background;
+                            propiedadesTabla.btnColorFuente2.Fill = ((DataGrid)item).Foreground;
+                            propiedadesTabla.btnColorFondo2.Fill = ((DataGrid)item).Background;
+                        }
 
-                    propiedadesTabla.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
-                    propiedadesTabla.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
+                        propiedadesTabla.Opacidad.Value = item.Opacity;
 
-                    propiedadesTabla.ShowDialog();
-                    break;
-                default:
+                        propiedadesTabla.CoordenadaX.Text = Math.Round(pointItem.X).ToString();
+                        propiedadesTabla.CoordenadaY.Text = Math.Round(pointItem.Y).ToString();
 
-                    break;
+                        propiedadesTabla.ShowDialog();
+                        break;
+                    default:
+
+                        break;
+                }
             }
         }
 
@@ -642,8 +691,225 @@ namespace Precios_Turnos
                 {
                     Task.Run(() => ActivarVoz());
                 }
+
+                if(tipoVentana.Equals("C"))
+                    if (pago != null)
+                    {
+                        actualizaPagoControles();
+                        Task.Run(() => VN22Spectral());
+                        Task.Run(() => SMARTHopper());
+                        Task.Run(() => finalizaPago());
+
+                    }
             }
 
+        }
+
+        private void finalizaPago()
+        {
+            finalizarPagoHilo = true;
+            while (finalizarPagoHilo)
+            {
+                try
+                {
+                    if (pago.Pagado == true)
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Button controlBtn = (Button)FindName("BtnCancelar");
+                            controlBtn.IsEnabled = false;
+
+                        
+
+                            if (pago.Cambio > 0)
+                                calcularCambios();
+
+                            RunningPayout = false;
+                            RunningHopper = false;
+                            finalizarPagoHilo = false;
+
+                            StartCloseTimer();
+                        }));
+
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+        }
+
+
+        private void actualizaPagoControles()
+        {
+            Label control = (Label)FindName("CantidadTotal");
+
+            if (control != null)
+            {
+                control.Content = "$ " + pago.CantidadTotal;
+            }
+
+            control = (Label)FindName("CantidadFaltante");
+
+            if (control != null)
+            {
+                control.Content = "$ " + pago.CantidadFaltante;
+            }
+            control = (Label)FindName("CantidadIngresada");
+            if (control != null)
+            {
+                control.Content = "$ " + pago.CantidadIngresada;
+            }
+            control = (Label)FindName("Cambio");
+            if (control != null)
+            {
+                control.Content = "$ " + pago.Cambio;
+            }
+
+        }
+
+        private bool calcularCambios() 
+        {
+           ValidarCambio validarCambio = new ValidarCambio();
+           bool cambioCompleto = validarCambio.calculaCambio(pago.Cambio, Hopper.UnitDataList, Payout.UnitDataList);
+            if (cambioCompleto)
+            {
+
+                if (validarCambio.monedasCambio > 0)
+                {
+                    if (!CalculatePayoutHopper(validarCambio.monedasCambio.ToString(), moneda.ToCharArray()))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                       
+                    }
+                }
+
+                if (validarCambio.billetesCambio > 0)
+                {
+                    if (!CalculatePayout(validarCambio.billetesCambio.ToString(), moneda.ToCharArray()))
+                    {
+
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                    }
+               
+                }
+            }
+            else
+            {
+                if (pago.CantidadMonedasIngresadas > 0)
+                {
+                    if (!CalculatePayoutHopper(pago.CantidadMonedasIngresadas.ToString(), moneda.ToCharArray()))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                    }
+                }
+
+                if (pago.CantidadBilletesIngresados > 0)
+                {
+                    if (!CalculatePayout(pago.CantidadBilletesIngresados.ToString(), moneda.ToCharArray()))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                    }
+
+                }
+
+            }
+
+            return cambioCompleto;
+        }
+
+        
+
+        private bool CalculatePayout(string amount, char[] currency)
+        {
+            string[] s = amount.Split('.');
+            // only need to deal with whole numbers so we can always just deal
+            // with s[0]
+            int n = 0;
+            try
+            {
+                n = Int32.Parse(s[0]) * 100; // Multiply by 100 for penny value
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "EXCEPTION");
+                return false;
+            }
+            // Make payout
+            return Payout.PayoutAmount(n, currency, logPagoNV22);
+        }
+
+        private bool CalculatePayoutHopper(string amount, char[] currency)
+        {
+            // Split string by decimal point
+            string[] s = amount.Split('.');
+            string final = "";
+            int payoutAmount = 0;
+
+            // If there was a decimal point
+            if (s.Length > 1)
+            {
+                // Add a trailing zero if necessary
+                if (s[1].Length == 1)
+                    s[1] += "0";
+                // If more than 2 decimal places, cull end
+                else if (s[1].Length > 2)
+                    s[1] = s[1].Substring(0, 2);
+
+                final += s[0] + s[1]; // Add to final result string
+            }
+            else
+                final += s[0] + "00"; // Add two zeros if there is no decimal point entered
+
+            try
+            {
+                // Parse it to a number
+                payoutAmount = Int32.Parse(final);
+            }
+            catch
+            {
+                return false;
+            }
+
+            // Pay it out
+            return Hopper.PayoutAmount(payoutAmount, currency, logPagoHopper);
         }
 
         public bool BorarObjeto(string pNombre, bool pMuestraMensaje = true)
@@ -735,16 +1001,22 @@ namespace Precios_Turnos
 
         private void objeto_MouseLeave(object sender, MouseEventArgs e)
         {
-            var control = e.Source as UIElement;
-            control.SetValue(BackgroundProperty, ultimoColor);
+            if (esDiseno)
+            {
+                var control = e.Source as UIElement;
+                control.SetValue(BackgroundProperty, ultimoColor);
+            }
         }
 
         private void objeto_MouseEnter(object sender, MouseEventArgs e)
         {
-            var control = e.Source as UIElement;
-            ultimoColor = new SolidColorBrush((control.GetValue(BackgroundProperty) as SolidColorBrush).Color);
-            control.SetValue(BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffbee6fd")));
-            controlSelectedName = control.GetValue(NameProperty).ToString();
+            if (esDiseno)
+            {
+                var control = e.Source as UIElement;
+                ultimoColor = new SolidColorBrush((control.GetValue(BackgroundProperty) as SolidColorBrush).Color);
+                control.SetValue(BackgroundProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffbee6fd")));
+                controlSelectedName = control.GetValue(NameProperty).ToString();
+            }
         }
 
         private void objetoMedia_MouseLeave(object sender, MouseEventArgs e)
@@ -995,7 +1267,7 @@ namespace Precios_Turnos
         {
             try
             {
-                mostarPropiedadesObjetos(e);
+                mostarPropiedadesObjetos(e.GetPosition(Principal));
             }
             catch (Exception) { }
         }
@@ -1249,6 +1521,11 @@ namespace Precios_Turnos
                                         //ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
 
                                         break;
+                                    case "Button":
+                                        Button button = (Button)FindName(item.GetValue(NameProperty).ToString());
+                                        button.Click += Button_Click;
+                                        button.MouseDoubleClick += Button_DobleClick;
+                                        break;
                                 }
                             }
                             catch (Exception) { }
@@ -1324,7 +1601,8 @@ namespace Precios_Turnos
                 ConfigurationManager.RefreshSection("appSettings");
                 GuardarControles();
             }
-                
+            RunningPayout = false;
+            RunningHopper = false;
         }
 
         private void MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1644,6 +1922,7 @@ namespace Precios_Turnos
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (tipoVentana.Equals("T"))
                 Task.Run(() => ProcesarTecla(e));
         }
         
@@ -2386,6 +2665,350 @@ namespace Precios_Turnos
                 Principal.Children.Add(obj);
                 itemCm.Header = "Agregar cantidad cambio";
             }
+        }
+
+        private void MenuMostrarOcultarBtnCancelar_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Button control = (Button)FindName("BtnCancelar");
+
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Eliminar botón cancelar";
+            }
+            else
+            {
+                Button obj = new Button();
+                obj.Name = "BtnCancelar";
+                obj.ToolTip = "BtnCancelar";
+                obj.Content = "Cancelar";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.BorderThickness = new Thickness(1);
+                obj.MouseDoubleClick += Button_DobleClick;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
+                itemCm.Header = "Agregar botón cancelar";
+            }
+        }
+        
+        private void Button_DobleClick(object sender, RoutedEventArgs e)
+        {
+            if (esDiseno)
+            {
+                var item = e.Source as UIElement;
+                controlClickName = item.GetValue(NameProperty).ToString();
+
+                mostarPropiedadesObjetos(item.PointToScreen(new Point(((Button)item).ActualWidth, ((Button)item).ActualHeight)));
+            }
+        }
+       
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "¿Está seguro que desea cancelar el pago?";
+            new Recursos().ventanaMensajesGrande800x600(dialog);
+            if (dialog.ShowDialog() == true)
+            {
+                if (pago.CantidadMonedasIngresadas > 0)
+                {
+                    if (!CalculatePayoutHopper(pago.CantidadMonedasIngresadas.ToString(), moneda.ToCharArray()))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                    }
+                }
+
+                if (pago.CantidadBilletesIngresados > 0)
+                {
+                    if (!CalculatePayout(pago.CantidadBilletesIngresados.ToString(), moneda.ToCharArray()))
+                    {
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+
+                        }));
+                    }
+
+                }
+
+                if (pago != null)
+                {
+                    pago.CantidadTotal = 0;
+                    pago.CantidadIngresada = 0;
+                    pago.CantidadFaltante = 0;
+                    pago.Cambio = 0;
+                }
+                
+                Close();
+            }
+                
+        }
+
+        void VN22Spectral()
+        {
+            Payout = new CPayout();
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string ComPort = config.AppSettings.Settings["COMNV22"].Value;
+            byte SSPAddress = byte.Parse(config.AppSettings.Settings["SSPNV22"].Value);
+            Payout.CommandStructure.ComPort = ComPort;
+            Payout.CommandStructure.SSPAddress = SSPAddress;
+            Payout.CommandStructure.Timeout = 3000;
+
+            // connect to validator
+            if (ConnectToValidator(reconnectionAttempts, 2))
+            {
+                RunningPayout = true;
+                logPagoNV22 += ("\r\nPoll Loop\r\n*********************************\r\n");
+                Payout.ConfigureBezel(0x00, 0x00, 0xFF, logPagoNV22);
+            }
+
+            while (RunningPayout)
+            {
+                // if the poll fails, try to reconnect
+                if (Payout.DoPoll(logPagoNV22, ref pago) == false)
+                {
+                    logPagoNV22 += ("Poll failed, attempting to reconnect...\r\n");
+                    while (true)
+                    {
+                        Payout.SSPComms.CloseComPort(); // close com port
+
+                        // attempt reconnect, pass over number of reconnection attempts
+                        if (ConnectToValidator(reconnectionAttempts, 2) == true)
+                            break; // if connection successful, break out and carry on
+                        // if not successful, stop the execution of the poll loop
+ 
+                        Payout.SSPComms.CloseComPort(); // close com port before return
+                        return;
+                    }
+                    logPagoNV22 += ("Reconnected\r\n");
+                }
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                        actualizaPagoControles();  
+
+                }));
+            }
+
+            //close com port
+            Payout.SSPComms.CloseComPort();
+
+        }
+
+        void SMARTHopper()
+        {
+            Hopper = new CHopper();
+            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            string ComPort = config.AppSettings.Settings["COMHopper"].Value;
+            byte SSPAddress = byte.Parse(config.AppSettings.Settings["SSPHopper"].Value);
+            Hopper.CommandStructure.ComPort = ComPort;
+            Hopper.CommandStructure.SSPAddress = SSPAddress;
+            Hopper.CommandStructure.Timeout = 2000;
+            Hopper.CommandStructure.RetryLevel = 3;
+
+            // First connect to the hopper
+            if (ConnectToHopper(10, 3))
+            {
+                RunningHopper = true;
+
+                logPagoHopper += ("\r\nPoll Loop\r\n"
+                + "*********************************\r\n");
+            }
+
+            // This loop won't run until the hopper is connected
+            while (RunningHopper)
+            {
+                // poll the hopper
+                if (!Hopper.DoPoll(logPagoHopper, ref pago))
+                {
+                    // If the poll fails, try to reconnect
+                    logPagoHopper += ("Attempting to reconnect...\r\n");
+                    if (!ConnectToHopper(10, 3))
+                    {
+                        // If it fails after 5 attempts, exit the loop
+                        RunningHopper = false;
+                    }
+                }
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                        actualizaPagoControles();
+                }));
+            }
+
+            //close com port
+            Hopper.SSPComms.CloseComPort();
+
+        }
+
+        private bool ConnectToValidator(int attempts, int interval)
+        {
+            // run for number of attempts specified
+            for (int i = 0; i < attempts; i++)
+            {
+                // close com port in case it was open
+                Payout.SSPComms.CloseComPort();
+
+                // turn encryption off for first stage
+                Payout.CommandStructure.EncryptionStatus = false;
+
+                // if the key negotiation is successful then set the rest up
+                if (Payout.OpenComPort(logPagoNV22) && Payout.NegotiateKeys(logPagoNV22))
+                {
+                    Payout.CommandStructure.EncryptionStatus = true; // now encrypting
+                    // find the max protocol version this validator supports
+                    byte maxPVersion = FindMaxProtocolVersionPayout();
+                    if (maxPVersion >= 6)
+                    {
+                        Payout.SetProtocolVersion(maxPVersion, logPagoNV22);
+                    }
+                    else
+                    {
+                        MessageBox.Show("This program does not support slaves under protocol 6!", "ERROR");
+                        return false;
+                    }
+                    // get info from the validator and store useful vars
+                    Payout.PayoutSetupRequest(logPagoNV22);
+                    // check this unit is supported
+                    if (!IsUnitValidPayout(Payout.UnitType))
+                    {
+                        MessageBox.Show("Unsupported type shown by SMART Payout, this SDK supports the SMART Payout only");
+                        return false;
+                    }
+                    // inhibits, this sets which channels can receive notes
+                    Payout.SetInhibits(logPagoNV22);
+                    // Get serial number
+                    Payout.GetSerialNumber(logPagoNV22);
+                    // enable, this allows the validator to operate
+                    Payout.EnableValidator(logPagoNV22);
+                    // enable the payout system on the validator
+                    Payout.EnablePayout(logPagoNV22);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool ConnectToHopper(int attempts, int interval)
+        {
+
+            // run for number of attempts specified
+            for (int i = 0; i < attempts; i++)
+            {
+
+                // close com port in case it was open
+                Hopper.SSPComms.CloseComPort();
+
+                // turn encryption off for first stage
+                Hopper.CommandStructure.EncryptionStatus = false;
+
+                // if the key negotiation is successful then set the rest up
+                if (Hopper.OpenComPort(logPagoHopper) && Hopper.NegotiateKeys(logPagoHopper) == true)
+                {
+                    Hopper.CommandStructure.EncryptionStatus = true; // now encrypting
+                    // find the max protocol version this hopper supports
+                    byte maxPVersion = FindMaxProtocolVersionHopper();
+                    if (maxPVersion >= 6)
+                    {
+                        Hopper.SetProtocolVersion(maxPVersion, logPagoHopper);
+                    }
+                    else
+                    {
+                        MessageBox.Show("This program does not support hoppers under protocol 6!", "ERROR");
+                        return false;
+                    }
+                    // get info from the hopper and store useful vars
+                    Hopper.HopperSetupRequest(logPagoHopper);
+                    // Get serial number.
+                    Hopper.GetSerialNumber(logPagoHopper);
+                    // check unit is valid type
+                    if (!IsUnitValidHopper(Hopper.UnitType))
+                    {
+                        MessageBox.Show("Unsupported type shown by SMART Hopper, this SDK supports the SMART Hopper only");
+                        return false;
+                    }
+                    // inhibits, this sets which channels can receive coins
+                    Hopper.SetInhibits(logPagoHopper);
+                    // enable, this allows the hopper to operate
+                    Hopper.EnableHopper(logPagoHopper);
+
+                    //Hopper.SetHopperOptions(0x00, 0x01, 0x01, 0x01, textBox1); 
+                   
+                   Hopper.SetHopperOptions(0x01, 0x01, 0x01, 0x00, logPagoHopper);
+                    
+
+                    Hopper.GetHopperOptions(logPagoHopper);
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private byte FindMaxProtocolVersionPayout()
+        {
+            // not dealing with protocol under level 6
+            // attempt to set in validator
+            byte b = 0x06;
+            while (true)
+            {
+                Payout.SetProtocolVersion(b);
+                if (Payout.CommandStructure.ResponseData[0] == CCommands.SSP_RESPONSE_FAIL)
+                    return --b;
+                b++;
+
+                // catch runaway
+                if (b > 12)
+                    return 0x06; // return default
+            }
+        }
+
+        private byte FindMaxProtocolVersionHopper()
+        {
+            // not dealing with protocol under level 6
+            // attempt to set in hopper
+            byte b = 0x06;
+            while (true)
+            {
+                if (!Hopper.SetProtocolVersion(b) || b > 20)
+                    return 0x06; // return default
+                // If it fails then it can't be set so fall back to previous iteration and return it
+                if (Hopper.CommandStructure.ResponseData[0] == CCommands.SSP_RESPONSE_FAIL)
+                    return --b;
+                b++;
+            }
+        }
+
+        private bool IsUnitValidPayout(char unitType)
+        {
+            if (unitType == (char)0x06) // 0x06 is Payout, no other types supported by this program
+                return true;
+            return false;
+        }
+
+        private bool IsUnitValidHopper(char unitType)
+        {
+            if (unitType == (char)0x03) // 0x03 is Hopper, only Hopper supported here
+                return true;
+            return false;
         }
     }
 }

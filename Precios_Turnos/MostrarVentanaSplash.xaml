@@ -26,6 +26,7 @@
                 <MenuItem x:Name="MenuMostrarOcultarCantidadIngresada" Header="Agregar cantidad ingresada" PreviewMouseLeftButtonDown="MenuMostrarOcultarCantidadIngresada_PreviewMouseLeftButtonDown" />
                 <MenuItem x:Name="MenuMostrarOcultarCantidadFaltante" Header="Agregar cantidad faltante" PreviewMouseLeftButtonDown="MenuMostrarOcultarCantidadFaltante_PreviewMouseLeftButtonDown" />
                 <MenuItem x:Name="MenuMostrarOcultarCambio" Header="Agregar cambio" PreviewMouseLeftButtonDown="MenuMostrarOcultarCambio_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarBtnCancelar" Header="Agregar botón cancelar" PreviewMouseLeftButtonDown="MenuMostrarOcultarBtnCancelar_PreviewMouseLeftButtonDown"/>
             </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
