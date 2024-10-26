@@ -1,0 +1,100 @@
+﻿<Window x:Class="Priceio.MostrarVentanaSplash"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Priceio"
+        mc:Ignorable="d"
+        x:Name="VentanaSplash" Title="Splash" Height="800" Width="600" MouseRightButtonUp="Principal_MouseRightButtonUp" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" Activated="Window_Activated" WindowStyle="None" SizeChanged="Window_SizeChanged">
+    <Window.Resources>
+        <ContextMenu x:Key="cmdPrincipalContexMenu" FontFamily="Arial Rounded MT">
+            <MenuItem x:Name="MenuAgregarTexto" Header="Agregar texto" PreviewMouseLeftButtonDown="MenuAgregarTexto_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuAgregarImagen" Header="Agregar imagen" PreviewMouseLeftButtonDown="MenuAgregarImagen_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="Turnero" Header="Turnero">
+                <MenuItem x:Name="MenuMostrarOcultarTurno" Header="Agregar turno" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown"/>
+                <MenuItem x:Name="MenuMostrarOcultarEquipo" Header="Agregar equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipo_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Agregar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
+                <Separator />
+                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+            </MenuItem>
+            <MenuItem x:Name="Verificador" Header="Verificador">
+                <MenuItem x:Name="MenuMostrarOcultarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>
+            </MenuItem>
+            <MenuItem x:Name="CajeroATM" Header="Cajero ATM">
+                <MenuItem x:Name="MenuMostrarOcultarCantidadTotal" Header="Agregar cantidad total" PreviewMouseLeftButtonDown="MenuMostrarOcultarCantidadTotal_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarCantidadIngresada" Header="Agregar cantidad ingresada" PreviewMouseLeftButtonDown="MenuMostrarOcultarCantidadIngresada_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarCantidadFaltante" Header="Agregar cantidad faltante" PreviewMouseLeftButtonDown="MenuMostrarOcultarCantidadFaltante_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarCambio" Header="Agregar cambio" PreviewMouseLeftButtonDown="MenuMostrarOcultarCambio_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarBtnCancelar" Header="Agregar botón cancelar" PreviewMouseLeftButtonDown="MenuMostrarOcultarBtnCancelar_PreviewMouseLeftButtonDown"/>
+            </MenuItem>
+            <Separator />
+            <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
+            <MenuItem x:Name="PropiedadesVentana" Header="Propiedades ventana" PreviewMouseLeftButtonDown="PropiedadesVentana_PreviewMouseLeftButtonDown"/>
+            <Separator />
+            <MenuItem x:Name="MenuReiniciarDiseno" Header="Reiniciar diseño splash" PreviewMouseLeftButtonDown="MenuReiniciarDiseno_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="MenuSalir" Header="Salir" PreviewMouseLeftButtonDown="MenuSalir_PreviewMouseLeftButtonDown"/>
+        </ContextMenu>
+        <ContextMenu x:Key="cmdContexMenu" FontFamily="Arial Rounded MT">
+            <MenuItem x:Name="MenuTraerFrente" Header="Traer al frente" PreviewMouseLeftButtonDown="MenuTraerFrente_PreviewMouseLeftButtonDown" />
+            <MenuItem x:Name="MenuPropiedades" Header="Propiedades" PreviewMouseLeftButtonDown="MenuPropiedades_PreviewMouseLeftButtonDown"/>
+            <Separator />
+            <MenuItem x:Name="MenuEliminar" Header="Eliminar" PreviewMouseLeftButtonDown="MenuEliminar_PreviewMouseLeftButtonDown"/>
+        </ContextMenu>
+    </Window.Resources>
+    <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown">
+        <Grid x:Name="Base"/>
+        <Image x:Name="Fondo" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" />
+        <Border x:Name="Borde" BorderBrush="Black" BorderThickness="3" Panel.ZIndex="1000"/>
+        <Label x:Name="ModoEdicion" Content="Modo edición" HorizontalAlignment="Left" VerticalAlignment="Bottom" FontSize="18" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" />
+        <Label x:Name="Coordenadas" Content="Coordenadas: 1920X, 1080Y" HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="14" Foreground="Red" FontFamily="Arial Rounded MT" Panel.ZIndex="1000" />
+        <Grid x:Name="BarraMenus"
+      Background="#CC989090" VerticalAlignment="Top" MouseLeftButtonDown="Window_MouseLeftButtonDown" Panel.ZIndex="1000">
+            <Label x:Name="TituloMenu" Content="Splash"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold" Panel.ZIndex="1000"/>
+            <Button x:Name="Salir" Content="X"  Click="Salir_Click"  FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" BorderThickness="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Panel.ZIndex="1000" >
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button x:Name="Maximizar" Content="☐" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" BorderThickness="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,24,0" Click="Maximizar_Click" Panel.ZIndex="1000">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF0E596D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>

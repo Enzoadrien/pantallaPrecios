@@ -1,0 +1,112 @@
+﻿<Window x:Class="Priceio.PropiedadesWEB"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Priceio"
+        mc:Ignorable="d"
+        Title="Propiedades" Height="270" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" Loaded="Window_Loaded" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="40*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="35*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal"
+                    Background="#FF989090" Grid.ColumnSpan="5">
+            <Label x:Name="Titulo" Content="Propiedades"  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+        </StackPanel>
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top"  Click="Salir_Click" Grid.Column="5" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+            <Button.Style>
+                <Style TargetType="{x:Type Button}">
+                    <Setter Property="Background" Value="#FF989090"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FFC42B1C"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+        <Label x:Name="lblNombre" Content="Nombre:" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="NombreControl" Grid.Row="1" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
+        <Label x:Name="lblTipoControl" Content="Tipo:" Grid.Row="2" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="TipoControl" Grid.Row="2" Grid.ColumnSpan="3" Text="" Grid.Column="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" IsReadOnly="True" Margin="0,0,5,0"/>
+        <Label x:Name="lblTamano" Content="Tamaño" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblAncho" Content="Ancho:" Grid.Row="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ancho" Grid.Row="4" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <Label x:Name="lblAlto" Content="Alto:" Grid.Row="5" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Alto" Grid.Row="5" Text="" Grid.Column="2" Grid.ColumnSpan="2" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" TextChanged="AnchoLargo_TextChanged" LostFocus="AnchoLargo_LostFocus" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <Label x:Name="lblLargoPX" Content="px" Grid.Row="4" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblAnchoPX" Content="px" Grid.Row="5" Grid.Column="4" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <CheckBox x:Name="chkOcultar" Content="Ocultar" Grid.Column="3" Grid.Row="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="chkOcultar_Checked" Unchecked="chkOcultar_Unchecked"/>
+        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="8"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaX"  Grid.Row="8" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged"/>
+        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="8" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaY" Grid.Row="8" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" LostFocus="Coordenada_LostFocus" TextChanged="Coordenada_TextChanged"/>
+        <StackPanel Grid.Row="9"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="5,5,5,5" Grid.ColumnSpan="2"/>
+        <StackPanel Grid.Row="9"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2">
+            <Button x:Name="btnBorrar"
+              Content="Eliminar"
+              IsDefault="True"
+              Width="60"
+              Height="20"
+              Margin="0,0,0,0"
+              TabIndex="0"
+              FontFamily="Arial Rounded MT" 
+              FontSize="14" Click="btnBorrar_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>

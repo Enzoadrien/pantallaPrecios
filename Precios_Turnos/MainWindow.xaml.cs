@@ -3,6 +3,11 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
 using Priceio;
+using Priceio.Cajero;
+using Priceio.Cajero.Hopper;
+using Priceio.Cajero.Payout;
+using Priceio.ClasesGenericas;
+using Priceio.Turnero;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,9 +44,8 @@ using System.Windows.Resources;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Linq;
-using static Precios_Turnos.MainWindow;
 
-namespace Precios_Turnos
+namespace Priceio
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -69,6 +73,9 @@ namespace Precios_Turnos
         private SolidColorBrush? ultimoColor;
         internal double ultimaOpacidad;
         private string? datosVerificador;
+        SMARTPayout? smartPayout;
+        SMARTHopper? smartHopper;
+
 
         public MainWindow()
         {
@@ -373,12 +380,33 @@ namespace Precios_Turnos
                 animaciones = false;
                 //Principal.IsHitTestVisible = true;
 
-                AsynchronousSocketListener.StopListening();
+                
+
                 Menu.Visibility = Visibility.Visible;
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
                 CenterWindowOnScreen();
                 LogoPrincipal.Opacity = 1;
+
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
+                tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
+                if (activarSplash)
+                {
+                    switch (tipoSplash)
+                    {
+                        case "T":
+                            AsynchronousSocketListener.StopListening();
+                            break;
+                        case "V":
+                            break;
+                        case "C":
+                            AsynchronousSocketListenerCajero.StopListening();
+                            detenerPagos();
+                            break;
+                    }
+                }
+                
 
 
                 if (esAplicacion)
@@ -3107,7 +3135,13 @@ namespace Precios_Turnos
         {
             try
             {
-                Task.Run(() => AsynchronousSocketListenerCajero.StartListening());
+                smartPayout = new SMARTPayout();
+                smartHopper = new SMARTHopper();
+                Task.Run(() => smartPayout.RunPayout());
+                Task.Run(() => smartHopper.RunHooper());
+
+                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout, smartHopper));
+
             }
             catch {
                 Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
@@ -3115,6 +3149,17 @@ namespace Precios_Turnos
                 dialogError.lblTexto.Text = "Ocurrio un error al procesar pagos. Favor de consultar al administrador";
                 dialogError.ShowDialog();
             }
+        }
+
+        private void detenerPagos()
+        {
+            try
+            {
+                smartPayout.RunningPayout = false;
+                smartHopper.RunningHopper = false;
+            }catch { }
+            
+            
         }
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)

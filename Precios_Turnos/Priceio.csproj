@@ -60,10 +60,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="ConfigurarNombres.xaml.cs">
+    <Compile Update="VentanasGenericas\ConfigurarNombres.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="ConfigurarVoz.xaml.cs">
+    <Compile Update="VentanasGenericas\ConfigurarVoz.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Properties\Settings.Designer.cs">
@@ -71,16 +71,19 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Update="PropiedadesVentanaTurnero.xaml.cs">
+    <Compile Update="VentanasPropiedadesSplash\PropiedadesImpresora.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="PropiedadesLabelTurno.xaml.cs">
+    <Compile Update="VentanasPropiedadesSplash\PropiedadesVentanaSplash.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="PropiedadesWEB.xaml.cs">
+    <Compile Update="VentanasPropiedadesSplash\PropiedadesLabelTurno.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="PropiedadesMultimediaTurno.xaml.cs">
+    <Compile Update="VentanasPropiedadesPrincipal\PropiedadesWEB.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="VentanasPropiedadesSplash\PropiedadesMultimediaTurno.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -183,7 +186,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="ConfigurarVoz.xaml">
+    <Page Update="VentanasGenericas\ConfigurarVoz.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
