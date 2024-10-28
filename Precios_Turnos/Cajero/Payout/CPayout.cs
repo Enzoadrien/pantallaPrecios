@@ -44,6 +44,8 @@ namespace Priceio.Cajero.Payout
         // level and whether it is being recycled.
         List<ChannelData> m_UnitDataList;
 
+        bool m_ValidatorEnabled;
+
         // constructor
         public CPayout()
         {
@@ -60,6 +62,7 @@ namespace Priceio.Cajero.Payout
             m_UnitDataList = new List<ChannelData>();
             m_HoldCount = 0;
             m_HoldNumber = 0;
+            m_ValidatorEnabled = true;
         }
 
         /* Variable Access */
@@ -127,7 +130,7 @@ namespace Priceio.Cajero.Payout
         /* Command functions */
 
         // This function opens the com port using the SSP library.
-        public bool OpenComPort(string log = null)
+        public bool OpenComPort(ref string log)
         {
             if (log != null) log += "Opening com port\r\n";
             if (m_eSSP.OpenSSPComPort(m_cmd))
@@ -136,59 +139,75 @@ namespace Priceio.Cajero.Payout
         }
 
         // The enable command enables the validator, allowing it to receive and act on commands.
-        public void EnableValidator(string log = null)
+        public bool EnableValidator(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_ENABLE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return false;
             // check response
-            if (CheckGenericResponses(log) && log != null)
+            if (CheckGenericResponses(ref log) && log != null) 
+            {
+                m_ValidatorEnabled = true;
                 log += "Unit enabled\r\n";
+                return true;
+            }
+            return false;
         }
 
         // Disable command stops the validator from acting on commands sent to it.
-        public void DisableValidator(string log = null)
+        public bool DisableValidator(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_DISABLE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return false;
             // check response
-            if (CheckGenericResponses(log) && log != null)
+            if (CheckGenericResponses(ref log) && log != null)
+            {
+                m_ValidatorEnabled = false;
                 log += "Unit disabled\r\n";
+                return true;
+            }
+            return false;
+        }
+
+        public bool ValidatorEnabled
+        {
+            get { return m_ValidatorEnabled; }
+            set { m_ValidatorEnabled = value; }
         }
 
         // Enable payout allows the validator to payout and store notes.
-        public void EnablePayout(string log = null)
+        public void EnablePayout(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_ENABLE_PAYOUT_DEVICE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
                 log += "Payout enabled\r\n";
         }
 
         // Disable payout stops the validator being able to store/payout notes.
-        public void DisablePayout(string log = null)
+        public void DisablePayout(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_DISABLE_PAYOUT_DEVICE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
                 log += "Payout disabled\r\n";
         }
 
         // Empty payout device takes all the notes stored and moves them to the cashbox.
-        public void EmptyPayoutDevice(string log = null)
+        public void EmptyPayoutDevice(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_EMPTY_ALL;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 log += "Emptying payout device\r\n";
             }
@@ -197,7 +216,7 @@ namespace Priceio.Cajero.Payout
         // This function uses the command GET DENOMINATION LEVEL to find out the number of
         // a specified type of note stored in the payout. Returns the number of notes stored
         // of that denomination.
-        public int CheckNoteLevel(int note, char[] currency, string log = null)
+        public int CheckNoteLevel(int note, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_DENOMINATION_LEVEL;
             byte[] b = CHelpers.ConvertIntToBytes(note);
@@ -211,8 +230,8 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[7] = (byte)currency[2];
             m_cmd.CommandDataLength = 8;
 
-            if (!SendCommand(log)) return 0;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return 0;
+            if (CheckGenericResponses(ref log))
             {
                 int i = m_cmd.ResponseData[1];
                 return i;
@@ -221,13 +240,13 @@ namespace Priceio.Cajero.Payout
         }
 
         // Return Note command returns note held in escrow to bezel. 
-        public void ReturnNote(string log = null)
+        public void ReturnNote(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_REJECT_BANKNOTE;
             m_cmd.CommandDataLength = 1;
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                 {
@@ -239,19 +258,19 @@ namespace Priceio.Cajero.Payout
 
         // This function uses the command GET ALL LEVELS to determine the stored levels of all denominations in the SMART Payout.
         // It displays the result in a textbox.
-        public void GetAllLevels(string log = null)
+        public void GetAllLevels(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_ALL_LEVELS;
             m_cmd.CommandDataLength = 1;
             StringBuilder sbOutput = new StringBuilder(500);
             int noteValue;
             int noteNumber;
-            if (!SendCommand(log))
+            if (!SendCommand(ref log))
             {
                 return;
             }
             // Proceed if SSP_RESPONSE_OK returned
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 sbOutput.Append("Number of Denominations = ");
                 sbOutput.Append(m_cmd.ResponseData[1]);
@@ -282,7 +301,7 @@ namespace Priceio.Cajero.Payout
         // or it can store the note for payout. This is specified in the second byte (0x00 to store for payout, 0x01 for cashbox). The 
         // bytes after this represent the 4 bit value of the note.
         // This function allows the note to be specified as an int in the param note, the stack bool is true for cashbox, false for storage.
-        public void ChangeNoteRoute(int note, char[] currency, bool stack, string log = null)
+        public void ChangeNoteRoute(int note, char[] currency, bool stack, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_DENOMINATION_ROUTE;
 
@@ -307,8 +326,8 @@ namespace Priceio.Cajero.Payout
 
             m_cmd.CommandDataLength = 9;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 string s = new string(currency);
                 if (stack)
@@ -321,40 +340,40 @@ namespace Priceio.Cajero.Payout
         }
 
         // The reset command instructs the validator to restart (same effect as switching on and off)
-        public void Reset(string log = null)
+        public void Reset(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_RESET;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            CheckGenericResponses(log);
+            if (!SendCommand(ref log)) return;
+            CheckGenericResponses(ref log);
         }
 
         // This just sends a sync command to the validator.
-        public bool SendSync(string log = null)
+        public bool SendSync(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SYNC;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return false;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return false;
+            if (CheckGenericResponses(ref log))
                 if (log != null) log += "Sent sync\r\n";
             return true;
         }
 
         // This function sets the protocol version in the validator to the version passed across. Whoever calls
         // this needs to check the response to make sure the version is supported.
-        public void SetProtocolVersion(byte pVersion, string log = null)
+        public void SetProtocolVersion(byte pVersion, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_HOST_PROTOCOL_VERSION;
             m_cmd.CommandData[1] = pVersion;
             m_cmd.CommandDataLength = 2;
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
         }
 
         // This function calls the PAYOUT AMOUNT command to payout a specified value. This can be sent
         // with the option byte 0x19 to test whether the payout is possible or 0x58 to actually do the payout.
-        public bool PayoutAmount(int amount, char[] currency, string log = null)
+        public bool PayoutAmount(int amount, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_PAYOUT_AMOUNT;
             byte[] b = CHelpers.ConvertIntToBytes(amount);
@@ -370,9 +389,9 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[8] = 0x58; // real payout
 
             m_cmd.CommandDataLength = 9;
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                 {
@@ -388,7 +407,7 @@ namespace Priceio.Cajero.Payout
         // notes. Due to the variable length of the data that could be passed to the function, the user 
         // passes an array containing the data to payout and the length of that array along with the number
         // of denominations they are paying out.
-        public void PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, string log = null)
+        public void PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, ref string log)
         {
             // First is the command byte
             m_cmd.CommandData[0] = CCommands.SSP_CMD_PAYOUT_BY_DENOMINATION;
@@ -408,8 +427,8 @@ namespace Priceio.Cajero.Payout
             dataLength += 3;
             m_cmd.CommandDataLength = dataLength;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "Paying out by denomination...\r\n";
@@ -417,7 +436,7 @@ namespace Priceio.Cajero.Payout
         }
 
         // This function performs a number of commands in order to setup the encryption between the host and the validator.
-        public bool NegotiateKeys(string log = null)
+        public bool NegotiateKeys(ref string log)
         {
             // make sure encryption is off
             m_cmd.EncryptionStatus = false;
@@ -427,7 +446,7 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SYNC;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success";
 
             m_eSSP.InitiateSSPHostKeys(keys, m_cmd);
@@ -440,7 +459,7 @@ namespace Priceio.Cajero.Payout
             // Convert generator to bytes and add to command data.
             BitConverter.GetBytes(keys.Generator).CopyTo(m_cmd.CommandData, 1);
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // send modulus
@@ -451,7 +470,7 @@ namespace Priceio.Cajero.Payout
             // Convert modulus to bytes and add to command data.
             BitConverter.GetBytes(keys.Modulus).CopyTo(m_cmd.CommandData, 1);
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // send key exchange
@@ -463,7 +482,7 @@ namespace Priceio.Cajero.Payout
             BitConverter.GetBytes(keys.HostInter).CopyTo(m_cmd.CommandData, 1);
 
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // Read slave intermediate key.
@@ -481,7 +500,7 @@ namespace Priceio.Cajero.Payout
         }
 
         // This function uses the setup request command to get all the information about the validator.
-        public void PayoutSetupRequest(string log = null)
+        public bool PayoutSetupRequest(ref string log)
         {
             StringBuilder sbDisplay = new StringBuilder(1000);
 
@@ -489,7 +508,7 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SETUP_REQUEST;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return false;
 
             // display setup request
 
@@ -577,11 +596,11 @@ namespace Priceio.Cajero.Payout
                 loopChannelData.Currency[2] = (char)m_cmd.ResponseData[index + 2 + i * 3];
 
                 // Channel level.
-                loopChannelData.Level = CheckNoteLevel(loopChannelData.Value, loopChannelData.Currency, log);
+                loopChannelData.Level = CheckNoteLevel(loopChannelData.Value, loopChannelData.Currency, ref log);
 
                 // Channel recycling
                 bool recycling = false;
-                IsNoteRecycling(loopChannelData.Value, loopChannelData.Currency, ref recycling, log);
+                IsNoteRecycling(loopChannelData.Value, loopChannelData.Currency, ref recycling, ref log);
                 loopChannelData.Recycling = recycling;
 
                 // Add data to list.
@@ -602,13 +621,14 @@ namespace Priceio.Cajero.Payout
 
             if (log != null)
                 log += sbDisplay.ToString();
+            return true;
         }
 
         // This function sends the set inhibits command to set the inhibits on the validator. An additional two
         // bytes are sent along with the command byte to indicate the status of the inhibits on the channels.
         // For example 0xFF and 0xFF in binary is 11111111 11111111. This indicates all 16 channels supported by
         // the validator are uninhibited. If a user wants to inhibit channels 8-16, they would send 0x00 and 0xFF.
-        public void SetInhibits(string log = null)
+        public void SetInhibits(ref string log)
         {
             // set inhibits
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_CHANNEL_INHIBITS;
@@ -616,14 +636,14 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[2] = 0xFF;
             m_cmd.CommandDataLength = 3;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
                 log += "Inhibits set\r\n";
         }
 
         // This function uses the GET ROUTING command to see if a specified note is recycling. The
         // caller passes a bool across which is set by the function.
-        public void IsNoteRecycling(int noteValue, char[] currency, ref bool response, string log = null)
+        public void IsNoteRecycling(int noteValue, char[] currency, ref bool response, ref string log)
         {
             // Determine if the note is currently being recycled
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_DENOMINATION_ROUTE;
@@ -639,8 +659,8 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[7] = (byte)currency[2];
             m_cmd.CommandDataLength = 8;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 // True if it is currently being recycled
                 if (m_cmd.ResponseData[1] == 0x00)
@@ -654,7 +674,7 @@ namespace Priceio.Cajero.Payout
         // This function uses the FLOAT AMOUNT command to set the float amount. The validator will empty
         // notes into the cashbox leaving the requested floating amount in the payout. The minimum payout
         // is also setup so the validator will leave itself the ability to payout the minimum value requested.
-        public void SetFloat(int minPayout, int floatAmount, char[] currency, string log = null)
+        public void SetFloat(int minPayout, int floatAmount, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_FLOAT_AMOUNT;
             byte[] b = CHelpers.ConvertIntToBytes(minPayout);
@@ -677,8 +697,8 @@ namespace Priceio.Cajero.Payout
 
             m_cmd.CommandDataLength = 13;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "Floated amount successfully\r\n";
@@ -688,13 +708,13 @@ namespace Priceio.Cajero.Payout
         // This function uses the SMART EMPTY command which empties all the notes in the note
         // storage to the cashbox but unlike the EMPTY command it keeps a track of all the notes
         // it has moved. This data can be retrieved using the CASHBOX PAYOUT OPERATION DATA command.
-        public void SmartEmpty(string log = null)
+        public void SmartEmpty(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SMART_EMPTY;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "SMART Emptying...\r\n";
@@ -703,17 +723,17 @@ namespace Priceio.Cajero.Payout
 
         // This function gets the CASHBOX PAYOUT OPERATION DATA from the hopper and returns it as a string.
         // It can be called after SMARTevents such as SMART empty.
-        public string GetCashboxPayoutOpData(string log = null)
+        public string GetCashboxPayoutOpData(ref string log)
         {
             StringBuilder sbDisplay = new StringBuilder(100);
             // first send the command
             m_cmd.CommandData[0] = CCommands.SSP_CMD_CASHBOX_PAYOUT_OPERATION_DATA;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return "";
+            if (!SendCommand(ref log)) return "";
 
             // now deal with the response data
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 // number of different notes
                 int numberOfDenominations = m_cmd.ResponseData[1];
@@ -750,7 +770,7 @@ namespace Priceio.Cajero.Payout
 
         // This function changes the colour of a supported bezel.  As command data byte 4 is set to 0x00, the change will not
         // be stored in EEPROM.
-        public void ConfigureBezel(byte red, byte green, byte blue, string log = null)
+        public void ConfigureBezel(byte red, byte green, byte blue, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_CONFIGURE_BEZEL;
             m_cmd.CommandData[1] = red;
@@ -758,19 +778,19 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[3] = blue;
             m_cmd.CommandData[4] = 0x00;
             m_cmd.CommandDataLength = 5;
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
         }
 
         // This function sends the command LAST REJECT CODE which gives info about why a note has been rejected. It then
         // outputs the info to a passed across textbox.
-        public void QueryRejection(string log)
+        public void QueryRejection(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_LAST_REJECT_CODE;
             m_cmd.CommandDataLength = 1;
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log == null) return;
                 switch (m_cmd.ResponseData[1])
@@ -810,15 +830,15 @@ namespace Priceio.Cajero.Payout
         // 0x00 = NV200
         // 0x01 = SMART Payout
         // 0x02 = Tamper Evident Cash Box.
-        public void GetSerialNumber(byte Device, string log = null)
+        public void GetSerialNumber(byte Device, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_SERIAL_NUMBER;
             m_cmd.CommandData[1] = Device;
             m_cmd.CommandDataLength = 2;
 
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 // Response data is big endian, so reverse bytes 1 to 4.
                 Array.Reverse(m_cmd.ResponseData, 1, 4);
@@ -828,13 +848,13 @@ namespace Priceio.Cajero.Payout
             }
         }
 
-        public void GetSerialNumber(string log = null)
+        public void GetSerialNumber(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_SERIAL_NUMBER;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 // Response data is big endian, so reverse bytes 1 to 4.
                 Array.Reverse(m_cmd.ResponseData, 1, 4);
@@ -846,7 +866,7 @@ namespace Priceio.Cajero.Payout
         }
         // The poll function is called repeatedly to poll to validator for information, it returns as
         // a response in the command structure what events are currently happening.
-        public bool DoPoll(string log, ref Pago? pago)
+        public bool DoPoll(ref string log, ref Pago? pago)
         {
             byte i;
             // If a not is to be held in escrow, send hold commands, as poll releases note.
@@ -857,7 +877,7 @@ namespace Priceio.Cajero.Payout
                 m_cmd.CommandData[0] = CCommands.SSP_CMD_HOLD;
                 m_cmd.CommandDataLength = 1;
                 log += "Note held in escrow: " + m_HoldCount + "\r\n";
-                if (!SendCommand(log)) return false;
+                if (!SendCommand(ref log)) return false;
                 return true;
 
             }
@@ -865,7 +885,7 @@ namespace Priceio.Cajero.Payout
             m_cmd.CommandData[0] = CCommands.SSP_CMD_POLL;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
 
             // store response locally so data can't get corrupted by other use of the cmd variable
             byte[] response = new byte[255];
@@ -918,7 +938,7 @@ namespace Priceio.Cajero.Payout
                     // appears once.
                     case CCommands.SSP_POLL_NOTE_REJECTED:
                         log += "Note rejected\r\n";
-                        QueryRejection(log);
+                        QueryRejection(ref log);
                         break;
                     // A note is in transit to the cashbox.
                     case CCommands.SSP_POLL_NOTE_STACKING:
@@ -941,9 +961,9 @@ namespace Priceio.Cajero.Payout
                     // The float operation has been completed.
                     case CCommands.SSP_POLL_FLOATED:
                         log += "Completed floating\r\n";
-                        GetCashboxPayoutOpData(log);
+                        GetCashboxPayoutOpData(ref log);
                         UpdateData();
-                        EnableValidator();
+                        EnableValidator(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // A note has been stored in the payout device to be paid out instead of going into the cashbox.
@@ -1014,7 +1034,7 @@ namespace Priceio.Cajero.Payout
                     case CCommands.SSP_POLL_DISPENSED:
                         log += "Dispensed note(s)\r\n";
                         UpdateData();
-                        EnableValidator();
+                        //EnableValidator();
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // The payout device is in the process of emptying all its stored notes to the cashbox. This
@@ -1026,7 +1046,7 @@ namespace Priceio.Cajero.Payout
                     case CCommands.SSP_POLL_EMPTIED:
                         log += "Emptied\r\n";
                         UpdateData();
-                        EnableValidator();
+                        EnableValidator(ref log);
                         break;
                     // The payout device is in the process of SMART emptying all its stored notes to the cashbox, keeping
                     // a count of the notes emptied. This will continue to poll until the device is empty.
@@ -1039,8 +1059,8 @@ namespace Priceio.Cajero.Payout
                     case CCommands.SSP_POLL_SMART_EMPTIED:
                         log += "SMART Emptied, getting info...\r\n";
                         UpdateData();
-                        GetCashboxPayoutOpData(log);
-                        EnableValidator();
+                        GetCashboxPayoutOpData(ref log);
+                        EnableValidator(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // The payout device has encountered a jam. This will not clear until the jam has been removed and the unit
@@ -1117,8 +1137,8 @@ namespace Priceio.Cajero.Payout
         {
             foreach (ChannelData d in m_UnitDataList)
             {
-                d.Level = CheckNoteLevel(d.Value, d.Currency, log);
-                IsNoteRecycling(d.Value, d.Currency, ref d.Recycling, log);
+                d.Level = CheckNoteLevel(d.Value, d.Currency, ref log);
+                IsNoteRecycling(d.Value, d.Currency, ref d.Recycling, ref log);
             }
         }
 
@@ -1141,7 +1161,7 @@ namespace Priceio.Cajero.Payout
 
         // This is used for generic response error catching, it outputs the info in a
         // meaningful way.
-        private bool CheckGenericResponses(string log)
+        private bool CheckGenericResponses(ref string log)
         {
             if (m_cmd.ResponseData[0] == CCommands.SSP_RESPONSE_OK)
                 return true;
@@ -1192,7 +1212,7 @@ namespace Priceio.Cajero.Payout
             }
         }
 
-        public bool SendCommand(string log = null)
+        public bool SendCommand(ref string log)
         {
             // Backup data and length in case we need to retry
             byte[] backup = new byte[255];
@@ -1211,16 +1231,22 @@ namespace Priceio.Cajero.Payout
 
         private void actualizaPago(int ingresado, ref Pago pago)
         {
-            pago.CantidadBilletesIngresados += ingresado;
-            pago.CantidadIngresada += ingresado;
-            pago.CantidadFaltante -= ingresado;
-            if (pago.CantidadIngresada >= pago.CantidadTotal)
+            if (pago != null)
             {
-                pago.CantidadFaltante = 0;
-                pago.Cambio = pago.CantidadIngresada - Convert.ToInt32(pago.CantidadTotal);
-                pago.Pagado = true;
+                try
+                {
+                    pago.CantidadBilletesIngresados += ingresado;
+                    pago.CantidadIngresada += ingresado;
+                    pago.CantidadFaltante -= ingresado;
+                    if (pago.CantidadIngresada >= pago.CantidadTotal)
+                    {
+                        pago.CantidadFaltante = 0;
+                        pago.Cambio = pago.CantidadIngresada - Convert.ToInt32(pago.CantidadTotal);
+                        pago.Pagado = true;
+                    }
+                }
+                catch { }
             }
-
         }
     }
 }

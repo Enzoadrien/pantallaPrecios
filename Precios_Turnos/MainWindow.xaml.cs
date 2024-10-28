@@ -6,7 +6,9 @@ using Priceio;
 using Priceio.Cajero;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
+using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
+using Priceio.SQLite;
 using Priceio.Turnero;
 using System;
 using System.Collections;
@@ -44,6 +46,8 @@ using System.Windows.Resources;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Linq;
+using static Priceio.Cajero.ChannelData;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Priceio
 {
@@ -73,17 +77,23 @@ namespace Priceio
         private SolidColorBrush? ultimoColor;
         internal double ultimaOpacidad;
         private string? datosVerificador;
-        SMARTPayout? smartPayout;
-        SMARTHopper? smartHopper;
+        internal HiloContolCajero hiloContolCajero;
+        private DispatcherTimer timer = new DispatcherTimer();
+        private int pollTimer = 250;
+        private bool runLog = false;
+        private VentanaLogSmart ventanaLogSmart;
+        private bool seMuestraLogSmart = false;
 
 
         public MainWindow()
         {
             InitializeComponent();
+            //new TableGenerator().GenenarBD();
+
             crearDirectorios();
             Coordenadas.Visibility = Visibility.Hidden;
             CargarVistaPrevia();
-            
+
             MaxHeight = SystemParameters.VirtualScreenHeight;
             MinHeight = Height = MaxHeight / 1.5;
 
@@ -185,8 +195,8 @@ namespace Priceio
                                 }
                                 else
                                 {
-                                   ActivarControlesMenu();
-                                   return true;
+                                    ActivarControlesMenu();
+                                    return true;
                                 }
                             }
                         }
@@ -336,20 +346,21 @@ namespace Priceio
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
                 tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
+                seMuestraLogSmart = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
                 if (activarSplash)
                 {
                     switch (tipoSplash)
                     {
                         case "T":
                             EscucharTurnos();
-                        break;
+                            break;
                         case "V":
                             break;
                         case "C":
                             EscucharPagos();
                             break;
                     }
-                }    
+                }
             }
 
             else if (WindowState == WindowState.Maximized && editar)
@@ -380,8 +391,6 @@ namespace Priceio
                 animaciones = false;
                 //Principal.IsHitTestVisible = true;
 
-                
-
                 Menu.Visibility = Visibility.Visible;
                 ResizeMode = ResizeMode.CanResize;
                 WindowStyle = WindowStyle.ThreeDBorderWindow;
@@ -401,12 +410,11 @@ namespace Priceio
                         case "V":
                             break;
                         case "C":
-                            AsynchronousSocketListenerCajero.StopListening();
-                            detenerPagos();
+                            DetenerPagos();
                             break;
                     }
                 }
-                
+
 
 
                 if (esAplicacion)
@@ -419,6 +427,8 @@ namespace Priceio
                 QuitarWEB(true);
             }
         }
+
+
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -817,10 +827,10 @@ namespace Priceio
                         Directory.CreateDirectory(@".\temp\objetosSplash");
                         CopyDirectory(@".\objetosSplash", @".\temp\objetosSplash", true);
                     }
-                   
+
 
                     FileInfo fi = new FileInfo(@"./Principal.png");
-                    if(fi.Exists)
+                    if (fi.Exists)
                         fi.CopyTo(@".\temp\Principal.png", true);
 
                     if (File.Exists(dlg.FileName))
@@ -1071,7 +1081,7 @@ namespace Priceio
                     }
                     else if (editar)
                     {
-                       
+
                         if (SeModificaControl(controlClickName))
                         {
                             switch (item.GetType().Name.ToString())
@@ -1092,7 +1102,7 @@ namespace Priceio
                     }
                 }
 
-                if(!SeModificaControl(controlClickName))
+                if (!SeModificaControl(controlClickName))
                     Coordenadas.Content = "Tamaño ventana: " + Width.ToString() + "X, " + Height.ToString() + "Y";
             }
             catch (Exception) { }
@@ -1130,7 +1140,7 @@ namespace Priceio
                             ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar equipos anteriores";
 
                         Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value; 
+                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
                         activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
                         if (activarSplash)
                         {
@@ -1153,7 +1163,7 @@ namespace Priceio
                             ((MenuItem)cm.Items[9]).IsEnabled = false;
                             ((MenuItem)cm.Items[10]).IsEnabled = false;
                         }
-                       
+
 
 
                         MenuItem itemCm = (MenuItem)cm.Items[12];
@@ -1162,15 +1172,15 @@ namespace Priceio
                         {
                             //if ((itemObjets as UIElement).Visibility == Visibility.Visible)
                             //{
-                                string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
-                                if (SeModificaControl(nombreControl))
-                                {
-                                    MenuItem itemControl = new MenuItem();
-                                    itemControl.Header = nombreControl + "-(" + (itemObjets as UIElement).GetType().Name + ")";
-                                    itemControl.Tag = nombreControl;
-                                    itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
-                                    itemCm.Items.Add(itemControl);
-                                }
+                            string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
+                            if (SeModificaControl(nombreControl))
+                            {
+                                MenuItem itemControl = new MenuItem();
+                                itemControl.Header = nombreControl + "-(" + (itemObjets as UIElement).GetType().Name + ")";
+                                itemControl.Tag = nombreControl;
+                                itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
+                                itemCm.Items.Add(itemControl);
+                            }
                             //}
                         }
                         cm.PlacementTarget = sender as Button;
@@ -1206,7 +1216,7 @@ namespace Priceio
                 PantallaCompleta.Background = null;
                 //Video.UpdateLayout();
             }
-            
+
 
             Coordenadas.Visibility = Visibility.Hidden;
             ModoEdicion.Visibility = Visibility.Hidden;
@@ -1216,20 +1226,20 @@ namespace Priceio
                 try
                 {
                     var controlSelected = FindName(controlSelectedName) as UIElement;
-                    if(controlSelected != null)
-                    switch (controlSelected.GetType().Name.ToString())
-                    {
-                        case "Image":
-                        case "MediaElement":
-                        case "DataGrid":
-                            controlSelected.SetValue(OpacityProperty, ultimaOpacidad);
-                            break;
-                        case "DockPanel":
-                        case "Label":
-                            controlSelected.SetValue(BackgroundProperty, ultimoColor);
-                            break;
-                    }
-                    
+                    if (controlSelected != null)
+                        switch (controlSelected.GetType().Name.ToString())
+                        {
+                            case "Image":
+                            case "MediaElement":
+                            case "DataGrid":
+                                controlSelected.SetValue(OpacityProperty, ultimaOpacidad);
+                                break;
+                            case "DockPanel":
+                            case "Label":
+                                controlSelected.SetValue(BackgroundProperty, ultimoColor);
+                                break;
+                        }
+
                 }
                 catch { }
                 SaveFrameworkElementToPng(Principal, 900, 557, @".\Principal.png");
@@ -1242,7 +1252,7 @@ namespace Priceio
             LogoPrincipal.IsHitTestVisible = false;
             ModoEdicion.Content = "Vista previa";
             ModoEdicion.FontSize = 18;
-            ModoEdicion.Visibility = Visibility.Visible;   
+            ModoEdicion.Visibility = Visibility.Visible;
 
         }
 
@@ -1956,7 +1966,7 @@ namespace Priceio
                     var itemImg = FindName("Img_" + item.GetValue(NameProperty).ToString()) as UIElement;
                     if (itemImg != null)
                     {
-                        propiedadesTabla.cbxCBloques.IsEnabled=false;
+                        propiedadesTabla.cbxCBloques.IsEnabled = false;
                         propiedadesTabla.cbxCRegistros.IsEnabled = false;
                     }
 
@@ -2109,15 +2119,15 @@ namespace Priceio
                         switch (item.GetType().Name.ToString())
                         {
                             case "DataGrid":
-                                var itemImg = FindName("Img_"+ pNombre) as UIElement;
+                                var itemImg = FindName("Img_" + pNombre) as UIElement;
 
                                 if (itemImg != null)
                                 {
                                     Principal.Children.Remove(itemImg);
-                                    NameScope.GetNameScope(this).UnregisterName("Img_"+ pNombre);
-                                    if (Directory.Exists(@".\objetos\"+ pNombre))
+                                    NameScope.GetNameScope(this).UnregisterName("Img_" + pNombre);
+                                    if (Directory.Exists(@".\objetos\" + pNombre))
                                     {
-                                        Directory.Delete(@".\objetos\"+ pNombre, true);
+                                        Directory.Delete(@".\objetos\" + pNombre, true);
                                     }
                                 }
                                 break;
@@ -2259,8 +2269,8 @@ namespace Priceio
                 obj.Stretch = Stretch.Uniform;
                 obj.MaxHeight = MaxHeight;
                 obj.MaxWidth = MaxWidth;
-                obj.Width = MaxWidth/3;
-                obj.Height = MaxHeight/3;
+                obj.Width = MaxWidth / 3;
+                obj.Height = MaxHeight / 3;
                 obj.Volume = .5;
                 obj.Tag = "";
                 obj.MouseLeave += objetoMedia_MouseLeave;
@@ -2316,7 +2326,7 @@ namespace Priceio
                 obj.HeadersVisibility = DataGridHeadersVisibility.None;
                 obj.CanUserAddRows = false;
                 obj.Tag = "2|15|H|15";
-                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString(),"")[0].DefaultView;
+                obj.ItemsSource = CargarListaTablas(dialog.NombreText, obj.Tag.ToString(), "")[0].DefaultView;
                 obj.MouseLeave += objetoMedia_MouseLeave;
                 obj.MouseEnter += objetoMedia_MouseEnter;
 
@@ -2343,12 +2353,12 @@ namespace Priceio
             DataTable dtFinal = new DataTable();
             for (int z = 0; z < (dt.Columns.Count * bloques) + (bloques - 1); z++)
             {
-                if(pCampoImagen.Length > 0)
+                if (pCampoImagen.Length > 0)
                     dtFinal.Columns.Add(dt.Columns[z].ColumnName);
                 else
                     dtFinal.Columns.Add();
             }
-                
+
 
             object[] arrayTemp = new object[0];
             object[] arrayResult = new object[0];
@@ -2746,7 +2756,7 @@ namespace Priceio
                         File.WriteAllText(@"objetos\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(nombreApp, savedControls));
                         if (esTabla)
                         {
-                            ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString(),"")[0].DefaultView;
+                            ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString(), "")[0].DefaultView;
                             //((DataGrid)itemObjets).UpdateLayout();
                             ColorFuenteFondoTabla(nombreControl, ((DataGrid)itemObjets).Tag.ToString());
                         }
@@ -2818,7 +2828,7 @@ namespace Priceio
                     }
                                         };
                                     }
-                                    List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(),"");
+                                    List<DataTable> list = CargarListaTablas(control.Name, control.Tag.ToString(), "");
                                     if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                         control.ItemsSource = list[0].DefaultView;
 
@@ -2863,7 +2873,7 @@ namespace Priceio
             catch (Exception) { }
         }
 
-        public List<DataTable> CargarListaTablas(string pNombre, string pTag, string pCampoImagen, bool pMostrarMensaje = false )
+        public List<DataTable> CargarListaTablas(string pNombre, string pTag, string pCampoImagen, bool pMostrarMensaje = false)
         {
             string[] datos = pTag.Split('|');
             List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre, pCampoImagen);
@@ -2937,8 +2947,8 @@ namespace Priceio
                     if (row != null)
                     {
                         var array2 = (((DataRowView)row.Item).Row).ItemArray;
-                        
-                        if(!array2.All(i => i is DBNull))
+
+                        if (!array2.All(i => i is DBNull))
                         {
                             if (row.GetIndex() % 2 == 0)
                             {
@@ -2953,7 +2963,7 @@ namespace Priceio
                         }
 
                     }
-                        
+
                 }
             }
             else
@@ -3043,7 +3053,7 @@ namespace Priceio
                 int tamano;
                 while (animaciones && maximizado && !editar)
                 {
-                    List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag,"");
+                    List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag, "");
                     tamano = LisTablas.Count;
                     if (x < tamano)
                         CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
@@ -3130,37 +3140,90 @@ namespace Priceio
             }
             catch { }
         }
-        
+
         private void EscucharPagos()
         {
             try
             {
-                smartPayout = new SMARTPayout();
-                smartHopper = new SMARTHopper();
-                Task.Run(() => smartPayout.RunPayout());
-                Task.Run(() => smartHopper.RunHooper());
-
-                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout, smartHopper));
-
+                if (seMuestraLogSmart)
+                {
+                    timer.Tick += new EventHandler(TimerTick);
+                    MostrarLogPagos();
+                }
+                hiloContolCajero = new HiloContolCajero();
+                hiloContolCajero.iniciarPayout();
+                hiloContolCajero.iniciarHopper();
+                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(hiloContolCajero.smartPayout, hiloContolCajero.smartHopper));
             }
-            catch {
-                Mensajes dialogError = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialogError.lblNombre.Content = "¡Error!";
-                dialogError.lblTexto.Text = "Ocurrio un error al procesar pagos. Favor de consultar al administrador";
-                dialogError.ShowDialog();
+            catch
+            {
             }
         }
 
-        private void detenerPagos()
+        private void DetenerPagos()
         {
             try
             {
-                smartPayout.RunningPayout = false;
-                smartHopper.RunningHopper = false;
-            }catch { }
-            
-            
+                hiloContolCajero.detenerPayout();
+                hiloContolCajero.detenerHopper();
+                AsynchronousSocketListenerCajero.StopListening();
+                if(ventanaLogSmart != null && seMuestraLogSmart)
+                {
+                    timer.Tick -= new EventHandler(TimerTick);
+                    ventanaLogSmart.Close();
+                    ventanaLogSmart = null;
+                }
+            }
+            catch
+            {
+            }
         }
+
+        private void MostrarLogPagos()
+        {
+            ventanaLogSmart = new VentanaLogSmart();
+            ventanaLogSmart.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = Mouse.GetPosition(this);
+
+            // get the position within the container
+            var mousePosition = this.PointToScreen(relativeCenterParent);
+
+            if (mousePosition.Y + ventanaLogSmart.Height >= this.MaxHeight)
+                ventanaLogSmart.Top = mousePosition.Y - ventanaLogSmart.Height;
+            else
+                ventanaLogSmart.Top = mousePosition.Y;
+
+            if (mousePosition.X + ventanaLogSmart.Width >= this.MaxWidth)
+                ventanaLogSmart.Left = mousePosition.X - ventanaLogSmart.Width;
+            else
+                ventanaLogSmart.Left = mousePosition.X;
+
+            ventanaLogSmart.Show();
+            Task.Run(() => recargarlog(ventanaLogSmart));
+        }
+
+        internal void recargarlog(VentanaLogSmart dialog)
+        {
+            runLog = true;
+            while (runLog)
+            {
+                if(hiloContolCajero!=null)
+                    dialog.recargarlog(hiloContolCajero.smartHopper.logPagoHopper, hiloContolCajero.smartPayout.logPagoPayout);
+
+                timer.Start();
+                while (timer.IsEnabled)
+                {
+                    Thread.Sleep(1); // Yield to free up CPU
+                }
+            }
+        }
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            timer.Stop();
+        }
+
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)
         {
@@ -3193,46 +3256,46 @@ namespace Priceio
                                 item.Content = pLisTablas[x].TableName;
                         }
 
-                            string pNombreImg = "Img_" + pNombre;
-                            var item2 = FindName(pNombreImg) as UIElement;
+                        string pNombreImg = "Img_" + pNombre;
+                        var item2 = FindName(pNombreImg) as UIElement;
 
-                            if (item2 != null)
+                        if (item2 != null)
+                        {
+                            try
                             {
-                                try
+                                string[] datosTag = pTag.ToString().Split('|');
+
+                                if (datosTag[2].Equals("V"))
                                 {
-                                        string[] datosTag = pTag.ToString().Split('|');
+                                    String imagenBuscar = pLisTablas[x].Columns[0].ColumnName;
+                                    BitmapImage bitmapImage = new BitmapImage();
+                                    bitmapImage.BeginInit();
+                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                    bitmapImage.EndInit();
 
-                                        if (datosTag[2].Equals("V"))
-                                        {
-                                            String imagenBuscar = pLisTablas[x].Columns[0].ColumnName;
-                                            BitmapImage bitmapImage = new BitmapImage();
-                                            bitmapImage.BeginInit();
-                                            bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                            bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
-                                            bitmapImage.EndInit();
-
-                                            ((Image)item2).Source = bitmapImage;
-                                        }
-                                        else
-                                        {
-
-                                                    String imagenBuscar = pLisTablas[x].Rows[0][datos[2]].ToString();
-                                                    BitmapImage bitmapImage = new BitmapImage();
-                                                    bitmapImage.BeginInit();
-                                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
-                                                    bitmapImage.EndInit();
-
-                                                    ((Image)item2).Source = bitmapImage;
-                                    }
+                                    ((Image)item2).Source = bitmapImage;
                                 }
-                                catch
+                                else
                                 {
-                                    ((Image)item2).Source = null;
+
+                                    String imagenBuscar = pLisTablas[x].Rows[0][datos[2]].ToString();
+                                    BitmapImage bitmapImage = new BitmapImage();
+                                    bitmapImage.BeginInit();
+                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                    bitmapImage.EndInit();
+
+                                    ((Image)item2).Source = bitmapImage;
                                 }
                             }
+                            catch
+                            {
+                                ((Image)item2).Source = null;
+                            }
+                        }
 
 
                         break;
@@ -3536,7 +3599,7 @@ namespace Priceio
                             }
                             break;
                         case "Button":
-                            if(((Button)item).Name.Equals("LogoPrincipal"))
+                            if (((Button)item).Name.Equals("LogoPrincipal"))
                                 item.IsHitTestVisible = true;
                             else
                                 item.IsHitTestVisible = false;
@@ -3736,7 +3799,7 @@ namespace Priceio
         {
             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
             dialog.lblNombre.Content = "¡Advertencia!";
-            if(!editar)
+            if (!editar)
                 dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
             else
                 dialog.lblTexto.Text = "Esta a punto salir del modo edición, ¿Está seguro que desea continuar?.";
@@ -3752,7 +3815,7 @@ namespace Priceio
 
         private void Sobre_Click(object sender, RoutedEventArgs e)
         {
-            Sobre dialog = new Sobre(this);
+            Sobre dialog = new Sobre();
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -3769,7 +3832,7 @@ namespace Priceio
         {
             Principal.Focus();
         }
-    
+
         private void EcribirErroresLog(string error)
         {
             DateTime dt = DateTime.Now;

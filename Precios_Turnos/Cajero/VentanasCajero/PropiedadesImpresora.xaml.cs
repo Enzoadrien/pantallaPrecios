@@ -64,6 +64,8 @@ namespace Priceio
             chkCursiva.IsChecked = config.AppSettings.Settings["CursivaLetraImpresora"].Value.Equals("true") ? true : false;
             cbxTamanoLogo.SelectedValue = config.AppSettings.Settings["TamanoLogoImpresora"].Value;
             imgLogo.Tag = config.AppSettings.Settings["LogoImpresora"].Value;
+            CoordenadaX.Text = config.AppSettings.Settings["CordenadaX"].Value;
+            CoordenadaY.Text = config.AppSettings.Settings["CordenadaY"].Value;
 
             BitmapImage image = new BitmapImage();
             image.BeginInit();
@@ -96,6 +98,8 @@ namespace Priceio
             config.AppSettings.Settings["CursivaLetraImpresora"].Value = chkCursiva.IsChecked == true ? "true" : "false";
             config.AppSettings.Settings["TamanoLogoImpresora"].Value = ((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["LogoImpresora"].Value = imgLogo.Tag.ToString();
+            config.AppSettings.Settings["CordenadaX"].Value = CoordenadaX.Text;
+            config.AppSettings.Settings["CordenadaY"].Value = CoordenadaY.Text;
 
 
             config.Save(ConfigurationSaveMode.Modified);
@@ -226,8 +230,13 @@ namespace Priceio
         }
         private void Document_PrintText(PrintPageEventArgs e, string inputString)
         {
+            if (CoordenadaX.Text.Length == 0)
+                CoordenadaX.Text = "0";
+            if (CoordenadaY.Text.Length == 0)
+                CoordenadaY.Text = "0";
+
             System.Drawing.Image img = System.Drawing.Image.FromFile(imgLogo.Source.ToString());
-            e.Graphics.DrawImage(img, 0, 0, int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()));
+            e.Graphics.DrawImage(img, float.Parse(CoordenadaX.Text), float.Parse(CoordenadaY.Text), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()));
 
             if (chkNegrita.IsChecked == true && chkCursiva.IsChecked == true)
                 e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
@@ -237,7 +246,29 @@ namespace Priceio
                 e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
             else
                 e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString())), System.Drawing.Brushes.Black, 0, 0);
+        }
 
+
+        private Boolean TextAllowed(String s)
+        {
+            foreach (Char c in s.ToCharArray())
+            {
+                if (Char.IsDigit(c)) continue;
+                else return false;
+            }
+            return true;
+        }
+
+        private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !TextAllowed(e.Text);
+        }
+
+        private void PastingHandler(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowed(s)) e.CancelCommand();
         }
     }
 

@@ -26,6 +26,7 @@ using System.Windows.Shapes;
 using Priceio.ClasesGenericas;
 using Priceio.Turnero;
 using Priceio.Turnero.Kretz;
+using static Priceio.Cajero.ChannelData;
 
 namespace Priceio
 {
@@ -41,7 +42,7 @@ namespace Priceio
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 
         private BackgroundWorker backgroundWorker = new BackgroundWorker();
-        
+
         public ConfigurarVentanaSplash(MainWindow pmainWindow)
         {
             InitializeComponent();
@@ -53,7 +54,7 @@ namespace Priceio
             backgroundWorker.ProgressChanged += ProgressChanged;
             backgroundWorker.DoWork += DoWork;
         }
-        
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -137,7 +138,7 @@ namespace Priceio
         private void CargarDatos()
         {
             Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            chkActivarSplash.IsChecked = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true")? true : false;
+            chkActivarSplash.IsChecked = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
             cbxTipoSplash.SelectedValue = config.AppSettings.Settings["TipoSplash"].Value;
             cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
             cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
@@ -147,18 +148,21 @@ namespace Priceio
             SSPNV22Spectral.Text = config.AppSettings.Settings["SSPNV22"].Value;
             cbxPuertoComSMARTHopper.SelectedValue = config.AppSettings.Settings["COMHopper"].Value;
             SSPSMARTHopper.Text = config.AppSettings.Settings["SSPHopper"].Value;
+            chkLogPago.IsChecked = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
             Durar.Text = config.AppSettings.Settings["Duracion"].Value;
             cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
             cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
             chkVoz.IsChecked = config.AppSettings.Settings["Voz"].Value.Equals("true") ? true : false;
             string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
-            if(clientes[0].Length > 0)
+            if (clientes[0].Length > 0)
                 foreach (string cliente in clientes)
                 {
                     cbxTurneros.Items.Add(cliente);
                 }
-            lblEncontrados.Content = "Encontrados: "+ cbxTurneros.Items.Count;
+            lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
             chkMostrarNombres.IsChecked = config.AppSettings.Settings["MostrarNombres"].Value.Equals("true") ? true : false;
+
+
         }
 
         private void GuardarDatos()
@@ -171,13 +175,14 @@ namespace Priceio
             config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
                 config.AppSettings.Settings["PuertoTCP"].Value = PuertoTCPCajero.Text;
-        
-             else
+
+            else
                 config.AppSettings.Settings["PuertoTCP"].Value = Puerto.Text;
             config.AppSettings.Settings["COMNV22"].Value = ((ComboBoxItem)cbxPuertoComNV22.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["SSPNV22"].Value = SSPNV22Spectral.Text;
             config.AppSettings.Settings["COMHopper"].Value = ((ComboBoxItem)cbxPuertoComSMARTHopper.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["SSPHopper"].Value = SSPSMARTHopper.Text;
+            config.AppSettings.Settings["LogPago"].Value = chkLogPago.IsChecked == true ? "true" : "false";
             config.AppSettings.Settings["Duracion"].Value = Durar.Text;
             config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
             config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
@@ -185,17 +190,17 @@ namespace Priceio
             string clientes = string.Empty;
             foreach (string cliente in cbxTurneros.Items)
             {
-                clientes += cliente+"|";
+                clientes += cliente + "|";
             }
-            if(((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S") && clientes.Length > 0)
-                config.AppSettings.Settings["Clientes"].Value = clientes.Substring(0, clientes.Length-1);
+            if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S") && clientes.Length > 0)
+                config.AppSettings.Settings["Clientes"].Value = clientes.Substring(0, clientes.Length - 1);
             else
                 config.AppSettings.Settings["Clientes"].Value = "";
 
             config.AppSettings.Settings["MostrarNombres"].Value = chkMostrarNombres.IsChecked == true ? "true" : "false";
 
             config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings"); 
+            ConfigurationManager.RefreshSection("appSettings");
 
         }
 
@@ -211,12 +216,12 @@ namespace Priceio
             {
                 try
                 {
-                        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + cbxAudio.SelectedItem.ToString());
-                        player.Play(); 
+                    System.Media.SoundPlayer player = new System.Media.SoundPlayer(@".\Recursos\audios\" + cbxAudio.SelectedItem.ToString());
+                    player.Play();
                 }
                 catch { }
             }
-            
+
         }
 
         private async void btnBuscar_Click(object sender, RoutedEventArgs e)
@@ -224,9 +229,9 @@ namespace Priceio
             if (IP.Text.Length > 0)
             {
                 string[] ipVal = IP.Text.Split('.');
-                if(ipVal.Length == 4)
+                if (ipVal.Length == 4)
                 {
-                    if (ipVal[0].Length>0 && ipVal[1].Length > 0 && ipVal[2].Length > 0 && ipVal[3].Length > 0)
+                    if (ipVal[0].Length > 0 && ipVal[1].Length > 0 && ipVal[2].Length > 0 && ipVal[3].Length > 0)
                     {
                         Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                         int puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
@@ -257,7 +262,7 @@ namespace Priceio
                                     countEncontrados++;
                                 }
                                 count++;
-                                    
+
                             }
                         }).ContinueWith(result => { Callback(lista); });
                     }
@@ -277,7 +282,7 @@ namespace Priceio
                     dialog.lblTexto.Text = "No es una dirección IP valida.";
                     dialog.ShowDialog();
                 }
-            }    
+            }
         }
 
         private void Callback(List<string> lista)
@@ -309,34 +314,35 @@ namespace Priceio
         {
             // This is called on the UI thread when ReportProgress method is called
             BarraP.Value = e.ProgressPercentage;
-            Progress.Text = e.ProgressPercentage+"/255"; 
-            lblEncontrados.Content = "Encontrados: "+countEncontrados;
+            Progress.Text = e.ProgressPercentage + "/255";
+            lblEncontrados.Content = "Encontrados: " + countEncontrados;
         }
 
         private void cbxTipo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
-                if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
-                {
-                    IP.IsEnabled = true;
-                    string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
-                    if (ip.Length == 4)
+                if ((ComboBoxItem)cbxTipo.SelectedItem != null)
+                    if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
                     {
-                        IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                        IP.IsEnabled = true;
+                        string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
+                        if (ip.Length == 4)
+                        {
+                            IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                        }
+                        btnBuscar.IsEnabled = true;
+                        cbxTurneros.IsEnabled = true;
+                        lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
                     }
-                    btnBuscar.IsEnabled = true;
-                    cbxTurneros.IsEnabled = true;
-                    lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
-                }
-                else
-                {
-                    IP.IsEnabled = false;
-                    IP.Text = "";
-                    btnBuscar.IsEnabled = false;
-                    cbxTurneros.IsEnabled = false;
-                    lblEncontrados.Content = "Encontrados: 0";
-                }
+                    else
+                    {
+                        IP.IsEnabled = false;
+                        IP.Text = "";
+                        btnBuscar.IsEnabled = false;
+                        cbxTurneros.IsEnabled = false;
+                        lblEncontrados.Content = "Encontrados: 0";
+                    }
             }
             catch { }
         }
@@ -414,10 +420,10 @@ namespace Priceio
 
                 dialog.ShowDialog();
             }
-                
+
         }
 
-        private void vozDemo() 
+        private void vozDemo()
         {
             string line = string.Empty;
             try
@@ -484,6 +490,55 @@ namespace Priceio
 
             dialog.ShowDialog();
         }
+
+        private void btnPayout_Click(object sender, RoutedEventArgs e)
+        {
+            GuardarDatos();
+            ConfigCanales dialog = new ConfigCanales(TipoSMART.PAYOUT);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
+        }
+
+        private void btnHopper_Click(object sender, RoutedEventArgs e)
+        {
+            GuardarDatos();
+            ConfigCanales dialog = new ConfigCanales(TipoSMART.HOPPER);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
+        }
+
+        private void btnRestablecer_Click(object sender, RoutedEventArgs e)
+        {
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            dialog.lblNombre.Content = "¡Advertencia!";
+            dialog.lblTexto.Text = "Se establecerá la configuración de fábrica, se perderá la configuración actual. ¿Está seguro que desea continuar?.";
+            dialog.btnCancelar.Visibility = Visibility.Visible;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            if (dialog.ShowDialog() == true)
+            {
+
+            }
+        }
+
+
     }
     public class ViewModelAudio
     {

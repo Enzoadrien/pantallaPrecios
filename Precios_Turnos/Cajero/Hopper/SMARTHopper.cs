@@ -17,11 +17,13 @@ namespace Priceio.Cajero.Hopper
         private string ComPort;
         private byte SSPAddress;
         private int pollTimer = 250;
-        private int reconnectionAttempts = 5;
+        private int reconnectionAttempts = 10;
         internal bool RunningHopper = false;
         internal string logPagoHopper = string.Empty;
         private Pago? pago;
-        DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer reconnectionTimer = new DispatcherTimer();
+        internal bool ConfigCargada = false;
 
         internal SMARTHopper()
         {
@@ -30,10 +32,12 @@ namespace Priceio.Cajero.Hopper
             ComPort = config.AppSettings.Settings["COMHopper"].Value;
             SSPAddress = byte.Parse(config.AppSettings.Settings["SSPHopper"].Value);
             timer.Interval = TimeSpan.FromMilliseconds(pollTimer);
-            timer.Tick += TimerTick;
+            timer.Tick += new EventHandler(TimerTick);
+            reconnectionTimer.Tick += new EventHandler(reconnectionTimer_Tick);
+            reconnectionTimer.Start();
         }
 
-        internal void RunHooper()
+        internal void RunHopper()
         {
             Hopper.CommandStructure.ComPort = ComPort;
             Hopper.CommandStructure.SSPAddress = SSPAddress;
@@ -47,39 +51,50 @@ namespace Priceio.Cajero.Hopper
                 logPagoHopper += "\r\nPoll Loop\r\n"
                 + "*********************************\r\n";
             }
-            Hopper.DisableCoinMech(logPagoHopper);
+            Hopper.DisableCoinMech(ref logPagoHopper);
             // This loop won't run until the hopper is connected
             while (RunningHopper)
             {
-                // poll the hopper
-                if (!Hopper.DoPoll(logPagoHopper, ref pago))
-                {
-                    // If the poll fails, try to reconnect
-                    logPagoHopper += "Attempting to reconnect...\r\n";
-                    if (ConnectToHopper(reconnectionAttempts, 3))
+                    // poll the hopper
+                    if (!Hopper.DoPoll(ref logPagoHopper, ref pago))
                     {
-                        // If it fails after 5 attempts, exit the loop
-                        //RunningHopper = false;
+                        // If the poll fails, try to reconnect
+                        logPagoHopper += "Attempting to reconnect...\r\n";
+                        if (!ConnectToHopper(reconnectionAttempts, 3))
+                        {
+                            // If it fails after 5 attempts, exit the loop
+                            break;
+                        }
+                        logPagoHopper += "Reconnected\r\n";
                     }
-                }
-                timer.Start();
+                    timer.Start();
 
-                while (timer.IsEnabled)
-                {
-                    Thread.Sleep(pollTimer); // Yield to free up CPU
-                }
+                    while (timer.IsEnabled)
+                    {
+                        Thread.Sleep(1); // Yield to free up CPU
+                    }
             }
             //close com port
             Hopper.SSPComms.CloseComPort();
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            if (RunningHopper)
             {
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Hopper y se ha desabilitado, consulte al administrador.";
-                new Recursos().ventanaMensajesGrande800x600(dialog);
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                dialog.ShowDialog();
-            }));
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Hopper y se ha desabilitado, consulte al administrador.";
+                    new Recursos().ventanaMensajesGrande800x600(dialog);
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
+                }));
+            }
+
+            RunningHopper = false;
+
+        }
+        internal void detenerHopper()
+        {
+            RunningHopper = false;
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -87,6 +102,10 @@ namespace Priceio.Cajero.Hopper
             timer.Stop();
         }
 
+        private void reconnectionTimer_Tick(object sender, EventArgs e)
+        {
+            reconnectionTimer.Stop();
+        }
         internal void actualizaPago(ref Pago pPago)
         {
             pago = pPago;
@@ -94,11 +113,12 @@ namespace Priceio.Cajero.Hopper
 
         private bool ConnectToHopper(int attempts, int interval)
         {
+            reconnectionTimer.Interval = TimeSpan.FromMilliseconds(interval * 1000);
 
             // run for number of attempts specified
             for (int i = 0; i < attempts; i++)
             {
-
+                reconnectionTimer.Start();
                 // close com port in case it was open
                 Hopper.SSPComms.CloseComPort();
 
@@ -106,14 +126,14 @@ namespace Priceio.Cajero.Hopper
                 Hopper.CommandStructure.EncryptionStatus = false;
 
                 // if the key negotiation is successful then set the rest up
-                if (Hopper.OpenComPort(logPagoHopper) && Hopper.NegotiateKeys(logPagoHopper) == true)
+                if (Hopper.OpenComPort(ref logPagoHopper) && Hopper.NegotiateKeys(ref logPagoHopper) == true)
                 {
                     Hopper.CommandStructure.EncryptionStatus = true; // now encrypting
                                                                      // find the max protocol version this hopper supports
                     byte maxPVersion = FindMaxProtocolVersionHopper();
                     if (maxPVersion >= 6)
                     {
-                        Hopper.SetProtocolVersion(maxPVersion, logPagoHopper);
+                        Hopper.SetProtocolVersion(maxPVersion, ref logPagoHopper);
                     }
                     else
                     {
@@ -121,9 +141,9 @@ namespace Priceio.Cajero.Hopper
                         return false;
                     }
                     // get info from the hopper and store useful vars
-                    Hopper.HopperSetupRequest(logPagoHopper);
+                    ConfigCargada = Hopper.HopperSetupRequest(ref logPagoHopper);
                     // Get serial number.
-                    Hopper.GetSerialNumber(logPagoHopper);
+                    Hopper.GetSerialNumber(ref logPagoHopper);
                     // check unit is valid type
                     if (!IsUnitValidHopper(Hopper.UnitType))
                     {
@@ -131,18 +151,22 @@ namespace Priceio.Cajero.Hopper
                         return false;
                     }
                     // inhibits, this sets which channels can receive coins
-                    Hopper.SetInhibits(logPagoHopper);
+                    Hopper.SetInhibits(ref logPagoHopper);
                     // enable, this allows the hopper to operate
-                    Hopper.EnableHopper(logPagoHopper);
+                    Hopper.EnableHopper(ref logPagoHopper);
 
                     //Hopper.SetHopperOptions(0x00, 0x01, 0x01, 0x01, textBox1); 
 
-                    Hopper.SetHopperOptions(0x01, 0x01, 0x01, 0x00, logPagoHopper);
+                    Hopper.SetHopperOptions(0x01, 0x01, 0x01, 0x00, ref logPagoHopper);
 
 
-                    Hopper.GetHopperOptions(logPagoHopper);
+                    Hopper.GetHopperOptions(ref logPagoHopper);
 
                     return true;
+                }
+                while (reconnectionTimer.IsEnabled)
+                {
+                    Thread.Sleep(1); // Yield to free up CPU
                 }
             }
             return false;
@@ -155,7 +179,7 @@ namespace Priceio.Cajero.Hopper
             byte b = 0x06;
             while (true)
             {
-                if (!Hopper.SetProtocolVersion(b) || b > 20)
+                if (!Hopper.SetProtocolVersion(b, ref logPagoHopper) || b > 20)
                     return 0x06; // return default
                 // If it fails then it can't be set so fall back to previous iteration and return it
                 if (Hopper.CommandStructure.ResponseData[0] == CCommands.SSP_RESPONSE_FAIL)
@@ -204,7 +228,7 @@ namespace Priceio.Cajero.Hopper
             }
 
             // Pay it out
-            return Hopper.PayoutAmount(payoutAmount, currency, logPagoHopper);
+            return Hopper.PayoutAmount(payoutAmount, currency, ref logPagoHopper);
         }
     }
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio"
         mc:Ignorable="d"
-        Title="Propiedades" Height="460" Width="270" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Title="Propiedades" Height="520" Width="270" WindowStyle="None" Opacity="1" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Window.DataContext>
       <local:ViewModelImpresoras/> 
     </Window.DataContext>
@@ -19,6 +19,8 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -178,13 +180,18 @@ FontSize="14" Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="3">
             <ComboBoxItem Content="130 px" Tag="130"/>
             <ComboBoxItem Content="140 px" Tag="140"/>
             <ComboBoxItem Content="150 px" Tag="150"/>
-        </ComboBox>   
-            <Grid Grid.Row="9" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="3" Background="White" Width="150" Height="150">
+        </ComboBox>
+        <Label x:Name="lblCoordenadas" Content="Coordenadas" Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblCoordenadaX" Content="X:" Grid.Row="10"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaX" Grid.Row="10" Text="" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler"/>
+        <Label x:Name="lblCoordenadaY" Content="Y:" Grid.Row="10" Grid.Column="2"  FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right"/>
+        <TextBox x:Name="CoordenadaY" Grid.Row="10" Text="" Grid.Column="3"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler"/>
+        <Grid Grid.Row="11" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="3" Background="White" Width="150" Height="150">
             <Border x:Name="TamanoImg" BorderThickness="1" Grid.Column="3" Grid.ColumnSpan="2" Grid.RowSpan="2" Grid.Row="7" BorderBrush="Black" Background="White" Width="70" Height="70" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image x:Name="imgLogo"/>
             </Border>
         </Grid>
-        <StackPanel Grid.Row="15"
+        <StackPanel Grid.Row="17"
         HorizontalAlignment="Left"
         Orientation="Horizontal"
         Margin="5,5,0,5" Grid.ColumnSpan="3" >
@@ -219,7 +226,7 @@ FontSize="14" Grid.Row="7" Grid.Column="2" Grid.ColumnSpan="3">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="15"
+        <StackPanel Grid.Row="17"
         HorizontalAlignment="Right"
         Orientation="Horizontal"
         Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2" >

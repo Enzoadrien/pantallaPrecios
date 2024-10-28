@@ -154,19 +154,19 @@ namespace Priceio.Cajero
             switch (pvStateObject.GetEstadoActual())
             {
                 case EstadoCajero.ERROR:
-                    respuesta = "ERROR|0|" + pvStateObject.GetError();
+                    respuesta = "ERROR|"+ pvStateObject.GetPago().CantidadIngresada + "|0|" + pvStateObject.GetError()+"|";
                     break;
                 case EstadoCajero.CANCELADO:
-                    respuesta = "CANCEL|0|";
+                    respuesta = "CANCEL|"+ pvStateObject.GetPago().CantidadIngresada + "|" + pvStateObject.GetPago().Cambio +"|";
                     break;
                 case EstadoCajero.OK:
-                    respuesta = "OK|" + pvStateObject.GetPago().CantidadIngresada + "|" + pvStateObject.GetPago().Cambio;
+                    respuesta = "OK|" + pvStateObject.GetPago().CantidadIngresada + "|" + pvStateObject.GetPago().Cambio+"|";
                     break;
                 case EstadoCajero.SIN_EFECTIVO:
-                    respuesta = "SIN_EFECTIVO|0|";
+                    respuesta = "SIN_EFECTIVO|0|0|0|";
                     break;
                 default:
-                    respuesta = "ERROR|0|NO SE COMPRETO EL PAGO";
+                    respuesta = "ERROR|0|0|NO SE COMPRETO EL PAGO|";
                     break;
             }
             return respuesta;

@@ -118,25 +118,25 @@ namespace Priceio.Cajero.Hopper
         // Command functions
 
         // This function send the SYNC command to the hopper. It returns true if it receives an OK response.
-        public bool SendSync(string log = null)
+        public bool SendSync(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SYNC;
             m_cmd.CommandDataLength = 1;
-            if (!SendCommand(log)) return false;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return false;
+            if (CheckGenericResponses(ref log))
                 return true;
             return false;
         }
 
         // The enable command allows the hopper to receive and act on commands.
-        public void EnableHopper(string log = null)
+        public void EnableHopper(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_ENABLE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
             // check response
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "SMART Hopper enabled\r\n";
@@ -144,7 +144,7 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function sends the Set Hopper Options command to the hopper.  
-        public void SetHopperOptions(byte payMode, byte levelCheck, byte motorSpeed, byte cashboxPayActive, string log = null)
+        public void SetHopperOptions(byte payMode, byte levelCheck, byte motorSpeed, byte cashboxPayActive, ref string log)
         {
             byte OptionData = 0x00;
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_HOPPER_OPTIONS;
@@ -160,9 +160,9 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[2] = 0x00;
             m_cmd.CommandDataLength = 3;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
             // check response
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "\r\nSMART Hopper options set\r\n";
@@ -171,12 +171,12 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This funtion sends the Get Hopper Options command and displays the results.
-        public void GetHopperOptions(string log = null)
+        public void GetHopperOptions(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_HOPPER_OPTIONS;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
             // Options carried as single bits, so decode.
             log += "Hopper Options\r\n";
@@ -217,13 +217,13 @@ namespace Priceio.Cajero.Hopper
 
         // Empty device moves all the coins in the device to the cashbox using command EMPTY ALL. It then
         // sets the channel levels to 0.
-        public void EmptyDevice(string log = null)
+        public void EmptyDevice(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_EMPTY_ALL;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 log += "Emptying all stored coins to cashbox...\r\n";
                 foreach (ChannelData d in m_UnitDataList)
@@ -232,7 +232,7 @@ namespace Priceio.Cajero.Hopper
         }
 
         // Set a channel to route to cashbox, this sends the SET ROUTING command.
-        public void RouteChannelToCashbox(int channelNumber, string log = null)
+        public void RouteChannelToCashbox(int channelNumber, ref string log)
         {
             // setup command
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_DENOMINATION_ROUTE;
@@ -262,9 +262,9 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandDataLength = 9;
 
             // send command
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 // update list
                 foreach (ChannelData d in m_UnitDataList)
@@ -281,7 +281,7 @@ namespace Priceio.Cajero.Hopper
             }
         }
         // Set a channel to route to storage, this sends the SET ROUTING command.
-        public void RouteChannelToStorage(int channelNumber, string log = null)
+        public void RouteChannelToStorage(int channelNumber, ref string log)
         {
             // setup command
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_DENOMINATION_ROUTE;
@@ -311,9 +311,9 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandDataLength = 9;
 
             // send command
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 // update list
                 foreach (ChannelData d in m_UnitDataList)
@@ -331,31 +331,31 @@ namespace Priceio.Cajero.Hopper
         }
 
         // Disable command stops the unit accepting commands and acting on them.
-        public void DisableHopper(string log = null)
+        public void DisableHopper(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_DISABLE;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return;
             // check response
-            if (CheckGenericResponses(log) && log != null)
+            if (CheckGenericResponses(ref log) && log != null)
                 log += "SMART Hopper disabled\r\n";
         }
 
         // The reset command instructs the hopper to restart (same effect as switching on and off)
-        public void Reset(string log = null)
+        public void Reset(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_RESET;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            CheckGenericResponses(log);
+            if (!SendCommand(ref log)) return;
+            CheckGenericResponses(ref log);
         }
 
         // This uses the PAYOUT AMOUNT command to payout a value specified by the param amountToPayout.
         // Protocol 6+ - We can use an option byte to test whether the payout is possible (0x19), and if
         // it is then we can resend with the option byte 0x58 to do the payout.
-        public bool PayoutAmount(int amountToPayout, char[] currency, string log = null)
+        public bool PayoutAmount(int amountToPayout, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_PAYOUT_AMOUNT;
 
@@ -375,9 +375,9 @@ namespace Priceio.Cajero.Hopper
 
             m_cmd.CommandDataLength = 9;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
                 return true;
             return false;
         }
@@ -386,7 +386,7 @@ namespace Priceio.Cajero.Hopper
         // coins. Due to the variable length of the data that could be passed to the function, the user 
         // passes an array containing the data to payout and the length of that array along with the number
         // of denominations they are paying out.
-        public void PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, string log = null)
+        public void PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, ref string log)
         {
             // First is the command byte
             m_cmd.CommandData[0] = CCommands.SSP_CMD_PAYOUT_BY_DENOMINATION;
@@ -406,8 +406,8 @@ namespace Priceio.Cajero.Hopper
             dataLength += 3;
             m_cmd.CommandDataLength = dataLength;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "Paying out by denomination...\r\n";
@@ -415,14 +415,14 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function uses the COIN MECH GLOBAL INHIBIT command to disable the coin mech.
-        public bool DisableCoinMech(string log = null)
+        public bool DisableCoinMech(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_COIN_MECH_GLOBAL_INHIBIT;
             m_cmd.CommandData[1] = 0x00; // 0 for disable
             m_cmd.CommandDataLength = 2;
 
-            if (!SendCommand(log)) return false;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return false;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 log += "Disabled coin mech\r\n";
                 m_CoinMechEnabled = false;
@@ -432,14 +432,14 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function uses the COIN MECH GLOBAL INHIBIT command to enable the coin mech.
-        public bool EnableCoinMech(string log = null)
+        public bool EnableCoinMech(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_COIN_MECH_GLOBAL_INHIBIT;
             m_cmd.CommandData[1] = 0x01; // 1 for enable
             m_cmd.CommandDataLength = 2;
 
-            if (!SendCommand(log)) return false;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return false;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 m_CoinMechEnabled = true;
                 log += "Enabled coin mech\r\n";
@@ -451,20 +451,20 @@ namespace Priceio.Cajero.Hopper
         // This function uses the command SMARTY EMPTY which empties all the coins to the cashbox but keeps a 
         // count of what was put in, the data of what coins were emptied can be accessed with the command
         // CASHBOX PAYOUT OPERATION DATA
-        public void SmartEmpty(string log = null)
+        public void SmartEmpty(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SMART_EMPTY;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null) log += "SMART empyting...\r\n";
             }
         }
 
         // This uses the SET COIN AMOUNT command to increase a channel level by passing over the channel and the amount to increment by
-        public void SetCoinLevelsByChannel(int channel, short amount, string log = null)
+        public void SetCoinLevelsByChannel(int channel, short amount, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_DENOMINATION_LEVEL;
             // Level to set
@@ -493,8 +493,8 @@ namespace Priceio.Cajero.Hopper
 
             m_cmd.CommandDataLength = 10;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 // Update the level
                 foreach (ChannelData d in m_UnitDataList)
@@ -516,7 +516,7 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This uses the SET COIN AMOUNT command to increase a channel level by passing over the coin value and the amount to increment by
-        public void SetCoinLevelsByCoin(int coin, char[] currency, short amount, string log = null)
+        public void SetCoinLevelsByCoin(int coin, char[] currency, short amount, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SET_DENOMINATION_LEVEL;
             byte[] b = CHelpers.ConvertInt16ToBytes(amount);
@@ -532,8 +532,8 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[9] = (byte)currency[2];
             m_cmd.CommandDataLength = 10;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 // Update the level
                 foreach (ChannelData d in m_UnitDataList)
@@ -553,11 +553,11 @@ namespace Priceio.Cajero.Hopper
 
 
         // Calls SetCoinLevelByChannel on all of the active channels.
-        public void SetAllCoinLevels(short amount, string log = null)
+        public void SetAllCoinLevels(short amount, ref string log)
         {
             foreach (ChannelData d in m_UnitDataList)
             {
-                SetCoinLevelsByChannel(d.Channel, amount, log);
+                SetCoinLevelsByChannel(d.Channel, amount, ref log);
             }
         }
 
@@ -565,7 +565,7 @@ namespace Priceio.Cajero.Hopper
         // This uses the GET DENOMINATION LEVEL command to query the hoopper on a specified coin it has stored, it returns
         // the level as an int.
 
-        public short CheckCoinLevel(int coinValue, char[] currency, string log = null)
+        public short CheckCoinLevel(int coinValue, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_DENOMINATION_LEVEL;
             byte[] b = CHelpers.ConvertInt32ToBytes(coinValue);
@@ -578,8 +578,8 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[7] = (byte)currency[2];
             m_cmd.CommandDataLength = 8;
 
-            if (!SendCommand(log)) return -1;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return -1;
+            if (CheckGenericResponses(ref log))
             {
                 return CHelpers.ConvertBytesToInt16Short(m_cmd.ResponseData, 1);
             }
@@ -587,18 +587,18 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function just updates all the coin levels in the list
-        public void UpdateData(string log = null)
+        public void UpdateData(ref string log)
         {
             foreach (ChannelData d in m_UnitDataList)
             {
-                d.Level = CheckCoinLevel(d.Value, d.Currency, log);
-                IsCoinRecycling(d.Value, d.Currency, ref d.Recycling);
+                d.Level = CheckCoinLevel(d.Value, d.Currency, ref log);
+                IsCoinRecycling(d.Value, d.Currency, ref d.Recycling, ref log);
             }
         }
 
         // This function uses the GET ROUTING command to see if a specified coin is recycling. The
         // caller passes a bool across which is set by the function.
-        public void IsCoinRecycling(int coinValue, char[] currency, ref bool response, string log = null)
+        public void IsCoinRecycling(int coinValue, char[] currency, ref bool response, ref string log)
         {
             // First determine if the coin is currently being recycled
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_DENOMINATION_ROUTE;
@@ -614,8 +614,8 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[7] = (byte)currency[2];
             m_cmd.CommandDataLength = 8;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log))
             {
                 // True if it is currently being recycled
                 if (m_cmd.ResponseData[1] == 0x00)
@@ -636,7 +636,7 @@ namespace Priceio.Cajero.Hopper
 
         // This function returns a member of the internal array to check whether a channel is
         // recycling, this can't be called before setup request or it will be inaccurate.
-        public bool IsChannelRecycling(int channel, string log = null)
+        public bool IsChannelRecycling(int channel, ref string log)
         {
             if (channel > 0 && channel <= m_NumberOfChannels)
             {
@@ -654,17 +654,17 @@ namespace Priceio.Cajero.Hopper
 
         // This function gets the CASHBOX PAYOUT OPERATION DATA from the hopper and returns it as a string.
         // It can be called after SMARTevents such as SMART empty.
-        public string GetCashboxPayoutOpData(string log = null)
+        public string GetCashboxPayoutOpData(ref string log)
         {
             StringBuilder sbDisplay = new StringBuilder(100);
             // first send the command
             m_cmd.CommandData[0] = CCommands.SSP_CMD_CASHBOX_PAYOUT_OPERATION_DATA;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return "";
+            if (!SendCommand(ref log)) return "";
 
             // now deal with the response data
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 // number of different coins
                 int numberOfDenominations = m_cmd.ResponseData[1];
@@ -702,7 +702,7 @@ namespace Priceio.Cajero.Hopper
         // This function uses the FLOAT AMOUNT command to set the float amount. The Hopper will empty
         // coins into the cashbox leaving the requested floating amount in the payout. The minimum payout
         // is also setup so the hopper will leave itself the ability to payout the minimum value requested.
-        public bool SetFloat(short minPayout, int floatAmount, char[] currency, string log = null)
+        public bool SetFloat(short minPayout, int floatAmount, char[] currency, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_FLOAT_AMOUNT;
 
@@ -727,9 +727,9 @@ namespace Priceio.Cajero.Hopper
 
             m_cmd.CommandDataLength = 11;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
 
-            if (CheckGenericResponses(log))
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "Set float successfully\r\n";
@@ -739,14 +739,14 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function sets the protocol version using the command HOST PROTOCOL VERSION.
-        public bool SetProtocolVersion(byte b, string log = null)
+        public bool SetProtocolVersion(byte b, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_HOST_PROTOCOL_VERSION;
             m_cmd.CommandData[1] = b;
             m_cmd.CommandDataLength = 2;
 
-            if (!SendCommand(log)) return false;
-            if (CheckGenericResponses(log))
+            if (!SendCommand(ref log)) return false;
+            if (CheckGenericResponses(ref log))
             {
                 if (log != null) log += "Setting protocol version " + b.ToString() + "\r\n";
             }
@@ -754,7 +754,7 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function opens the com port identified in the command structure, using the SSP library.
-        public bool OpenComPort(string log = null)
+        public bool OpenComPort(ref string log)
         {
             // open com port
             if (log != null) log += "Opening com port\r\n";
@@ -766,7 +766,7 @@ namespace Priceio.Cajero.Hopper
         }
 
         // This function performs a number of commands in order to setup the encryption between the host and the hopper.
-        public bool NegotiateKeys(string log = null)
+        public bool NegotiateKeys(ref string log)
         {
             // make sure encryption is off
             m_cmd.EncryptionStatus = false;
@@ -776,7 +776,7 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SYNC;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success";
 
             m_eSSP.InitiateSSPHostKeys(keys, m_cmd);
@@ -789,7 +789,7 @@ namespace Priceio.Cajero.Hopper
             // Convert generator to bytes and add to command data.
             BitConverter.GetBytes(keys.Generator).CopyTo(m_cmd.CommandData, 1);
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // send modulus
@@ -800,7 +800,7 @@ namespace Priceio.Cajero.Hopper
             // Convert modulus to bytes and add to command data.
             BitConverter.GetBytes(keys.Modulus).CopyTo(m_cmd.CommandData, 1);
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // send key exchange
@@ -812,7 +812,7 @@ namespace Priceio.Cajero.Hopper
             BitConverter.GetBytes(keys.HostInter).CopyTo(m_cmd.CommandData, 1);
 
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
             if (log != null) log += "Success\r\n";
 
             // Read slave intermediate key.
@@ -831,7 +831,7 @@ namespace Priceio.Cajero.Hopper
 
         // This function uses the setup request command to get all the information about the hopper. It can optionally
         // output to a specified textbox.
-        public void HopperSetupRequest(string log = null)
+        public bool HopperSetupRequest(ref string log)
         {
             StringBuilder sbDisplay = new StringBuilder(1000);
 
@@ -839,7 +839,7 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[0] = CCommands.SSP_CMD_SETUP_REQUEST;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
+            if (!SendCommand(ref log)) return false;
 
             // display setup request
 
@@ -909,9 +909,9 @@ namespace Priceio.Cajero.Hopper
                 loopChannelData.Currency[2] = (char)m_cmd.ResponseData[index + 2 + 2 * m_NumberOfChannels + i * 3];
 
                 // Channel level.
-                loopChannelData.Level = CheckCoinLevel(loopChannelData.Value, loopChannelData.Currency);
+                loopChannelData.Level = CheckCoinLevel(loopChannelData.Value, loopChannelData.Currency, ref log);
 
-                IsCoinRecycling(loopChannelData.Value, loopChannelData.Currency, ref loopChannelData.Recycling);
+                IsCoinRecycling(loopChannelData.Value, loopChannelData.Currency, ref loopChannelData.Recycling, ref log);
 
                 // Add data to list.
                 m_UnitDataList.Add(loopChannelData);
@@ -934,21 +934,22 @@ namespace Priceio.Cajero.Hopper
 
             if (log != null)
                 log += sbDisplay.ToString();
+            return true;
         }
 
         // This function clears the inhibit on all channels.
-        public void SetInhibits(string log = null)
+        public void SetInhibits(ref string log)
         {
             for (int i = 1; i <= m_NumberOfChannels; i++)
             {
-                SetChannelInhibit(i, false, log);
+                SetChannelInhibit(i, false, ref log);
             }
         }
 
         // This function sends the set coin mech inhibits command to set whether a coin is accepted into the Hopper.
         // Please note: The response data of this command if it is sent with no coin mech attached will be
         // WRONG PARAMETERS.
-        public void SetChannelInhibit(int channel, bool inhibit, string log = null)
+        public void SetChannelInhibit(int channel, bool inhibit, ref string log)
         {
             // set or clears inhibit on channel
 
@@ -978,8 +979,8 @@ namespace Priceio.Cajero.Hopper
             }
             m_cmd.CommandDataLength = 7;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 if (inhibit)
                 {
@@ -997,15 +998,15 @@ namespace Priceio.Cajero.Hopper
         // 0x00 = NV200
         // 0x01 = SMART Payout
         // 0x02 = Tamper Evident Cash Box.
-        public void GetSerialNumber(byte Device, string log = null)
+        public void GetSerialNumber(byte Device, ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_SERIAL_NUMBER;
             m_cmd.CommandData[1] = Device;
             m_cmd.CommandDataLength = 2;
 
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 // Response data is big endian, so reverse bytes 1 to 4.
                 Array.Reverse(m_cmd.ResponseData, 1, 4);
@@ -1015,13 +1016,13 @@ namespace Priceio.Cajero.Hopper
             }
         }
 
-        public void GetSerialNumber(string log = null)
+        public void GetSerialNumber(ref string log)
         {
             m_cmd.CommandData[0] = CCommands.SSP_CMD_GET_SERIAL_NUMBER;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return;
-            if (CheckGenericResponses(log) && log != null)
+            if (!SendCommand(ref log)) return;
+            if (CheckGenericResponses(ref log) && log != null)
             {
                 // Response data is big endian, so reverse bytes 1 to 4.
                 Array.Reverse(m_cmd.ResponseData, 1, 4);
@@ -1034,7 +1035,7 @@ namespace Priceio.Cajero.Hopper
 
         // This function is called repeatedly to poll the hopper about what events are happening. It
         // can optionally output these events to a textbox.
-        public bool DoPoll(string log, ref Pago? pago)
+        public bool DoPoll(ref string log, ref Pago? pago)
         {
             byte i;
 
@@ -1042,7 +1043,7 @@ namespace Priceio.Cajero.Hopper
             m_cmd.CommandData[0] = CCommands.SSP_CMD_POLL;
             m_cmd.CommandDataLength = 1;
 
-            if (!SendCommand(log)) return false;
+            if (!SendCommand(ref log)) return false;
 
             // if FA is received it indicates the unit briefly lost power and the key so return false
             // for a full reconnection
@@ -1064,7 +1065,7 @@ namespace Priceio.Cajero.Hopper
                     // This response indicates that the unit was reset and this is the first time a poll
                     // has been called since the reset.
                     case CCommands.SSP_POLL_SLAVE_RESET:
-                        UpdateData();
+                        UpdateData(ref log);
                         break;
                     // This response is given when the unit is disabled.
                     case CCommands.SSP_POLL_DISABLED:
@@ -1094,8 +1095,8 @@ namespace Priceio.Cajero.Hopper
                             log += CHelpers.FormatToCurrency(coin) + " " + currency + " coin(s) dispensed\r\n";
                         }
 
-                        UpdateData();
-                        EnableHopper();
+                        UpdateData(ref log);
+                        EnableHopper(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // The coins being recycled inside the unit are running low.
@@ -1122,8 +1123,8 @@ namespace Priceio.Cajero.Hopper
                         break;
                     // The float operation has completed.
                     case CCommands.SSP_POLL_FLOATED:
-                        UpdateData();
-                        EnableHopper();
+                        UpdateData(ref log);
+                        EnableHopper(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // This poll appears when the SMART Hopper has been searching for a coin but cannot find it within
@@ -1158,7 +1159,7 @@ namespace Priceio.Cajero.Hopper
                         currency += (char)response[i + 6];
                         currency += (char)response[i + 7];
                         log += CHelpers.FormatToCurrency(coin) + " " + currency + " credited\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         actualizaPago(coin / 100, ref pago);
                         i += 7;
                         break;
@@ -1177,8 +1178,8 @@ namespace Priceio.Cajero.Hopper
                     // The unit has finished dumping coins to the cashbox.
                     case CCommands.SSP_POLL_EMPTIED:
                         log += "Emptied\r\n";
-                        UpdateData();
-                        EnableHopper();
+                        UpdateData(ref log);
+                        EnableHopper(ref log);
                         break;
                     // A fraud attempt has been detected.
                     case CCommands.SSP_POLL_FRAUD_ATTEMPT:
@@ -1194,9 +1195,9 @@ namespace Priceio.Cajero.Hopper
                     // The unit has finished SMART emptying. The info on what has been dumped can be obtained
                     // by sending the CASHBOX PAYOUT OPERATION DATA command.
                     case CCommands.SSP_POLL_SMART_EMPTIED:
-                        GetCashboxPayoutOpData(log);
-                        UpdateData();
-                        EnableHopper();
+                        GetCashboxPayoutOpData(ref log);
+                        UpdateData(ref log);
+                        EnableHopper(ref log);
                         log += "SMART emptied\r\n";
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
@@ -1216,7 +1217,7 @@ namespace Priceio.Cajero.Hopper
         // Non-Command functions 
 
         // This is used to send a command via SSP to the hopper
-        public bool SendCommand(string log)
+        public bool SendCommand(ref string log)
         {
             // attempt to send the command
             if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
@@ -1286,7 +1287,7 @@ namespace Priceio.Cajero.Hopper
 
         // This is used for generic response error catching, it outputs the info in a
         // meaningful way.
-        public bool CheckGenericResponses(string log = null)
+        public bool CheckGenericResponses(ref string log)
         {
             if (m_cmd.ResponseData[0] == CCommands.SSP_RESPONSE_OK)
                 return true;
@@ -1337,16 +1338,22 @@ namespace Priceio.Cajero.Hopper
 
         private void actualizaPago(int ingresado, ref Pago pago)
         {
-            pago.CantidadMonedasIngresadas += ingresado;
-            pago.CantidadIngresada += ingresado;
-            pago.CantidadFaltante -= ingresado;
-            if (pago.CantidadIngresada >= pago.CantidadTotal)
+            if(pago != null)
             {
-                pago.CantidadFaltante = 0;
-                pago.Cambio = pago.CantidadIngresada - Convert.ToInt32(pago.CantidadTotal);
-                pago.Pagado = true;
+                try
+                {
+                    pago.CantidadMonedasIngresadas += ingresado;
+                    pago.CantidadIngresada += ingresado;
+                    pago.CantidadFaltante -= ingresado;
+                    if (pago.CantidadIngresada >= pago.CantidadTotal)
+                    {
+                        pago.CantidadFaltante = 0;
+                        pago.Cambio = pago.CantidadIngresada - Convert.ToInt32(pago.CantidadTotal);
+                        pago.Pagado = true;
+                    }
+                }
+                catch { }
             }
-
         }
     }
 }

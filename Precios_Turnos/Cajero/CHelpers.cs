@@ -13,6 +13,10 @@ namespace Priceio.Cajero
         public char[] Currency;
         public int Level;
         public bool Recycling;
+        public enum TipoSMART
+        {
+            PAYOUT, HOPPER
+        }
         public ChannelData()
         {
             Value = 0;
@@ -24,6 +28,8 @@ namespace Priceio.Cajero
     };
     internal class CHelpers
     {
+
+        public static string moneda = "MXN";
         // Helper function to convert 4 bytes to an int 32 from a specified array and index.
         static public int ConvertBytesToInt32(byte[] b, int index)
         {

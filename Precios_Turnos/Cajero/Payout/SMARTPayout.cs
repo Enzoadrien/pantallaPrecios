@@ -18,11 +18,13 @@ namespace Priceio.Cajero.Payout
         private string ComPort;
         private byte SSPAddress;
         internal bool RunningPayout = false;
-        private int pollTimer = 250; // timer in ms
+        private int pollTimer = 100; // timer in ms
         private int reconnectionAttempts = 5;
         internal string logPagoPayout = string.Empty;
         private Pago? pago;
-        DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer reconnectionTimer = new DispatcherTimer();
+        internal bool ConfigCargada = false;
 
         internal SMARTPayout()
         {
@@ -31,7 +33,9 @@ namespace Priceio.Cajero.Payout
             ComPort = config.AppSettings.Settings["COMNV22"].Value;
             SSPAddress = byte.Parse(config.AppSettings.Settings["SSPNV22"].Value);
             timer.Interval = TimeSpan.FromMilliseconds(pollTimer);
-            timer.Tick += TimerTick;
+            timer.Tick += new EventHandler(TimerTick);
+            reconnectionTimer.Tick += new EventHandler(reconnectionTimer_Tick);
+            reconnectionTimer.Start();
         }
 
         internal void RunPayout()
@@ -44,43 +48,39 @@ namespace Priceio.Cajero.Payout
             {
                 RunningPayout = true;
                 logPagoPayout += "\r\nPoll Loop\r\n*********************************\r\n";
-                Payout.ConfigureBezel(0x00, 0x00, 0xFF, logPagoPayout);
+                Payout.ConfigureBezel(0x00, 0x00, 0xFF, ref logPagoPayout);
             }
-            Payout.DisableValidator(logPagoPayout);
+            Payout.DisableValidator(ref logPagoPayout);
             while (RunningPayout)
             {
-
-                // if the poll fails, try to reconnect
-                if (Payout.DoPoll(logPagoPayout, ref pago) == false)
-                {
-                    logPagoPayout += "Poll failed, attempting to reconnect...\r\n";
+                    // if the poll fails, try to reconnect
+                    if (!Payout.DoPoll(ref logPagoPayout, ref pago))
+                    {
+                        logPagoPayout += "Poll failed, attempting to reconnect...\r\n";
                     while (true)
                     {
                         Payout.SSPComms.CloseComPort(); // close com port
 
                         // attempt reconnect, pass over number of reconnection attempts
                         if (ConnectToValidator(reconnectionAttempts, 2))
-                        {
-                            //break; // if connection successful, break out and carry on
-                            // if not successful, stop the execution of the poll loop
-                        }
+                            break; // if connection successful, break out and carry on
+                        // if not successful, stop the execution of the poll loop
                         Payout.SSPComms.CloseComPort(); // close com port before return
                         return;
                     }
-                    logPagoPayout += "Reconnected\r\n";
-                }
-                timer.Start();
+                        logPagoPayout += "Reconnected\r\n";
+                    }
+                    timer.Start();
 
-                while (timer.IsEnabled)
-                {
-                    Thread.Sleep(1); // Yield to free up CPU
-                }
+                    while (timer.IsEnabled)
+                    {
+                        Thread.Sleep(1); // Yield to free up CPU
+                    }
             }
-
             Payout.SSPComms.CloseComPort();
-
-            Application.Current.Dispatcher.Invoke(new Action(() =>
+            if (RunningPayout)
             {
+                Application.Current.Dispatcher.Invoke(new Action(() =>{
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
                 dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Payout y se ha desabilitado, consulte al administrador.";
@@ -88,6 +88,8 @@ namespace Priceio.Cajero.Payout
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 dialog.ShowDialog();
             }));
+            }
+            RunningPayout = false;
         }
 
         private void TimerTick(object sender, EventArgs e)
@@ -95,6 +97,16 @@ namespace Priceio.Cajero.Payout
             timer.Stop();
         }
 
+        private void reconnectionTimer_Tick(object sender, EventArgs e)
+        {
+            reconnectionTimer.Stop();
+        }
+        
+        internal void detenerPayout()
+        {
+            RunningPayout = false;
+        }
+        
         internal void actualizaPago(ref Pago pPago)
         {
             pago = pPago;
@@ -102,6 +114,7 @@ namespace Priceio.Cajero.Payout
 
         private bool ConnectToValidator(int attempts, int interval)
         {
+            reconnectionTimer.Interval = TimeSpan.FromMilliseconds(interval * 1000);
             // run for number of attempts specified
             for (int i = 0; i < attempts; i++)
             {
@@ -112,14 +125,14 @@ namespace Priceio.Cajero.Payout
                 Payout.CommandStructure.EncryptionStatus = false;
 
                 // if the key negotiation is successful then set the rest up
-                if (Payout.OpenComPort(logPagoPayout) && Payout.NegotiateKeys(logPagoPayout))
+                if (Payout.OpenComPort(ref logPagoPayout) && Payout.NegotiateKeys(ref logPagoPayout))
                 {
                     Payout.CommandStructure.EncryptionStatus = true; // now encrypting
                     // find the max protocol version this validator supports
                     byte maxPVersion = FindMaxProtocolVersionPayout();
                     if (maxPVersion >= 6)
                     {
-                        Payout.SetProtocolVersion(maxPVersion, logPagoPayout);
+                        Payout.SetProtocolVersion(maxPVersion, ref logPagoPayout);
                     }
                     else
                     {
@@ -127,7 +140,7 @@ namespace Priceio.Cajero.Payout
                         return false;
                     }
                     // get info from the validator and store useful vars
-                    Payout.PayoutSetupRequest(logPagoPayout);
+                    ConfigCargada = Payout.PayoutSetupRequest(ref logPagoPayout);
                     // check this unit is supported
                     if (!IsUnitValidPayout(Payout.UnitType))
                     {
@@ -135,14 +148,20 @@ namespace Priceio.Cajero.Payout
                         return false;
                     }
                     // inhibits, this sets which channels can receive notes
-                    Payout.SetInhibits(logPagoPayout);
+                    Payout.SetInhibits(ref logPagoPayout);
                     // Get serial number
-                    Payout.GetSerialNumber(logPagoPayout);
+                    Payout.GetSerialNumber(ref logPagoPayout);
                     // enable, this allows the validator to operate
-                    Payout.EnableValidator(logPagoPayout);
+                    Payout.EnableValidator(ref logPagoPayout);
                     // enable the payout system on the validator
-                    Payout.EnablePayout(logPagoPayout);
+                    Payout.EnablePayout(ref logPagoPayout);
                     return true;
+                }
+
+                reconnectionTimer.Start();
+                while (reconnectionTimer.IsEnabled)
+                {
+                    Thread.Sleep(1); // Yield to free up CPU
                 }
             }
             return false;
@@ -155,7 +174,7 @@ namespace Priceio.Cajero.Payout
             byte b = 0x06;
             while (true)
             {
-                Payout.SetProtocolVersion(b);
+                Payout.SetProtocolVersion(b, ref logPagoPayout);
                 if (Payout.CommandStructure.ResponseData[0] == CCommands.SSP_RESPONSE_FAIL)
                     return --b;
                 b++;
@@ -189,7 +208,7 @@ namespace Priceio.Cajero.Payout
                 return false;
             }
             // Make payout
-            return Payout.PayoutAmount(n, currency, logPagoPayout);
+            return Payout.PayoutAmount(n, currency, ref logPagoPayout);
         }
     }
 }

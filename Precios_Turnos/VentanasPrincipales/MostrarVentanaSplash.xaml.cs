@@ -52,10 +52,12 @@ namespace Priceio
         private double anchoAnt = 0;
         private double altoAnt = 0;
         private Pago? pago;
-
+        private int pollTimer = 250;
         private SMARTPayout? smartPayout;
         private SMARTHopper? smartHopper;
         private string moneda = "MXN";
+        private bool cancelando = false;
+        private DispatcherTimer timerPago = new DispatcherTimer();
         //
 
         internal MostrarVentanaSplash(bool pEsDiseno = false, MainWindow? parentWindow = null, string pvSrtDatoVerificador = "", Pago? pvPago = null, SMARTPayout? payout = null, SMARTHopper? hopper = null)
@@ -63,17 +65,20 @@ namespace Priceio
             smartPayout = payout;
             smartHopper = hopper;
 
-            if(pvPago != null)
+            if (pvPago != null)
             {
                 if (pvPago.TipoPago == Pago.Tipo.PAGO)
                 {
-                    smartPayout.Payout.EnableValidator(smartPayout.logPagoPayout);
-                    smartHopper.Hopper.EnableCoinMech(smartHopper.logPagoHopper);
+                    smartPayout.Payout.EnableValidator(ref smartPayout.logPagoPayout);
+                    smartHopper.Hopper.EnableCoinMech(ref smartHopper.logPagoHopper);
                 }
                 smartPayout.actualizaPago(ref pvPago);
                 smartHopper.actualizaPago(ref pvPago);
+
+
+                timerPago.Interval = TimeSpan.FromMilliseconds(pollTimer);
+                timerPago.Tick += new EventHandler(timerPago_Tick);
             }
-                
 
             Owner = parentWindow;
             mainWindow = parentWindow;
@@ -118,6 +123,7 @@ namespace Priceio
                 BarraMenus.Visibility = Visibility.Hidden;
                 ModoEdicion.Visibility = Visibility.Hidden;
                 Coordenadas.Visibility = Visibility.Hidden;
+                ResizeMode = ResizeMode.NoResize;
 
                 if (!tipoVentana.Equals("C"))
                 {
@@ -130,6 +136,10 @@ namespace Priceio
             CenterWindowOnScreen();
         }
 
+        private void timerPago_Tick(object sender, EventArgs e)
+        {
+            timerPago.Stop();
+        }
         internal Pago? recuperaPago()
         {
             return pago;
@@ -720,76 +730,93 @@ namespace Priceio
 
         internal void verificaPago()
         {
-            bool finalizarPagoHilo = true;
-            while (finalizarPagoHilo)
+            while (true)
             {
+                timerPago.Start();
 
+                actualizaPagoControles();
                 try
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    if (pago.TipoPago == Pago.Tipo.RETIRO)
                     {
-                        if (pago.TipoPago == Pago.Tipo.RETIRO)
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
-
                             Button controlBtn = (Button)FindName("BtnCancelar");
-                            if (controlBtn != null)
-                                controlBtn.IsEnabled = false;
-                        }
-                        if (pago.Pagado)
+                        if (controlBtn != null)
+                            controlBtn.IsEnabled = false;
+
+                        }));
+                    }
+                    if (pago.Pagado && !cancelando)
+                    {
+                        smartPayout.Payout.DisableValidator(ref smartPayout.logPagoPayout);
+                        smartHopper.Hopper.DisableCoinMech(ref smartHopper.logPagoHopper);
+                        if (pago.Cambio > 0)
                         {
-                            while (finalizarPagoHilo)
+                            while (true)
                             {
-                                if(smartHopper.Hopper.UnitDataList.Count == 4 && smartPayout.Payout.UnitDataList.Count == 6)
+                                if (smartHopper.ConfigCargada && smartPayout.ConfigCargada)
                                 {
-
-                                    smartPayout.Payout.DisableValidator(smartPayout.logPagoPayout);
-                                    smartHopper.Hopper.DisableCoinMech(smartHopper.logPagoHopper);
-
-                                    if (pago.Cambio > 0)
-                                    {
-                                        bool cambio = calcularCambios();
-                                        if(cambio && pago.EstadoPago != Pago.Estado.CANCELADO)
-                                            pago.EstadoPago = Pago.Estado.OK;
-                                        else if(cambio && pago.EstadoPago == Pago.Estado.CANCELADO)
-                                            pago.EstadoPago = Pago.Estado.CANCELADO;
-                                        else
-                                            pago.EstadoPago = Pago.Estado.SIN_EFECTIVO;
-                                    }
+                                    bool cambio = calcularCambios();
+                                    if (cambio && pago.EstadoPago != Pago.Estado.CANCELADO)
+                                        pago.EstadoPago = Pago.Estado.OK;
+                                    else if (cambio && pago.EstadoPago == Pago.Estado.CANCELADO)
+                                        pago.EstadoPago = Pago.Estado.CANCELADO;
+                                    else if (!cambio && pago.EstadoPago == Pago.Estado.CANCELADO)
+                                        pago.EstadoPago = Pago.Estado.ERROR;
                                     else
-                                        if (pago.EstadoPago != Pago.Estado.CANCELADO)
-                                            pago.EstadoPago = Pago.Estado.OK;
-                                        
-
-                                    finalizarPagoHilo = false;
-                                    StartCloseTimer();
+                                        pago.EstadoPago = Pago.Estado.SIN_EFECTIVO;
                                     break;
                                 }
+                                while (timerPago.IsEnabled)
+                                {
+                                    Thread.Sleep(1); // Yield to free up CPU
+                                }
                             }
+                            break;
                         }
-                    }));
+                        else
+                        {
+                            if(pago.EstadoPago != Pago.Estado.CANCELADO)
+                                pago.EstadoPago = Pago.Estado.OK;
+                            break;
+                        }
+                    }
                 }
-                catch{}
-                actualizaPagoControles();
-                Thread.Sleep(250);
+                catch { }
+                while (timerPago.IsEnabled)
+                {
+                    Thread.Sleep(1); // Yield to free up CPU
+                }
             }
+
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                StartCloseTimer();
+            }));
         }
 
         private void actualizaPagoControles()
         {
             Application.Current.Dispatcher.InvokeAsync(new Action(() =>
             {
-                Label control = (Label)FindName("CantidadTotal");
-                if (control != null)
-                    control.Content = "$ " + pago.CantidadTotal;
-                control = (Label)FindName("CantidadFaltante");
-                if (control != null)
-                    control.Content = "$ " + pago.CantidadFaltante;
-                control = (Label)FindName("CantidadIngresada");
-                if (control != null)
-                    control.Content = "$ " + pago.CantidadIngresada;
-                control = (Label)FindName("Cambio");
-                if (control != null)
-                    control.Content = "$ " + pago.Cambio;
+                try
+                {
+                    Label control = (Label)FindName("CantidadTotal");
+                    if (control != null)
+                        control.Content = "$ " + pago.CantidadTotal;
+                    control = (Label)FindName("CantidadFaltante");
+                    if (control != null)
+                        control.Content = "$ " + pago.CantidadFaltante;
+                    control = (Label)FindName("CantidadIngresada");
+                    if (control != null)
+                        control.Content = "$ " + pago.CantidadIngresada;
+                    control = (Label)FindName("Cambio");
+                    if (control != null)
+                        control.Content = "$ " + pago.Cambio;
+                }
+                catch { }
+               
             }));
         }
 
@@ -799,11 +826,28 @@ namespace Priceio
             bool cambioCompleto = validarCambio.calculaCambio(pago.Cambio, smartHopper.Hopper.UnitDataList, smartPayout.Payout.UnitDataList);
             if (cambioCompleto)
             {
+                if (validarCambio.billetesCambio > 0)
+                {
+                    if (!smartPayout.CalculatePayout(validarCambio.billetesCambio.ToString(), moneda.ToCharArray()))
+                    {
+                        cambioCompleto = false;
+                        Application.Current.Dispatcher.Invoke(new Action(() =>
+                        {
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                            dialog.lblNombre.Content = "¡Advertencia!";
+                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                            new Recursos().ventanaMensajesGrande800x600(dialog);
+                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                            dialog.ShowDialog();
+                        }));
+                    }
+                }
 
                 if (validarCambio.monedasCambio > 0)
                 {
                     if (!smartHopper.CalculatePayoutHopper(validarCambio.monedasCambio.ToString(), moneda.ToCharArray()))
                     {
+                        cambioCompleto = false;
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
                             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
@@ -812,35 +856,31 @@ namespace Priceio
                             new Recursos().ventanaMensajesGrande800x600(dialog);
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             dialog.ShowDialog();
-
-                        }));
-
-                    }
-                }
-
-                if (validarCambio.billetesCambio > 0)
-                {
-                    if (!smartPayout.CalculatePayout(validarCambio.billetesCambio.ToString(), moneda.ToCharArray()))
-                    {
-
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                            dialog.lblNombre.Content = "¡Advertencia!";
-                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                            new Recursos().ventanaMensajesGrande800x600(dialog);
-                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                            dialog.ShowDialog();
-
                         }));
                     }
-
                 }
             }
             else
             {
                 if (pago.TipoPago == Pago.Tipo.PAGO)
                 {
+                    if (pago.CantidadBilletesIngresados > 0)
+                    {
+                        if (!smartPayout.CalculatePayout(pago.CantidadBilletesIngresados.ToString(), moneda.ToCharArray()))
+                        {
+                            Application.Current.Dispatcher.Invoke(new Action(() =>
+                            {
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                                dialog.lblNombre.Content = "¡Advertencia!";
+                                dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
+                                new Recursos().ventanaMensajesGrande800x600(dialog);
+                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                dialog.ShowDialog();
+
+                            }));
+                        }
+                    }
+
                     if (pago.CantidadMonedasIngresadas > 0)
                     {
                         if (!smartHopper.CalculatePayoutHopper(pago.CantidadMonedasIngresadas.ToString(), moneda.ToCharArray()))
@@ -857,29 +897,8 @@ namespace Priceio
                             }));
                         }
                     }
-
-                    if (pago.CantidadBilletesIngresados > 0)
-                    {
-                        if (!smartPayout.CalculatePayout(pago.CantidadBilletesIngresados.ToString(), moneda.ToCharArray()))
-                        {
-                            Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                                dialog.lblNombre.Content = "¡Advertencia!";
-                                dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                                new Recursos().ventanaMensajesGrande800x600(dialog);
-                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                                dialog.ShowDialog();
-
-                            }));
-                        }
-
-                    }
                 }
-
             }
-
-
             return cambioCompleto;
         }
 
@@ -2679,19 +2698,53 @@ namespace Priceio
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
-            dialog.lblNombre.Content = "¡Advertencia!";
-            dialog.lblTexto.Text = "¿Está seguro que desea cancelar el pago?";
-            new Recursos().ventanaMensajesGrande800x600(dialog);
-            if (dialog.ShowDialog() == true)
+            try
             {
-                pago.Cambio = pago.CantidadIngresada;
-                pago.EstadoPago = Pago.Estado.CANCELADO;
-                pago.Pagado = true;
+                //smartPayout.Payout.DisableValidator(smartPayout.logPagoPayout);
+                //smartHopper.Hopper.DisableCoinMech(smartHopper.logPagoHopper);
+
                 Button controlBtn = (Button)FindName("BtnCancelar");
                 if (controlBtn != null)
                     controlBtn.IsEnabled = false;
+
+                cancelando = true;
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                dialog.lblNombre.Content = "¡Advertencia!";
+                dialog.lblTexto.Text = "¿Está seguro que desea cancelar el pago?";
+                new Recursos().ventanaMensajesGrande800x600(dialog);
+                if (dialog.ShowDialog() == true)
+                {
+                    pago.Cambio = pago.CantidadIngresada;
+                    pago.EstadoPago = Pago.Estado.CANCELADO;
+                    pago.Pagado = true;
+                    cancelando = false;
+                }
+                else
+                {
+                    //smartPayout.Payout.EnableValidator(smartPayout.logPagoPayout);
+                    //smartHopper.Hopper.EnableCoinMech(smartHopper.logPagoHopper);
+                    cancelando = false;
+                    //DispatcherTimer timer = new DispatcherTimer();
+                    //timer.Interval = TimeSpan.FromMilliseconds(4000);
+                    //timer.Tick += TimerTickBtn;
+                    //timer.Start();
+                }
             }
+            catch
+            {
+
+            }
+
+        }
+        private void TimerTickBtn(object sender, EventArgs e)
+        {
+            DispatcherTimer timer = (DispatcherTimer)sender;
+            timer.Stop();
+            timer.Tick -= TimerTickBtn;
+
+            Button controlBtn = (Button)FindName("BtnCancelar");
+            if (controlBtn != null)
+                controlBtn.IsEnabled = true;
         }
     }
 }

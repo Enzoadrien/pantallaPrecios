@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.10" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
     <PackageReference Include="MySql.Data" Version="9.0.0" />
     <PackageReference Include="System.Data.Odbc" Version="8.0.1" />
@@ -60,6 +61,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Cajero\VentanasCajero\VentanaLogSmart.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="VentanasGenericas\ConfigurarNombres.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -71,7 +75,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Update="VentanasPropiedadesSplash\PropiedadesImpresora.xaml.cs">
+    <Compile Update="Cajero\VentanasCajero\PropiedadesImpresora.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Cajero\VentanasCajero\ConfigCanales.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="VentanasPropiedadesSplash\PropiedadesVentanaSplash.xaml.cs">
