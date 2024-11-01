@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Asn1.X509;
+﻿using Microsoft.VisualBasic.Logging;
+using Org.BouncyCastle.Asn1.X509;
 using Priceio.ClasesGenericas;
 using System;
 using System.Collections.Generic;
@@ -18,13 +19,19 @@ namespace Priceio.Cajero.Payout
         private string ComPort;
         private byte SSPAddress;
         internal bool RunningPayout = false;
-        private int pollTimer = 100; // timer in ms
+        private int pollTimer = 500; // timer in ms
         private int reconnectionAttempts = 5;
         internal string logPagoPayout = string.Empty;
         private Pago? pago;
         private DispatcherTimer timer = new DispatcherTimer();
         private DispatcherTimer reconnectionTimer = new DispatcherTimer();
         internal bool ConfigCargada = false;
+        internal bool BoolResetPayout = false;
+        internal bool BoolEnablePayout = false;
+        internal bool BoolDisablePayout = false;
+        internal bool BoolCalculatePayout = false;
+        internal bool BoolEmptyCash = false;
+        private string moneda = "MXN";
 
         internal SMARTPayout()
         {
@@ -35,16 +42,15 @@ namespace Priceio.Cajero.Payout
             timer.Interval = TimeSpan.FromMilliseconds(pollTimer);
             timer.Tick += new EventHandler(TimerTick);
             reconnectionTimer.Tick += new EventHandler(reconnectionTimer_Tick);
-            reconnectionTimer.Start();
         }
 
-        internal void RunPayout()
+        internal async Task RunPayout()
         {
             Payout.CommandStructure.ComPort = ComPort;
             Payout.CommandStructure.SSPAddress = SSPAddress;
             Payout.CommandStructure.Timeout = 3000;
             // connect to validator
-            if (ConnectToValidator(reconnectionAttempts, 2))
+            if (ConnectToValidator(reconnectionAttempts, 2).Result)
             {
                 RunningPayout = true;
                 logPagoPayout += "\r\nPoll Loop\r\n*********************************\r\n";
@@ -53,66 +59,65 @@ namespace Priceio.Cajero.Payout
             Payout.DisableValidator(ref logPagoPayout);
             while (RunningPayout)
             {
-                    // if the poll fails, try to reconnect
-                    if (!Payout.DoPoll(ref logPagoPayout, ref pago))
-                    {
-                        logPagoPayout += "Poll failed, attempting to reconnect...\r\n";
-                    while (true)
-                    {
-                        Payout.SSPComms.CloseComPort(); // close com port
+                if (BoolResetPayout)
+                {
+                    ResetPayout();
+                    BoolResetPayout = false;
+                }
+                if (BoolEnablePayout)
+                {
+                    EnableValidator();
+                    BoolEnablePayout = false;
+                }
+                if (BoolDisablePayout)
+                {
+                    DisableValidator();
+                    BoolDisablePayout = false;
+                }
+                if (BoolCalculatePayout)
+                {
+                    CalculatePayout(pago.BilletesCambio.ToString(), moneda.ToCharArray());
+                    BoolCalculatePayout = false;
+                }
+                if (BoolEmptyCash)
+                {
+                    EmptyCash();
+                    BoolEmptyCash = false;
+                }
+                // if the poll fails, try to reconnect
+                if (!Payout.DoPoll(ref logPagoPayout, ref pago))
+                {
+                    ConfigCargada = false;
+                    logPagoPayout += "Poll failed, attempting to reconnect...\r\n";
+                    // attempt reconnect, pass over number of reconnection attempts
+                    if (!ConnectToValidator(reconnectionAttempts, 2).Result)
+                        break;
+                    logPagoPayout += "Reconnected\r\n";
+                }
+                timer.Start();
 
-                        // attempt reconnect, pass over number of reconnection attempts
-                        if (ConnectToValidator(reconnectionAttempts, 2))
-                            break; // if connection successful, break out and carry on
-                        // if not successful, stop the execution of the poll loop
-                        Payout.SSPComms.CloseComPort(); // close com port before return
-                        return;
-                    }
-                        logPagoPayout += "Reconnected\r\n";
-                    }
-                    timer.Start();
-
-                    while (timer.IsEnabled)
-                    {
-                        Thread.Sleep(1); // Yield to free up CPU
-                    }
+                while (timer.IsEnabled)
+                {
+                    await Task.Delay(1);
+                }
             }
             Payout.SSPComms.CloseComPort();
             if (RunningPayout)
             {
-                Application.Current.Dispatcher.Invoke(new Action(() =>{
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
-                dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Payout y se ha desabilitado, consulte al administrador.";
-                new Recursos().ventanaMensajesGrande800x600(dialog);
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                dialog.ShowDialog();
-            }));
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Payout y se ha desabilitado, consulte al administrador.";
+                    new Recursos().ventanaMensajesGrande800x600(dialog);
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
+                }));
             }
             RunningPayout = false;
         }
 
-        private void TimerTick(object sender, EventArgs e)
-        {
-            timer.Stop();
-        }
-
-        private void reconnectionTimer_Tick(object sender, EventArgs e)
-        {
-            reconnectionTimer.Stop();
-        }
-        
-        internal void detenerPayout()
-        {
-            RunningPayout = false;
-        }
-        
-        internal void actualizaPago(ref Pago pPago)
-        {
-            pago = pPago;
-        }
-
-        private bool ConnectToValidator(int attempts, int interval)
+        private async Task<bool> ConnectToValidator(int attempts, int interval)
         {
             reconnectionTimer.Interval = TimeSpan.FromMilliseconds(interval * 1000);
             // run for number of attempts specified
@@ -136,15 +141,17 @@ namespace Priceio.Cajero.Payout
                     }
                     else
                     {
-                        MessageBox.Show("This program does not support slaves under protocol 6!", "ERROR");
+                        logPagoPayout += "This program does not support slaves under protocol 6!\r\n";
+                        //MessageBox.Show("This program does not support slaves under protocol 6!", "ERROR");
                         return false;
                     }
                     // get info from the validator and store useful vars
-                    ConfigCargada = Payout.PayoutSetupRequest(ref logPagoPayout);
+                    Payout.PayoutSetupRequest(ref logPagoPayout);
                     // check this unit is supported
                     if (!IsUnitValidPayout(Payout.UnitType))
                     {
-                        MessageBox.Show("Unsupported type shown by SMART Payout, this SDK supports the SMART Payout only");
+                        logPagoPayout += "Unsupported type shown by SMART Payout, this SDK supports the SMART Payout only\r\n";
+                        //MessageBox.Show("Unsupported type shown by SMART Payout, this SDK supports the SMART Payout only");
                         return false;
                     }
                     // inhibits, this sets which channels can receive notes
@@ -155,16 +162,37 @@ namespace Priceio.Cajero.Payout
                     Payout.EnableValidator(ref logPagoPayout);
                     // enable the payout system on the validator
                     Payout.EnablePayout(ref logPagoPayout);
+                    ConfigCargada = true;
                     return true;
                 }
 
                 reconnectionTimer.Start();
                 while (reconnectionTimer.IsEnabled)
                 {
-                    Thread.Sleep(1); // Yield to free up CPU
+                    await Task.Delay(1);
                 }
             }
             return false;
+        }
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            timer.Stop();
+        }
+
+        private void reconnectionTimer_Tick(object sender, EventArgs e)
+        {
+            reconnectionTimer.Stop();
+        }
+
+        internal void detenerPayout()
+        {
+            RunningPayout = false;
+        }
+
+        internal void ActualizaPago(ref Pago pPago)
+        {
+            pago = pPago;
         }
 
         private byte FindMaxProtocolVersionPayout()
@@ -192,7 +220,7 @@ namespace Priceio.Cajero.Payout
             return false;
         }
 
-        internal bool CalculatePayout(string amount, char[] currency)
+        private bool CalculatePayout(string amount, char[] currency)
         {
             string[] s = amount.Split('.');
             // only need to deal with whole numbers so we can always just deal
@@ -209,6 +237,27 @@ namespace Priceio.Cajero.Payout
             }
             // Make payout
             return Payout.PayoutAmount(n, currency, ref logPagoPayout);
+        }
+
+        private void ResetPayout()
+        {
+            Payout.Reset(ref logPagoPayout);
+            Payout.SSPComms.CloseComPort();
+        }
+
+        private void EnableValidator()
+        {
+            Payout.EnableValidator(ref logPagoPayout);
+        }
+
+        private void DisableValidator()
+        {
+            Payout.DisableValidator(ref logPagoPayout);
+        }
+
+        private void EmptyCash()
+        {
+            Payout.SmartEmpty(ref logPagoPayout);
         }
     }
 }

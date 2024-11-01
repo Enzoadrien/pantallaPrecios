@@ -3,6 +3,7 @@ using Precios_Turnos;
 using Priceio;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
+using Priceio.Cajero.VentanasCajero;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,6 +18,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Threading;
 using static Priceio.Cajero.StateObjectCajero;
 
 namespace Priceio.Cajero
@@ -25,18 +28,14 @@ namespace Priceio.Cajero
     {
         private SMARTPayout smartPayout;
         private SMARTHopper smartHopper;
-        public ProcesarPagoCajero(SMARTPayout payout, SMARTHopper hopper)
-        {
-            smartPayout = payout;
-            smartHopper = hopper;
-        }
-        
-        internal string ProcesarComando(string pvSrtComando, StateObjectCajero pvStateObject)
+
+        internal async Task<string> ProcesarComando(string pvSrtComando, StateObjectCajero pvStateObject, SMARTPayout pSmartPayout, SMARTHopper pSmartHopper)
         {
             try
             {
                 Pago? pago = JsonSerializer.Deserialize<Pago>(pvSrtComando);
-
+                smartPayout = pSmartPayout;
+                smartHopper = pSmartHopper;
                 switch (pago.TipoPago)
                 {
                     case Pago.Tipo.PAGO:

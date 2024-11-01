@@ -63,6 +63,7 @@
                 <Separator />
                 <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                     <MenuItem x:Name="Conexion" Header="Configurar conexión" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
+                    <MenuItem x:Name="ConfigurarSplash" Header="Configurar ventana splash" Click="ConfigurarSplash_Click" FontFamily="Arial Rounded MT" Visibility="Hidden"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>

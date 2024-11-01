@@ -23,10 +23,10 @@ namespace Priceio.Cajero
         private static SMARTPayout smartPayout;
         private static SMARTHopper smartHopper;
 
-        public static void StartListening(SMARTPayout payout, SMARTHopper hopper)
+        public static void StartListening(SMARTPayout pSmartPayout, SMARTHopper pSmartHopper)
         {
-            smartPayout = payout;
-            smartHopper = hopper;
+            smartPayout = pSmartPayout;
+            smartHopper = pSmartHopper;
             start = true;
             // Establish the local endpoint for the socket.  
             // The DNS name of the computer  
@@ -131,8 +131,8 @@ namespace Priceio.Cajero
                     }
                     if (datoCorrecto)
                     {
-                        ProcesarPagoCajero PT = new ProcesarPagoCajero(smartPayout, smartHopper);
-                        data = PT.ProcesarComando(data, state);
+                        ProcesarPagoCajero PT = new ProcesarPagoCajero();
+                        data = PT.ProcesarComando(data, state, smartPayout, smartHopper).Result;
 
                         // Echo the data back to the client.
                         byte[] msg = Encoding.ASCII.GetBytes(data);

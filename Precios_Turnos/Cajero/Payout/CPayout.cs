@@ -114,7 +114,6 @@ namespace Priceio.Cajero.Payout
             get { return m_NoteHeld; }
         }
 
-
         // access to sorted list of hash entries
         public List<ChannelData> UnitDataList
         {
@@ -884,6 +883,7 @@ namespace Priceio.Cajero.Payout
             //send poll
             m_cmd.CommandData[0] = CCommands.SSP_CMD_POLL;
             m_cmd.CommandDataLength = 1;
+            m_cmd.CommandDataLength = 1;
 
             if (!SendCommand(ref log)) return false;
 
@@ -902,7 +902,7 @@ namespace Priceio.Cajero.Payout
                     // has been called since the reset.
                     case CCommands.SSP_POLL_SLAVE_RESET:
                         log += "Unit reset\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         break;
                     // This response indicates the unit is disabled.
                     case CCommands.SSP_POLL_DISABLED:
@@ -926,7 +926,7 @@ namespace Priceio.Cajero.Payout
                     case CCommands.SSP_POLL_CREDIT_NOTE:
                         GetDataByChannel(response[i + 1], ref data);
                         log += "Credit " + CHelpers.FormatToCurrency(data.Value) + "\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         actualizaPago(data.Value / 100, ref pago);
                         i++;
                         break;
@@ -962,14 +962,14 @@ namespace Priceio.Cajero.Payout
                     case CCommands.SSP_POLL_FLOATED:
                         log += "Completed floating\r\n";
                         GetCashboxPayoutOpData(ref log);
-                        UpdateData();
+                        UpdateData(ref log);
                         EnableValidator(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
                     // A note has been stored in the payout device to be paid out instead of going into the cashbox.
                     case CCommands.SSP_POLL_NOTE_STORED_IN_PAYOUT:
                         log += "Note stored\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         break;
                     // A safe jam has been detected. This is where the user has inserted a note and the note
                     // is jammed somewhere that the user cannot reach.
@@ -1033,7 +1033,7 @@ namespace Priceio.Cajero.Payout
                     // The note has been dispensed and removed from the bezel by the user.
                     case CCommands.SSP_POLL_DISPENSED:
                         log += "Dispensed note(s)\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         //EnableValidator();
                         i += (byte)(response[i + 1] * 7 + 1);
                         break;
@@ -1045,7 +1045,7 @@ namespace Priceio.Cajero.Payout
                     // This single poll response indicates that the payout device has finished emptying.
                     case CCommands.SSP_POLL_EMPTIED:
                         log += "Emptied\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         EnableValidator(ref log);
                         break;
                     // The payout device is in the process of SMART emptying all its stored notes to the cashbox, keeping
@@ -1058,7 +1058,7 @@ namespace Priceio.Cajero.Payout
                     // using the CASHBOX PAYOUT OPERATION DATA command.
                     case CCommands.SSP_POLL_SMART_EMPTIED:
                         log += "SMART Emptied, getting info...\r\n";
-                        UpdateData();
+                        UpdateData(ref log);
                         GetCashboxPayoutOpData(ref log);
                         EnableValidator(ref log);
                         i += (byte)(response[i + 1] * 7 + 1);
@@ -1133,7 +1133,7 @@ namespace Priceio.Cajero.Payout
         }
 
         // Updates all the data in the list.
-        public void UpdateData(string log = null)
+        public void UpdateData(ref string log)
         {
             foreach (ChannelData d in m_UnitDataList)
             {
@@ -1169,6 +1169,7 @@ namespace Priceio.Cajero.Payout
             {
                 if (log != null)
                 {
+                    log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + "\r\n";
                     switch (m_cmd.ResponseData[0])
                     {
                         case CCommands.SSP_RESPONSE_COMMAND_CANNOT_BE_PROCESSED:
@@ -1218,14 +1219,27 @@ namespace Priceio.Cajero.Payout
             byte[] backup = new byte[255];
             m_cmd.CommandData.CopyTo(backup, 0);
             byte length = m_cmd.CommandDataLength;
-            // attempt to send the command
-            if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
+            if(length != 0)
             {
-                m_eSSP.CloseComPort();
-                if (log != null)
-                    log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
+                // attempt to send the command
+                if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
+                {
+                    m_eSSP.CloseComPort();
+                    if (log != null)
+                    {
+                        log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + "\r\n";
+                        log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
+                    }
+
+                    return false;
+                }
+            }
+           else
+                {
+                log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + " not send \r\n";
                 return false;
             }
+
             return true;
         }
 

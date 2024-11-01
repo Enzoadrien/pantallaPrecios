@@ -1,15 +1,18 @@
 ﻿using Precios_Turnos;
 using Priceio.Cajero;
+using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
 using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,18 +34,21 @@ namespace Priceio
     public partial class ConfigCanales : Window
     {
         internal TipoSMART tipoSMART;
-        internal HiloContolCajero hiloContolCajero;
         internal bool corriendo = false;
-
+        private SMARTPayout smartPayout;
+        private SMARTHopper smartHopper;
         private DispatcherTimer timer = new DispatcherTimer();
         private int pollTimer = 250;
         private bool runLog = false;
         private VentanaLog dialog;
 
         private int canales = 0;
+        private bool cargando = true;
 
-        public ConfigCanales(TipoSMART pTipoSMART)
+        internal ConfigCanales(TipoSMART pTipoSMART, SMARTPayout pSmartPayout, SMARTHopper pSmartHopper)
         {
+            smartPayout = pSmartPayout;
+            smartHopper = pSmartHopper;
             InitializeComponent();
             tipoSMART = pTipoSMART;
 
@@ -51,14 +57,12 @@ namespace Priceio
             if (tipoSMART == TipoSMART.PAYOUT)
             {
                 Titulo.Content = "Configurar SMART Payout";
-                hiloContolCajero = new HiloContolCajero();
-                hiloContolCajero.iniciarPayout();
+                Task.Run( ()=> smartPayout.RunPayout());
             }
             else
             {
                 Titulo.Content = "Configurar SMART Hopper";
-                hiloContolCajero = new HiloContolCajero();
-                hiloContolCajero.iniciarHopper();
+                Task.Run(() => smartHopper.RunHopper());
             }
             bloquearControles();
         }
@@ -68,7 +72,7 @@ namespace Priceio
             timer.Stop();
         }
 
-        internal void RacargarNiveles()
+        internal async Task RacargarNiveles()
         {
             corriendo = true;
             while (corriendo)
@@ -79,52 +83,91 @@ namespace Priceio
                 }));
                 if (tipoSMART == TipoSMART.PAYOUT)
                 {
-                    if (hiloContolCajero.smartPayout.ConfigCargada)
+                    if (smartPayout.ConfigCargada)
                     {
                         if (canales == 0)
                             desbloquearControles();
+                        else
+                            cargando = false;
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
-                            foreach (ChannelData d in hiloContolCajero.NivelesPayout())
+                            foreach (ChannelData d in smartPayout.Payout.UnitDataList)
                             {
                                 string s = string.Empty;
                                 s += (d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 s += " [" + d.Level + "] = " + (d.Level * d.Value / 100f).ToString();
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
+                                if (cargando)
+                                    cargarCheck(d.Channel, d.Recycling);
                             }
                         }));
                     }
                 }
                 else
                 {
-                    if (hiloContolCajero.smartHopper.ConfigCargada)
+                    if (smartHopper.ConfigCargada)
                     {
                         if (canales == 0)
                             desbloquearControles();
+                        else
+                            cargando = false;
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
-                            foreach (ChannelData d in hiloContolCajero.NivelesHopper())
+                            foreach (ChannelData d in smartHopper.Hopper.UnitDataList)
                             {
                                 string s = string.Empty;
                                 s += (d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 s += " [" + d.Level + "] = " + (d.Level * d.Value / 100f).ToString();
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
+                                if (cargando)
+                                    cargarCheck(d.Channel, d.Recycling);
                             }
                         }));
                     }
                 }
-                Thread.Sleep(250);
+                await Task.Delay(250);
             }
+        }
+
+        private void cargarCheck(int canal, bool activar)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+
+                switch (canal)
+                {
+                    case 1:
+                        chkCh1.IsChecked = activar;
+                        break;
+                    case 2:
+                        chkCh2.IsChecked = activar;
+                        break;
+                    case 3:
+                        chkCh3.IsChecked = activar;
+                        break;
+                    case 4:
+                        chkCh4.IsChecked = activar;
+                        break;
+                    case 5:
+                        chkCh5.IsChecked = activar;
+                        break;
+                    case 6:
+                        chkCh6.IsChecked = activar;
+                        break;
+                    default:
+                        break;
+                }
+            }));
         }
 
         private void desbloquearControles()
         {
             if (tipoSMART == TipoSMART.PAYOUT)
-                canales = hiloContolCajero.smartPayout.Payout.NumberOfChannels;
+                canales = smartPayout.Payout.NumberOfChannels;
             else
-                canales = hiloContolCajero.smartHopper.Hopper.NumberOfChannels;
+                canales = smartHopper.Hopper.NumberOfChannels;
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 switch (canales)
@@ -225,56 +268,53 @@ namespace Priceio
 
         private void chkCh_Checked(object sender, RoutedEventArgs e)
         {
-            CheckBox ck = ((CheckBox)sender);
-            if (tipoSMART == TipoSMART.PAYOUT)
+            if (!cargando)
             {
-                // Get the data from the payout
-                ChannelData d = new ChannelData();
-                hiloContolCajero.smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
-                hiloContolCajero.smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref hiloContolCajero.smartPayout.logPagoPayout);
+                CheckBox ck = ((CheckBox)sender);
+                if (tipoSMART == TipoSMART.PAYOUT)
+                {
+                    // Get the data from the payout
+                    ChannelData d = new ChannelData();
+                    smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
+                    smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref smartPayout.logPagoPayout);
 
+                }
+                else
+                    smartHopper.Hopper.RouteChannelToStorage(Int32.Parse(ck.Tag.ToString()), ref smartHopper.logPagoHopper);
             }
-            else
-                hiloContolCajero.smartHopper.Hopper.RouteChannelToStorage(Int32.Parse(ck.Tag.ToString()), ref hiloContolCajero.smartHopper.logPagoHopper);
         }
 
         private void chkCh_Unchecked(object sender, RoutedEventArgs e)
         {
-            CheckBox ck = ((CheckBox)sender);
-            if (tipoSMART == TipoSMART.PAYOUT)
+            if (!cargando)
             {
-                // Get the data from the payout
-                ChannelData d = new ChannelData();
-                hiloContolCajero.smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
-                hiloContolCajero.smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref hiloContolCajero.smartPayout.logPagoPayout);
+                CheckBox ck = ((CheckBox)sender);
+                if (tipoSMART == TipoSMART.PAYOUT)
+                {
+                    // Get the data from the payout
+                    ChannelData d = new ChannelData();
+                    smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
+                    smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref smartPayout.logPagoPayout);
 
+                }
+                else
+                    smartHopper.Hopper.RouteChannelToCashbox(Int32.Parse(ck.Tag.ToString()), ref smartHopper.logPagoHopper);
             }
-            else
-                hiloContolCajero.smartHopper.Hopper.RouteChannelToCashbox(Int32.Parse(ck.Tag.ToString()), ref hiloContolCajero.smartHopper.logPagoHopper);
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            corriendo = false;
-
-            if (tipoSMART == TipoSMART.PAYOUT)
-                hiloContolCajero.detenerPayout();
-            else
-                hiloContolCajero.detenerHopper();
-
             Close();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
-            corriendo = false;
             runLog = false;
-
+            corriendo = false;
             if (tipoSMART == TipoSMART.PAYOUT)
-                hiloContolCajero.detenerPayout();
+                smartPayout.detenerPayout();
             else
-                hiloContolCajero.detenerHopper();
+                smartHopper.detenerHopper();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -286,27 +326,31 @@ namespace Priceio
         {
             if (tipoSMART == TipoSMART.PAYOUT)
             {
-                if (hiloContolCajero.smartPayout.Payout.ValidatorEnabled)
+                if (smartPayout.Payout.ValidatorEnabled)
                 {
-
-                    if (hiloContolCajero.smartPayout.Payout.DisableValidator(ref hiloContolCajero.smartPayout.logPagoPayout))
-                        btnRecargar.Content = "Recargar";
+                    btnRecargar.Content = "Recargar";
+                    smartPayout.BoolDisablePayout = true;
                 }
                 else
-                    if (hiloContolCajero.smartPayout.Payout.EnableValidator(ref hiloContolCajero.smartPayout.logPagoPayout))
-                        btnRecargar.Content = "Finalizar";
+                {
+
+                    btnRecargar.Content = "Finalizar";
+                    smartPayout.BoolEnablePayout = true;
+                }
             }
 
             else
             {
-                if (hiloContolCajero.smartHopper.Hopper.CoinMechEnabled)
+                if (smartHopper.Hopper.CoinMechEnabled)
                 {
-                    if (hiloContolCajero.smartHopper.Hopper.DisableCoinMech(ref hiloContolCajero.smartHopper.logPagoHopper))
                         btnRecargar.Content = "Recargar";
+                    smartHopper.BoolDisableCoinMech = true;
                 }
                 else
-                    if (hiloContolCajero.smartHopper.Hopper.EnableCoinMech(ref hiloContolCajero.smartHopper.logPagoHopper))
-                        btnRecargar.Content = "Finalizar";
+                {
+                    btnRecargar.Content = "Finalizar";
+                    smartHopper.BoolEnableCoinMech = true;
+                }
             }
         }
 
@@ -314,13 +358,11 @@ namespace Priceio
         {
             if (tipoSMART == TipoSMART.PAYOUT)
             {
-                hiloContolCajero.smartPayout.Payout.Reset(ref hiloContolCajero.smartPayout.logPagoPayout);
-                hiloContolCajero.smartPayout.Payout.SSPComms.CloseComPort();
+                smartPayout.BoolResetPayout = true;
             }
             else
             {
-                hiloContolCajero.smartHopper.Hopper.Reset(ref hiloContolCajero.smartHopper.logPagoHopper);
-                hiloContolCajero.smartHopper.Hopper.SSPComms.CloseComPort();
+                smartHopper.BoolResetHopper = true;
             }
         }
 
@@ -328,11 +370,11 @@ namespace Priceio
         {
             if (tipoSMART == TipoSMART.PAYOUT)
             {
-                hiloContolCajero.smartPayout.Payout.SmartEmpty(ref hiloContolCajero.smartPayout.logPagoPayout);
+                smartPayout.BoolEmptyCash = true;
             }
             else
             {
-                hiloContolCajero.smartHopper.Hopper.SmartEmpty(ref hiloContolCajero.smartHopper.logPagoHopper);
+                smartHopper.BoolEmptyCash = true; ;
             }
         }
 
@@ -343,14 +385,35 @@ namespace Priceio
                 int cantidad = int.Parse(Retiro.Text);
                 if (cantidad > 0)
                 {
+                    ValidarCambio validarCambio = new ValidarCambio();
+                    Pago pago = new Pago();
+                    pago.Cambio = cantidad;
                     bool seEntrego = false;
                     if (tipoSMART == TipoSMART.PAYOUT)
                     {
-                        seEntrego = hiloContolCajero.smartPayout.CalculatePayout(cantidad.ToString(), CHelpers.moneda.ToCharArray());
+                        int revisar = validarCambio.cambioPayout(cantidad, smartPayout.Payout.UnitDataList);
+                        if (revisar == 0)
+                        {
+                            pago.BilletesCambio = cantidad;
+                            smartPayout.ActualizaPago(ref pago);
+                            smartPayout.BoolCalculatePayout = true;
+                            seEntrego = true;
+                        }
+                        else
+                            seEntrego = false;
                     }
                     else
                     {
-                        seEntrego = hiloContolCajero.smartHopper.CalculatePayoutHopper(cantidad.ToString(), CHelpers.moneda.ToCharArray());
+                        bool revisar = validarCambio.cambioHopper(cantidad, smartHopper.Hopper.UnitDataList);
+                        if (revisar)
+                        {
+                            pago.MonedasCambio = cantidad;
+                            smartHopper.ActualizaPago(ref pago);
+                            smartHopper.BoolCalculatePayoutHopper = true;
+                            seEntrego = true;
+                        }
+                        else
+                            seEntrego = false;
                     }
                     if (!seEntrego)
                     {
@@ -361,7 +424,6 @@ namespace Priceio
                         dialog.ShowDialog();
                         FocusManager.SetFocusedElement(this, Retiro);
                     }
-
                 }
                 else
                 {
@@ -412,20 +474,20 @@ namespace Priceio
             Task.Run(() => recargarlog(dialog));
         }
 
-        internal void recargarlog(VentanaLog dialog)
+        internal async Task recargarlog(VentanaLog dialog)
         {
             runLog = true;
             while (runLog)
             {
                 if (tipoSMART == TipoSMART.PAYOUT)
-                    dialog.recargarlog(hiloContolCajero.smartPayout.logPagoPayout);
+                    dialog.recargarlog(smartPayout.logPagoPayout);
                 else
-                    dialog.recargarlog(hiloContolCajero.smartHopper.logPagoHopper);
+                    dialog.recargarlog(smartHopper.logPagoHopper);
 
                 timer.Start();
                 while (timer.IsEnabled)
                 {
-                    Thread.Sleep(1); // Yield to free up CPU
+                    await Task.Delay(1); // Yield to free up CPU
                 }
             }
             Application.Current.Dispatcher.Invoke(new Action(() =>

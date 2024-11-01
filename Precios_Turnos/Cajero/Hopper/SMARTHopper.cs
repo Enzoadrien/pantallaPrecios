@@ -24,6 +24,12 @@ namespace Priceio.Cajero.Hopper
         private DispatcherTimer timer = new DispatcherTimer();
         private DispatcherTimer reconnectionTimer = new DispatcherTimer();
         internal bool ConfigCargada = false;
+        internal bool BoolResetHopper = false;
+        internal bool BoolEnableCoinMech = false;
+        internal bool BoolDisableCoinMech = false;
+        internal bool BoolCalculatePayoutHopper = false;
+        internal bool BoolEmptyCash = false;
+        private string moneda = "MXN";
 
         internal SMARTHopper()
         {
@@ -37,14 +43,14 @@ namespace Priceio.Cajero.Hopper
             reconnectionTimer.Start();
         }
 
-        internal void RunHopper()
+        internal async Task RunHopper()
         {
             Hopper.CommandStructure.ComPort = ComPort;
             Hopper.CommandStructure.SSPAddress = SSPAddress;
             Hopper.CommandStructure.Timeout = 2000;
             Hopper.CommandStructure.RetryLevel = 3;
             // First connect to the hopper
-            if (ConnectToHopper(10, 3))
+            if (ConnectToHopper(reconnectionAttempts, 3).Result)
             {
                 RunningHopper = true;
 
@@ -55,24 +61,50 @@ namespace Priceio.Cajero.Hopper
             // This loop won't run until the hopper is connected
             while (RunningHopper)
             {
-                    // poll the hopper
-                    if (!Hopper.DoPoll(ref logPagoHopper, ref pago))
+                if (BoolResetHopper)
+                {
+                    ResetHopper();
+                    BoolResetHopper = false;
+                }
+                if (BoolEnableCoinMech)
+                {
+                    EnableCoinMech();
+                    BoolEnableCoinMech = false;
+                }
+                if (BoolDisableCoinMech)
+                {
+                    DisableCoinMech();
+                    BoolDisableCoinMech = false;
+                }
+                if (BoolCalculatePayoutHopper)
+                {
+                    CalculatePayoutHopper(pago.MonedasCambio.ToString(), moneda.ToCharArray());
+                    BoolCalculatePayoutHopper = false;
+                }
+                if (BoolEmptyCash)
+                {
+                    EmptyCash();
+                    BoolEmptyCash = false;
+                }
+                // poll the hopper
+                if (!Hopper.DoPoll(ref logPagoHopper, ref pago))
+                {
+                    ConfigCargada = false;
+                    // If the poll fails, try to reconnect
+                    logPagoHopper += "Attempting to reconnect...\r\n";
+                    if (!ConnectToHopper(reconnectionAttempts, 3).Result)
                     {
-                        // If the poll fails, try to reconnect
-                        logPagoHopper += "Attempting to reconnect...\r\n";
-                        if (!ConnectToHopper(reconnectionAttempts, 3))
-                        {
-                            // If it fails after 5 attempts, exit the loop
-                            break;
-                        }
-                        logPagoHopper += "Reconnected\r\n";
+                        // If it fails after 5 attempts, exit the loop
+                        break;
                     }
-                    timer.Start();
+                    logPagoHopper += "Reconnected\r\n";
+                }
+                timer.Start();
 
-                    while (timer.IsEnabled)
-                    {
-                        Thread.Sleep(1); // Yield to free up CPU
-                    }
+                while (timer.IsEnabled)
+                {
+                    await Task.Delay(1); // Yield to free up CPU
+                }
             }
             //close com port
             Hopper.SSPComms.CloseComPort();
@@ -90,28 +122,9 @@ namespace Priceio.Cajero.Hopper
             }
 
             RunningHopper = false;
-
-        }
-        internal void detenerHopper()
-        {
-            RunningHopper = false;
         }
 
-        private void TimerTick(object sender, EventArgs e)
-        {
-            timer.Stop();
-        }
-
-        private void reconnectionTimer_Tick(object sender, EventArgs e)
-        {
-            reconnectionTimer.Stop();
-        }
-        internal void actualizaPago(ref Pago pPago)
-        {
-            pago = pPago;
-        }
-
-        private bool ConnectToHopper(int attempts, int interval)
+        private async Task<bool> ConnectToHopper(int attempts, int interval)
         {
             reconnectionTimer.Interval = TimeSpan.FromMilliseconds(interval * 1000);
 
@@ -137,17 +150,19 @@ namespace Priceio.Cajero.Hopper
                     }
                     else
                     {
-                        MessageBox.Show("This program does not support hoppers under protocol 6!", "ERROR");
+                        logPagoHopper += "This program does not support hoppers under protocol 6!\r\n";
+                        //MessageBox.Show("This program does not support hoppers under protocol 6!", "ERROR");
                         return false;
                     }
                     // get info from the hopper and store useful vars
-                    ConfigCargada = Hopper.HopperSetupRequest(ref logPagoHopper);
+                    Hopper.HopperSetupRequest(ref logPagoHopper);
                     // Get serial number.
                     Hopper.GetSerialNumber(ref logPagoHopper);
                     // check unit is valid type
                     if (!IsUnitValidHopper(Hopper.UnitType))
                     {
-                        MessageBox.Show("Unsupported type shown by SMART Hopper, this SDK supports the SMART Hopper only");
+                        logPagoHopper += "Unsupported type shown by SMART Hopper, this SDK supports the SMART Hopper only\r\n";
+                        //MessageBox.Show("Unsupported type shown by SMART Hopper, this SDK supports the SMART Hopper only");
                         return false;
                     }
                     // inhibits, this sets which channels can receive coins
@@ -162,14 +177,35 @@ namespace Priceio.Cajero.Hopper
 
                     Hopper.GetHopperOptions(ref logPagoHopper);
 
+                    ConfigCargada = true;
                     return true;
                 }
                 while (reconnectionTimer.IsEnabled)
                 {
-                    Thread.Sleep(1); // Yield to free up CPU
+                    await Task.Delay(1); // Yield to free up CPU
                 }
             }
             return false;
+        }
+
+        internal void detenerHopper()
+        {
+            RunningHopper = false;
+        }
+
+        private void TimerTick(object sender, EventArgs e)
+        {
+            timer.Stop();
+        }
+
+        private void reconnectionTimer_Tick(object sender, EventArgs e)
+        {
+            reconnectionTimer.Stop();
+        }
+
+        internal void ActualizaPago(ref Pago pPago)
+        {
+            pago = pPago;
         }
 
         private byte FindMaxProtocolVersionHopper()
@@ -195,7 +231,7 @@ namespace Priceio.Cajero.Hopper
             return false;
         }
 
-        internal bool CalculatePayoutHopper(string amount, char[] currency)
+        private bool CalculatePayoutHopper(string amount, char[] currency)
         {
             // Split string by decimal point
             string[] s = amount.Split('.');
@@ -230,6 +266,27 @@ namespace Priceio.Cajero.Hopper
             // Pay it out
             return Hopper.PayoutAmount(payoutAmount, currency, ref logPagoHopper);
         }
+
+        private void ResetHopper()
+        {
+            Hopper.Reset(ref logPagoHopper);
+            Hopper.SSPComms.CloseComPort();
+        }
+
+        private void EnableCoinMech()
+        {
+            Hopper.EnableCoinMech(ref logPagoHopper);
+        }
+
+        private void DisableCoinMech()
+        {
+            Hopper.DisableCoinMech(ref logPagoHopper);
+        }
+        private void EmptyCash()
+        {
+            Hopper.SmartEmpty(ref logPagoHopper);
+        }
+
     }
 
 }

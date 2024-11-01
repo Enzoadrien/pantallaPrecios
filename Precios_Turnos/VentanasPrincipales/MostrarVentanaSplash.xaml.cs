@@ -26,6 +26,7 @@ using Org.BouncyCastle.Asn1.X509;
 using Priceio.Cajero;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
+using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 
 namespace Priceio
@@ -69,15 +70,16 @@ namespace Priceio
             {
                 if (pvPago.TipoPago == Pago.Tipo.PAGO)
                 {
-                    smartPayout.Payout.EnableValidator(ref smartPayout.logPagoPayout);
-                    smartHopper.Hopper.EnableCoinMech(ref smartHopper.logPagoHopper);
+                    smartPayout.BoolEnablePayout = true;
+                    smartHopper.BoolEnableCoinMech = true;
                 }
-                smartPayout.actualizaPago(ref pvPago);
-                smartHopper.actualizaPago(ref pvPago);
+                smartPayout.ActualizaPago(ref pvPago);
+                smartHopper.ActualizaPago(ref pvPago);
 
 
                 timerPago.Interval = TimeSpan.FromMilliseconds(pollTimer);
                 timerPago.Tick += new EventHandler(timerPago_Tick);
+
             }
 
             Owner = parentWindow;
@@ -140,6 +142,7 @@ namespace Priceio
         {
             timerPago.Stop();
         }
+        
         internal Pago? recuperaPago()
         {
             return pago;
@@ -718,6 +721,7 @@ namespace Priceio
                     if (pago != null)
                     {
                         actualizaPagoControles();
+                    
                     }
             }
 
@@ -728,7 +732,7 @@ namespace Priceio
             Task.Run(() => verificaPago());
         }
 
-        internal void verificaPago()
+        internal async Task verificaPago()
         {
             while (true)
             {
@@ -749,8 +753,9 @@ namespace Priceio
                     }
                     if (pago.Pagado && !cancelando)
                     {
-                        smartPayout.Payout.DisableValidator(ref smartPayout.logPagoPayout);
-                        smartHopper.Hopper.DisableCoinMech(ref smartHopper.logPagoHopper);
+                        smartPayout.BoolDisablePayout=true;
+                        smartHopper.BoolDisableCoinMech = true;
+
                         if (pago.Cambio > 0)
                         {
                             while (true)
@@ -768,10 +773,6 @@ namespace Priceio
                                         pago.EstadoPago = Pago.Estado.SIN_EFECTIVO;
                                     break;
                                 }
-                                while (timerPago.IsEnabled)
-                                {
-                                    Thread.Sleep(1); // Yield to free up CPU
-                                }
                             }
                             break;
                         }
@@ -786,7 +787,7 @@ namespace Priceio
                 catch { }
                 while (timerPago.IsEnabled)
                 {
-                    Thread.Sleep(1); // Yield to free up CPU
+                    await Task.Delay(1);// Yield to free up CPU
                 }
             }
 
@@ -828,36 +829,17 @@ namespace Priceio
             {
                 if (validarCambio.billetesCambio > 0)
                 {
-                    if (!smartPayout.CalculatePayout(validarCambio.billetesCambio.ToString(), moneda.ToCharArray()))
-                    {
-                        cambioCompleto = false;
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                            dialog.lblNombre.Content = "¡Advertencia!";
-                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                            new Recursos().ventanaMensajesGrande800x600(dialog);
-                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                            dialog.ShowDialog();
-                        }));
-                    }
+                    pago.BilletesCambio = validarCambio.billetesCambio;
+                    smartPayout.ActualizaPago(ref pago);
+                    smartPayout.BoolCalculatePayout = true;
                 }
 
                 if (validarCambio.monedasCambio > 0)
                 {
-                    if (!smartHopper.CalculatePayoutHopper(validarCambio.monedasCambio.ToString(), moneda.ToCharArray()))
-                    {
-                        cambioCompleto = false;
-                        Application.Current.Dispatcher.Invoke(new Action(() =>
-                        {
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                            dialog.lblNombre.Content = "¡Advertencia!";
-                            dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                            new Recursos().ventanaMensajesGrande800x600(dialog);
-                            dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                            dialog.ShowDialog();
-                        }));
-                    }
+                    pago.MonedasCambio = validarCambio.monedasCambio;
+                    smartHopper.ActualizaPago(ref pago);
+                    smartHopper.BoolCalculatePayoutHopper = true;
+
                 }
             }
             else
@@ -866,36 +848,16 @@ namespace Priceio
                 {
                     if (pago.CantidadBilletesIngresados > 0)
                     {
-                        if (!smartPayout.CalculatePayout(pago.CantidadBilletesIngresados.ToString(), moneda.ToCharArray()))
-                        {
-                            Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                                dialog.lblNombre.Content = "¡Advertencia!";
-                                dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                                new Recursos().ventanaMensajesGrande800x600(dialog);
-                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                                dialog.ShowDialog();
-
-                            }));
-                        }
+                        pago.BilletesCambio = pago.CantidadBilletesIngresados;
+                        smartPayout.ActualizaPago(ref pago);
+                        smartPayout.BoolCalculatePayout = true;
                     }
 
                     if (pago.CantidadMonedasIngresadas > 0)
                     {
-                        if (!smartHopper.CalculatePayoutHopper(pago.CantidadMonedasIngresadas.ToString(), moneda.ToCharArray()))
-                        {
-                            Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
-                                dialog.lblNombre.Content = "¡Advertencia!";
-                                dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se reembolsará el total de dinero ingresado, consulte al administrador.";
-                                new Recursos().ventanaMensajesGrande800x600(dialog);
-                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                                dialog.ShowDialog();
-
-                            }));
-                        }
+                        pago.MonedasCambio = pago.CantidadMonedasIngresadas;
+                        smartHopper.ActualizaPago(ref pago);
+                        smartHopper.BoolCalculatePayoutHopper = true;
                     }
                 }
             }
@@ -2736,6 +2698,7 @@ namespace Priceio
             }
 
         }
+        
         private void TimerTickBtn(object sender, EventArgs e)
         {
             DispatcherTimer timer = (DispatcherTimer)sender;

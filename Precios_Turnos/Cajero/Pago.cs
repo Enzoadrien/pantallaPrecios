@@ -28,7 +28,8 @@ namespace Priceio.Cajero
         public int CantidadBilletesIngresados { get; set; }
         public int CantidadMonedasIngresadas { get; set; }
         public string? Impresion { get; set; }
-
-
+        public int BilletesCambio {  get; set; }
+        public int MonedasCambio { get; set; }
+        
     }
 }

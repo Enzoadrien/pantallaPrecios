@@ -77,13 +77,14 @@ namespace Priceio
         private SolidColorBrush? ultimoColor;
         internal double ultimaOpacidad;
         private string? datosVerificador;
-        internal HiloContolCajero hiloContolCajero;
-        private DispatcherTimer timer = new DispatcherTimer();
-        private int pollTimer = 250;
-        private bool runLog = false;
-        private VentanaLogSmart ventanaLogSmart;
-        private bool seMuestraLogSmart = false;
 
+        private SMARTPayout smartPayout = new SMARTPayout();
+        private SMARTHopper smartHopper = new SMARTHopper();
+
+        private DispatcherTimer timer = new DispatcherTimer();
+        private bool runLog = false;
+        private VentanaLogSmart? ventanaLogSmart;
+        private bool seMuestraLogSmart = false;
 
         public MainWindow()
         {
@@ -358,8 +359,20 @@ namespace Priceio
                             break;
                         case "C":
                             EscucharPagos();
+                            try
+                            {
+                                if (seMuestraLogSmart)
+                                {
+                                    timer.Tick += new EventHandler(TimerTickLog);
+                                    MostrarLogPagos();
+                                }
+                            }
+                            catch
+                            {
+                            }
                             break;
                     }
+                    
                 }
             }
 
@@ -400,6 +413,7 @@ namespace Priceio
                 Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                 activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
                 tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
+                seMuestraLogSmart = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
                 if (activarSplash)
                 {
                     switch (tipoSplash)
@@ -411,8 +425,15 @@ namespace Priceio
                             break;
                         case "C":
                             DetenerPagos();
+                            if (ventanaLogSmart != null)
+                                ventanaLogSmart.Close();
                             break;
                     }
+                    ConfigurarSplash.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    ConfigurarSplash.Visibility = Visibility.Hidden;
                 }
 
 
@@ -427,8 +448,6 @@ namespace Priceio
                 QuitarWEB(true);
             }
         }
-
-
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -3145,18 +3164,14 @@ namespace Priceio
         {
             try
             {
-                if (seMuestraLogSmart)
-                {
-                    timer.Tick += new EventHandler(TimerTick);
-                    MostrarLogPagos();
-                }
-                hiloContolCajero = new HiloContolCajero();
-                hiloContolCajero.iniciarPayout();
-                hiloContolCajero.iniciarHopper();
-                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(hiloContolCajero.smartPayout, hiloContolCajero.smartHopper));
+
+                Task.Run(() => smartHopper.RunHopper());
+                Task.Run(() => smartPayout.RunPayout());
+                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout,smartHopper));
             }
-            catch
+            catch (Exception e)
             {
+                MessageBox.Show(e.Message, "ERROR");
             }
         }
 
@@ -3164,66 +3179,42 @@ namespace Priceio
         {
             try
             {
-                hiloContolCajero.detenerPayout();
-                hiloContolCajero.detenerHopper();
+
+                smartPayout.detenerPayout();
+                smartHopper.detenerHopper();
                 AsynchronousSocketListenerCajero.StopListening();
-                if(ventanaLogSmart != null && seMuestraLogSmart)
-                {
-                    timer.Tick -= new EventHandler(TimerTick);
-                    ventanaLogSmart.Close();
-                    ventanaLogSmart = null;
-                }
             }
-            catch
+            catch(Exception e)
             {
+                MessageBox.Show(e.Message, "ERROR");
             }
         }
 
         private void MostrarLogPagos()
         {
             ventanaLogSmart = new VentanaLogSmart();
-            ventanaLogSmart.WindowStartupLocation = WindowStartupLocation.Manual;
-
-            var relativeCenterParent = Mouse.GetPosition(this);
-
-            // get the position within the container
-            var mousePosition = this.PointToScreen(relativeCenterParent);
-
-            if (mousePosition.Y + ventanaLogSmart.Height >= this.MaxHeight)
-                ventanaLogSmart.Top = mousePosition.Y - ventanaLogSmart.Height;
-            else
-                ventanaLogSmart.Top = mousePosition.Y;
-
-            if (mousePosition.X + ventanaLogSmart.Width >= this.MaxWidth)
-                ventanaLogSmart.Left = mousePosition.X - ventanaLogSmart.Width;
-            else
-                ventanaLogSmart.Left = mousePosition.X;
-
             ventanaLogSmart.Show();
             Task.Run(() => recargarlog(ventanaLogSmart));
         }
 
-        internal void recargarlog(VentanaLogSmart dialog)
+        internal async Task recargarlog(VentanaLogSmart dialog)
         {
             runLog = true;
             while (runLog)
             {
-                if(hiloContolCajero!=null)
-                    dialog.recargarlog(hiloContolCajero.smartHopper.logPagoHopper, hiloContolCajero.smartPayout.logPagoPayout);
+                dialog.recargarlog(smartHopper.logPagoHopper, smartPayout.logPagoPayout);
 
                 timer.Start();
                 while (timer.IsEnabled)
                 {
-                    Thread.Sleep(1); // Yield to free up CPU
+                    await Task.Delay(1); // Yield to free up CPU
                 }
             }
         }
-
-        private void TimerTick(object sender, EventArgs e)
+        private void TimerTickLog(object sender, EventArgs e)
         {
             timer.Stop();
         }
-
 
         public void CambiarContenidoTabla(string pNombre, string pTag, List<DataTable> pLisTablas, int x)
         {
@@ -3449,7 +3440,7 @@ namespace Priceio
 
         private void VentanaSplash_Click(object sender, RoutedEventArgs e)
         {
-            ConfigurarVentanaSplash dialog = new ConfigurarVentanaSplash(this);
+            ConfigurarVentanaSplash dialog = new ConfigurarVentanaSplash(this, smartPayout, smartHopper);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -3850,6 +3841,21 @@ namespace Priceio
         private void MenuVentanaSplash_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             MostrarVentanaSplash dialog = new MostrarVentanaSplash(true);
+            dialog.ShowDialog();
+        }
+
+        private void ConfigurarSplash_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigurarVentanaSplash dialog = new ConfigurarVentanaSplash(this, smartPayout, smartHopper);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
             dialog.ShowDialog();
         }
     }

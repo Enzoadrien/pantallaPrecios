@@ -23,6 +23,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Org.BouncyCastle.Asn1.X509;
+using Priceio.Cajero.Hopper;
+using Priceio.Cajero.Payout;
 using Priceio.ClasesGenericas;
 using Priceio.Turnero;
 using Priceio.Turnero.Kretz;
@@ -43,8 +46,13 @@ namespace Priceio
 
         private BackgroundWorker backgroundWorker = new BackgroundWorker();
 
-        public ConfigurarVentanaSplash(MainWindow pmainWindow)
+        private SMARTPayout smartPayout;
+        private SMARTHopper smartHopper;
+
+        internal ConfigurarVentanaSplash(MainWindow pmainWindow, SMARTPayout? payout = null, SMARTHopper? hopper = null)
         {
+            smartPayout = payout;
+            smartHopper = hopper;
             InitializeComponent();
             CargarDatos();
             mainWindow = pmainWindow;
@@ -494,7 +502,7 @@ namespace Priceio
         private void btnPayout_Click(object sender, RoutedEventArgs e)
         {
             GuardarDatos();
-            ConfigCanales dialog = new ConfigCanales(TipoSMART.PAYOUT);
+            ConfigCanales dialog = new ConfigCanales(TipoSMART.PAYOUT, smartPayout, smartHopper);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -511,7 +519,7 @@ namespace Priceio
         private void btnHopper_Click(object sender, RoutedEventArgs e)
         {
             GuardarDatos();
-            ConfigCanales dialog = new ConfigCanales(TipoSMART.HOPPER);
+            ConfigCanales dialog = new ConfigCanales(TipoSMART.HOPPER, smartPayout, smartHopper);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
