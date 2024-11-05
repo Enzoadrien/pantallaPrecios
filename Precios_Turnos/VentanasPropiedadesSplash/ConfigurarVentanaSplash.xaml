@@ -374,7 +374,7 @@ Height="20"
 Margin="0,0,0,0"
 TabIndex="0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnImpresora_Click">
+FontSize="14" Click="btnImpresora_Click" VerticalAlignment="Center">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background" Value="#FF989090"/>

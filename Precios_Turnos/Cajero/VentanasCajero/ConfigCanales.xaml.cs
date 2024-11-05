@@ -99,7 +99,10 @@ namespace Priceio
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
                                 if (cargando)
+                                {
+                                    cbxDenominacion.Items.Add((d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2]);
                                     cargarCheck(d.Channel, d.Recycling);
+                                }
                             }
                         }));
                     }
@@ -122,7 +125,10 @@ namespace Priceio
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
                                 if (cargando)
+                                {
+                                    cbxDenominacion.Items.Add((d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2]);
                                     cargarCheck(d.Channel, d.Recycling);
+                                }
                             }
                         }));
                     }
@@ -156,6 +162,12 @@ namespace Priceio
                     case 6:
                         chkCh6.IsChecked = activar;
                         break;
+                    case 7:
+                        chkCh6.IsChecked = activar;
+                        break;
+                    case 8:
+                        chkCh6.IsChecked = activar;
+                        break;
                     default:
                         break;
                 }
@@ -174,57 +186,127 @@ namespace Priceio
                 {
                     case 1:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         break;
                     case 2:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
                         chkCh2.IsEnabled = true;
                         break;
                     case 3:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
                         chkCh2.IsEnabled = true;
                         Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
                         chkCh3.IsEnabled = true;
                         break;
                     case 4:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
                         chkCh2.IsEnabled = true;
                         Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
                         chkCh3.IsEnabled = true;
                         Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
                         chkCh4.IsEnabled = true;
                         break;
                     case 5:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
                         chkCh2.IsEnabled = true;
                         Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
                         chkCh3.IsEnabled = true;
                         Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
                         chkCh4.IsEnabled = true;
                         Ch5Min.IsEnabled = true;
+                        Ch5Max.IsEnabled = true;
                         chkCh5.IsEnabled = true;
                         break;
                     case 6:
                         Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
                         chkCh1.IsEnabled = true;
                         Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
                         chkCh2.IsEnabled = true;
                         Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
                         chkCh3.IsEnabled = true;
                         Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
                         chkCh4.IsEnabled = true;
                         Ch5Min.IsEnabled = true;
+                        Ch5Max.IsEnabled = true;
                         chkCh5.IsEnabled = true;
                         Ch6Min.IsEnabled = true;
+                        Ch6Max.IsEnabled = true;
                         chkCh6.IsEnabled = true;
+                        break;
+                    case 7:
+                        Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
+                        chkCh1.IsEnabled = true;
+                        Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
+                        chkCh2.IsEnabled = true;
+                        Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
+                        chkCh3.IsEnabled = true;
+                        Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
+                        chkCh4.IsEnabled = true;
+                        Ch5Min.IsEnabled = true;
+                        Ch5Max.IsEnabled = true;
+                        chkCh5.IsEnabled = true;
+                        Ch6Min.IsEnabled = true;
+                        Ch6Max.IsEnabled = true;
+                        chkCh6.IsEnabled = true;
+                        Ch7Min.IsEnabled = true;
+                        Ch7Max.IsEnabled = true;
+                        chkCh7.IsEnabled = true;
+                        break;
+                    case 8:
+                        Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
+                        chkCh1.IsEnabled = true;
+                        Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
+                        chkCh2.IsEnabled = true;
+                        Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
+                        chkCh3.IsEnabled = true;
+                        Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
+                        chkCh4.IsEnabled = true;
+                        Ch5Min.IsEnabled = true;
+                        Ch5Max.IsEnabled = true;
+                        chkCh5.IsEnabled = true;
+                        Ch6Min.IsEnabled = true;
+                        Ch6Max.IsEnabled = true;
+                        chkCh6.IsEnabled = true;
+                        Ch7Min.IsEnabled = true;
+                        Ch7Max.IsEnabled = true;
+                        chkCh7.IsEnabled = true;
+                        Ch8Min.IsEnabled = true;
+                        Ch8Max.IsEnabled = true;
+                        chkCh8.IsEnabled = true;
                         break;
                     default:
                         break;
@@ -235,17 +317,29 @@ namespace Priceio
         private void bloquearControles()
         {
             Ch1Min.IsEnabled = false;
+            Ch1Max.IsEnabled = false;
             chkCh1.IsEnabled = false;
             Ch2Min.IsEnabled = false;
+            Ch2Max.IsEnabled = false;
             chkCh2.IsEnabled = false;
             Ch3Min.IsEnabled = false;
+            Ch3Max.IsEnabled = false;
             chkCh3.IsEnabled = false;
             Ch4Min.IsEnabled = false;
+            Ch4Max.IsEnabled = false;
             chkCh4.IsEnabled = false;
             Ch5Min.IsEnabled = false;
+            Ch5Max.IsEnabled = false;
             chkCh5.IsEnabled = false;
             Ch6Min.IsEnabled = false;
+            Ch6Max.IsEnabled = false;
             chkCh6.IsEnabled = false;
+            Ch7Min.IsEnabled = false;
+            Ch7Max.IsEnabled = false;
+            chkCh7.IsEnabled = false;
+            Ch8Min.IsEnabled = false;
+            Ch8Max.IsEnabled = false;
+            chkCh8.IsEnabled = false;
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -273,14 +367,15 @@ namespace Priceio
                 CheckBox ck = ((CheckBox)sender);
                 if (tipoSMART == TipoSMART.PAYOUT)
                 {
-                    // Get the data from the payout
-                    ChannelData d = new ChannelData();
-                    smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
-                    smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref smartPayout.logPagoPayout);
+                    smartPayout.chanelRoute = int.Parse(ck.Tag.ToString());
+                    smartPayout.BoolDisableRouteNote = true;
 
                 }
                 else
-                    smartHopper.Hopper.RouteChannelToStorage(Int32.Parse(ck.Tag.ToString()), ref smartHopper.logPagoHopper);
+                {
+                    smartHopper.chanelRoute = int.Parse(ck.Tag.ToString());
+                    smartHopper.BoolDisableRouteCash = true;
+                }
             }
         }
 
@@ -291,14 +386,15 @@ namespace Priceio
                 CheckBox ck = ((CheckBox)sender);
                 if (tipoSMART == TipoSMART.PAYOUT)
                 {
-                    // Get the data from the payout
-                    ChannelData d = new ChannelData();
-                    smartPayout.Payout.GetDataByChannel(Int32.Parse(ck.Tag.ToString()), ref d);
-                    smartPayout.Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref smartPayout.logPagoPayout);
+                    smartPayout.chanelRoute = int.Parse(ck.Tag.ToString());
+                    smartPayout.BoolRouteNote = true;
 
                 }
                 else
-                    smartHopper.Hopper.RouteChannelToCashbox(Int32.Parse(ck.Tag.ToString()), ref smartHopper.logPagoHopper);
+                {
+                    smartHopper.chanelRoute = int.Parse(ck.Tag.ToString());
+                    smartHopper.BoolRouteCash = true;
+                }
             }
         }
 
@@ -343,7 +439,7 @@ namespace Priceio
             {
                 if (smartHopper.Hopper.CoinMechEnabled)
                 {
-                        btnRecargar.Content = "Recargar";
+                    btnRecargar.Content = "Recargar";
                     smartHopper.BoolDisableCoinMech = true;
                 }
                 else
@@ -359,11 +455,18 @@ namespace Priceio
             if (tipoSMART == TipoSMART.PAYOUT)
             {
                 smartPayout.BoolResetPayout = true;
+                bloquearControles();
+                cargando = true;
+                canales = 0;
             }
             else
             {
                 smartHopper.BoolResetHopper = true;
+                bloquearControles();
+                cargando = true;
+                canales = 0;
             }
+            btnRecargar.Content = "Finalizar";
         }
 
         private void btnVaciar_Click(object sender, RoutedEventArgs e)
@@ -380,9 +483,9 @@ namespace Priceio
 
         private void btnRetirar_Click(object sender, RoutedEventArgs e)
         {
-            if (Retiro.Text.Length > 0)
+            if (Monto.Text.Length > 0)
             {
-                int cantidad = int.Parse(Retiro.Text);
+                int cantidad = int.Parse(Monto.Text);
                 if (cantidad > 0)
                 {
                     ValidarCambio validarCambio = new ValidarCambio();
@@ -422,7 +525,7 @@ namespace Priceio
                         dialog.lblTexto.Text = "El cajero no puede entregar la cantidad indicada, por favor revise que los datos sean correctos";
                         dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                         dialog.ShowDialog();
-                        FocusManager.SetFocusedElement(this, Retiro);
+                        FocusManager.SetFocusedElement(this, Monto);
                     }
                 }
                 else
@@ -432,7 +535,7 @@ namespace Priceio
                     dialog.lblTexto.Text = "Indique un valor diferente de cero en el retiro";
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                     dialog.ShowDialog();
-                    FocusManager.SetFocusedElement(this, Retiro);
+                    FocusManager.SetFocusedElement(this, Monto);
                 }
             }
             else
@@ -442,7 +545,7 @@ namespace Priceio
                 dialog.lblTexto.Text = "Indique un valor en el retiro";
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 dialog.ShowDialog();
-                FocusManager.SetFocusedElement(this, Retiro);
+                FocusManager.SetFocusedElement(this, Monto);
             }
         }
 

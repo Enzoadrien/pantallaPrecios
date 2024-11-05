@@ -31,6 +31,9 @@ namespace Priceio.Cajero.Payout
         internal bool BoolDisablePayout = false;
         internal bool BoolCalculatePayout = false;
         internal bool BoolEmptyCash = false;
+        internal bool BoolRouteNote = false;
+        internal bool BoolDisableRouteNote = false;
+        internal int chanelRoute = 0; 
         private string moneda = "MXN";
 
         internal SMARTPayout()
@@ -61,6 +64,7 @@ namespace Priceio.Cajero.Payout
             {
                 if (BoolResetPayout)
                 {
+                    ConfigCargada = false;
                     ResetPayout();
                     BoolResetPayout = false;
                 }
@@ -83,6 +87,18 @@ namespace Priceio.Cajero.Payout
                 {
                     EmptyCash();
                     BoolEmptyCash = false;
+                }
+                if (BoolRouteNote)
+                {
+                    RouteNote();
+                    chanelRoute = 0;
+                    BoolRouteNote = false;
+                }
+                if (BoolDisableRouteNote)
+                {
+                    DisableRouteNote();
+                    chanelRoute = 0;
+                    BoolDisableRouteNote = false;
                 }
                 // if the poll fails, try to reconnect
                 if (!Payout.DoPoll(ref logPagoPayout, ref pago))
@@ -258,6 +274,21 @@ namespace Priceio.Cajero.Payout
         private void EmptyCash()
         {
             Payout.SmartEmpty(ref logPagoPayout);
+        }
+        
+        private void RouteNote()
+        {
+            // Get the data from the payout
+            ChannelData d = new ChannelData();
+            Payout.GetDataByChannel(chanelRoute, ref d);
+            Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref logPagoPayout);
+        }
+        
+        private void DisableRouteNote()
+        {
+            ChannelData d = new ChannelData();
+            Payout.GetDataByChannel(chanelRoute, ref d);
+            Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref logPagoPayout);
         }
     }
 }

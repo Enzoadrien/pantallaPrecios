@@ -5,13 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio"
         mc:Ignorable="d"
-        Title="Titulo" Background="#FFD2CBCB" WindowStyle="None" Height="370" Width="400" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing" Loaded="Window_Loaded">
+        Title="Titulo" Background="#FFD2CBCB" WindowStyle="None" Height="460" Width="450" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="40*"/>
-            <ColumnDefinition Width="40*"/>
-            <ColumnDefinition Width="40*"/>
-            <ColumnDefinition Width="40*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="100*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
@@ -25,13 +27,17 @@
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="35*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal"
-        Background="#FF989090" Grid.ColumnSpan="4">
-            <Label x:Name="Titulo" Content="Configurar..."  VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="2" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold"/>
+        Background="#FF989090" Grid.ColumnSpan="6">
+            <Label x:Name="Titulo" Content="Configurar..." VerticalAlignment="Top" FontFamily="Arial Rounded MT" Grid.ColumnSpan="4" FontSize="18" FontWeight="Bold"/>
         </StackPanel>
-        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top" Grid.Column="4" Click="Salir_Click" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
+        <Button x:Name="Salir" Content="X" HorizontalAlignment="Right"  VerticalAlignment="Top" Grid.Column="5" Click="Salir_Click" FontFamily="Arial Rounded MT" HorizontalContentAlignment="Center" Width="24" Height="24" >
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="#FF989090"/>
@@ -54,87 +60,61 @@
             </Button.Style>
         </Button>
         <Label x:Name="lblNiveles" Content="Niveles:" Grid.ColumnSpan="2" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <ListBox x:Name="Niveles" Grid.Row="2" Grid.RowSpan="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" Margin="5,0,0,0" IsEnabled="False">
+        <ListBox x:Name="Niveles" Grid.Row="2" Grid.RowSpan="8" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" Margin="5,0,5,0" IsEnabled="False">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
-                    <Setter Property="Height" Value="29" />
+                    <Setter Property="Height" Value="28" />
+                    <Setter Property="VerticalAlignment" Value="Stretch" />
+                    <Setter Property="HorizontalAlignment" Value="Right" />
                 </Style>
             </ListBox.ItemContainerStyle>
-            <ListBoxItem Content="20.00 MXN [0] = 0 MXN"/>
-            <ListBoxItem Content="50.00 MXN [0] = 0 MXN"/>
-            <ListBoxItem Content="100.00 MXN [0] = 0 MXN"/>
-            <ListBoxItem Content="200.00 MXN [0] = 0 MXN"/>
-            <ListBoxItem Content="500.00 MXN [0] = 0 MXN"/>
-            <ListBoxItem Content="1000.00 MXN [0] = 0 MXN"/>
         </ListBox>
-        <Label x:Name="lblMinimos" Content="Mínimos"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" HorizontalAlignment="Center"/>
-        <TextBox x:Name="Ch1Min" Grid.Row="2" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch2Min" Grid.Row="3" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch3Min" Grid.Row="4" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch4Min" Grid.Row="5" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch5Min" Grid.Row="6" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch6Min" Grid.Row="7" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblActivo" Content="Activo"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
-        <CheckBox x:Name="chkCh1" Tag="1" Content="Ch1" Grid.Row="2" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <CheckBox x:Name="chkCh2" Tag="2" Content="Ch2" Grid.Row="3" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <CheckBox x:Name="chkCh3" Tag="3" Content="Ch3" Grid.Row="4" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <CheckBox x:Name="chkCh4" Tag="4" Content="Ch4" Grid.Row="5" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <CheckBox x:Name="chkCh5" Tag="5" Content="Ch5" Grid.Row="6" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <CheckBox x:Name="chkCh6" Tag="6" Content="Ch6" Grid.Row="7" Grid.Column="3" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
-        <Label x:Name="lblPagoMinimo" Content="Pago mínimo:" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMinimo" Grid.Row="8" Grid.Column="1" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <Label x:Name="lblPagoMaximo" Content="Pago máximo:" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Grid.Column="2" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMaximo" Grid.Row="8" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <StackPanel Grid.Row="10"
-           HorizontalAlignment="Right"
-           Orientation="Horizontal"
-           Margin="5,5,0,5">
-            <Button x:Name="btnRecargar"
-         Content="Recargar"
-         IsDefault="True"
-         Width="80"
-         Height="20"
-         Margin="0,0,0,0"
-         TabIndex="4"
-         FontFamily="Arial Rounded MT" 
-         FontSize="14" Click="btnRecargar_Click" HorizontalAlignment="Right">
-                <Button.Style>
-                    <Style TargetType="{x:Type Button}">
-                        <Setter Property="Background" Value="#FF989090"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="{x:Type Button}">
-                                    <Border Background="{TemplateBinding Background}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FF0E596D"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </StackPanel>
-       
-        <TextBox x:Name="Retiro" Grid.Row="10" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <StackPanel Grid.Row="10"
-  HorizontalAlignment="Right"
+        <Label x:Name="lblMinimos" Content="Mínimos"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
+        <TextBox x:Name="Ch1Min" Grid.Row="2" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch2Min" Grid.Row="3" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch3Min" Grid.Row="4" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch4Min" Grid.Row="5" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch5Min" Grid.Row="6" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch6Min" Grid.Row="7" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch7Min" Grid.Row="8" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch8Min" Grid.Row="9" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblMaximos" Content="Máximos"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="4" HorizontalAlignment="Center"/>
+        <TextBox x:Name="Ch1Max" Grid.Row="2" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch2Max" Grid.Row="3" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch3Max" Grid.Row="4" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch4Max" Grid.Row="5" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch5Max" Grid.Row="6" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch6Max" Grid.Row="7" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch7Max" Grid.Row="8" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch8Max" Grid.Row="9" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblActivo" Content="Activo"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="5" HorizontalAlignment="Center"/>
+        <CheckBox x:Name="chkCh1" Tag="1" Content="Ch1" Grid.Row="2" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh2" Tag="2" Content="Ch2" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh3" Tag="3" Content="Ch3" Grid.Row="4" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh4" Tag="4" Content="Ch4" Grid.Row="5" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh5" Tag="5" Content="Ch5" Grid.Row="6" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh6" Tag="6" Content="Ch6" Grid.Row="7" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh7" Tag="7" Content="Ch7" Grid.Row="8" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <CheckBox x:Name="chkCh8" Tag="8" Content="Ch8" Grid.Row="9" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
+        <Label x:Name="lblTotales" Content="Totales:" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" />
+        <Label x:Name="lblTotalesNivele" Content="Nivel" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="1" Grid.ColumnSpan="2" />
+        <Label x:Name="lblTotalesNiveleMin" Content="Min" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="3" />
+        <Label x:Name="lblTotalesNiveleMax" Content="Max" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="4" />
+        <Label x:Name="lblPagoMinimo" Content="Pago mínimo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="PagoMinimo" Grid.Row="11" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <Label x:Name="lblPagoMaximo" Content="Pago máximo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="3" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="5" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <ComboBox x:Name="cbxDenominacion" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="12" Margin="5,0,5,0" Grid.ColumnSpan="2" />
+        <TextBox x:Name="Cantidad" Grid.Row="12" Margin="5,3,5,0" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2"/>
+        <StackPanel Grid.Row="12"
   Orientation="Horizontal"
-  Margin="5,5,0,5" Grid.Column="1" >
-            <Button x:Name="btnRetirar"
-Content="Retirar"
-IsDefault="True"
-Width="80"
+  Margin="5,5,5,5" Grid.Column="3" Grid.ColumnSpan="3" >
+            <Button x:Name="btnRetirarDenominacion"
+Content="Retirar denominación"
 Height="20"
 Margin="0,0,0,0"
-TabIndex="0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnRetirar_Click" HorizontalAlignment="Center">
+FontSize="14" Click="btnRetirar_Click" Width="150">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>
@@ -157,10 +137,43 @@ FontSize="14" Click="btnRetirar_Click" HorizontalAlignment="Center">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="10"
-  HorizontalAlignment="Left"
+        <StackPanel Grid.Row="13"
+           Orientation="Horizontal"
+           Margin="5,5,20,5" HorizontalAlignment="Right" Grid.ColumnSpan="2" Grid.Column="3">
+            <Button x:Name="btnRecargar"
+         Content="Recargar"
+         IsDefault="True"
+         Width="80"
+         Height="20"
+         Margin="0,0,0,0"
+         FontFamily="Arial Rounded MT" 
+         FontSize="14" Click="btnRecargar_Click">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FF0E596D"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="13"
+  HorizontalAlignment="Right"
   Orientation="Horizontal"
-  Margin="5,5,0,5" Grid.Column="3" >
+  Margin="0,5,5,5" Grid.Column="4" Grid.ColumnSpan="2" >
             <Button x:Name="btnVaciar"
 Content="Vaciar"
 IsDefault="True"
@@ -184,7 +197,7 @@ FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center">
                         </Setter>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FFC42B1C"/>
+                                <Setter Property="Background" Value="#FFF9D735"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </Style.Triggers>
@@ -192,12 +205,42 @@ FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <CheckBox x:Name="chkLog" Content="Mostar log" Grid.Row="11" HorizontalAlignment="Right" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkLog_Checked" Unchecked="chkLog_Unchecked"/>
-
-        <StackPanel Grid.Row="11"
-  HorizontalAlignment="Right"
+        <TextBox x:Name="Monto" Grid.Row="13" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <StackPanel Grid.Row="13"
   Orientation="Horizontal"
-  Margin="0,5,5,5" Grid.Column="1" Grid.ColumnSpan="2">
+  Margin="5,5,5,5" Grid.ColumnSpan="2" Grid.Column="1" >
+            <Button x:Name="btnRetirar"
+Content="Retirar monto"
+Height="20"
+Margin="0,0,0,0"
+FontFamily="Arial Rounded MT" 
+FontSize="14" Click="btnRetirar_Click" Width="100">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="#FF989090"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFE47C25"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+        <StackPanel Grid.Row="14"
+  HorizontalAlignment="Center"
+  Orientation="Horizontal"
+  Margin="0,5,30,5" Grid.ColumnSpan="2" Grid.Column="4" >
             <Button x:Name="btRestablecer"
 Content="Restablecer"
 IsDefault="True"
@@ -206,7 +249,7 @@ Height="20"
 Margin="0,0,0,0"
 TabIndex="0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnRestablecer_Click">
+FontSize="14" Click="btnRestablecer_Click" HorizontalAlignment="Center">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>
@@ -229,10 +272,11 @@ FontSize="14" Click="btnRestablecer_Click">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="11"
+        <CheckBox x:Name="chkLog" Content="Mostar log" Grid.Row="15" HorizontalAlignment="Left" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkLog_Checked" Unchecked="chkLog_Unchecked" Grid.ColumnSpan="2" Margin="5,0,0,0"/>
+        <StackPanel Grid.Row="15"
         HorizontalAlignment="Right"
         Orientation="Horizontal"
-        Margin="0,5,5,5" Grid.Column="3" >
+        Margin="0,5,5,5" Grid.Column="5" >
             <Button x:Name="btnOK"
       Content="Aceptar"
       IsDefault="True"
@@ -241,7 +285,7 @@ FontSize="14" Click="btnRestablecer_Click">
       Margin="0,0,0,0"
       TabIndex="0"
       FontFamily="Arial Rounded MT" 
-      FontSize="14" Click="btnOK_Click">
+      FontSize="14" Click="btnOK_Click" VerticalAlignment="Center">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>

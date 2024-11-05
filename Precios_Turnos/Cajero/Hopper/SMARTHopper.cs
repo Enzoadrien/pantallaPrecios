@@ -29,6 +29,9 @@ namespace Priceio.Cajero.Hopper
         internal bool BoolDisableCoinMech = false;
         internal bool BoolCalculatePayoutHopper = false;
         internal bool BoolEmptyCash = false;
+        internal bool BoolRouteCash = false;
+        internal bool BoolDisableRouteCash = false;
+        internal int chanelRoute = 0;
         private string moneda = "MXN";
 
         internal SMARTHopper()
@@ -63,6 +66,7 @@ namespace Priceio.Cajero.Hopper
             {
                 if (BoolResetHopper)
                 {
+                    ConfigCargada = false;
                     ResetHopper();
                     BoolResetHopper = false;
                 }
@@ -85,6 +89,18 @@ namespace Priceio.Cajero.Hopper
                 {
                     EmptyCash();
                     BoolEmptyCash = false;
+                }
+                if (BoolRouteCash)
+                {
+                    RouteCash();
+                    chanelRoute = 0;
+                    BoolRouteCash = false;
+                }
+                if (BoolDisableRouteCash)
+                {
+                    DisableRouteCash();
+                    chanelRoute = 0;
+                    BoolDisableRouteCash = false;
                 }
                 // poll the hopper
                 if (!Hopper.DoPoll(ref logPagoHopper, ref pago))
@@ -282,11 +298,22 @@ namespace Priceio.Cajero.Hopper
         {
             Hopper.DisableCoinMech(ref logPagoHopper);
         }
+        
         private void EmptyCash()
         {
             Hopper.SmartEmpty(ref logPagoHopper);
         }
 
+        private void RouteCash()
+        {
+
+           Hopper.RouteChannelToStorage(chanelRoute, ref logPagoHopper);
+        }
+
+        private void DisableRouteCash()
+        {
+            Hopper.RouteChannelToCashbox(chanelRoute, ref logPagoHopper);
+        }
     }
 
 }

@@ -64,16 +64,36 @@
     <Compile Update="Cajero\VentanasCajero\VentanaLogSmart.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Properties\Cajero.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Cajero.settings</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\DNS.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DNS.settings</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Turnero.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Turnero.settings</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\VentanaSplash.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VentanaSplash.settings</DependentUpon>
+    </Compile>
     <Compile Update="VentanasGenericas\ConfigurarNombres.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="VentanasGenericas\ConfigurarVoz.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
+    <Compile Update="Properties\Verificador.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
+      <DependentUpon>Verificador.settings</DependentUpon>
     </Compile>
     <Compile Update="Cajero\VentanasCajero\PropiedadesImpresora.xaml.cs">
       <SubType>Code</SubType>
@@ -102,9 +122,25 @@
     <None Update="ITLlib.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Properties\Settings.settings">
+    <None Update="Properties\Cajero.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <LastGenOutput>Cajero.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Properties\DNS.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>DNS.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Properties\Verificador.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Verificador.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Properties\Turnero.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Turnero.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Properties\VentanaSplash.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>VentanaSplash.Designer.cs</LastGenOutput>
     </None>
     <None Update="Recursos\audios\bells-1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
