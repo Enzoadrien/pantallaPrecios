@@ -9,7 +9,6 @@ using System.IO;
 using static Priceio.Turnero.StateObject;
 using System.Windows;
 using System.Numerics;
-using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using Precios_Turnos;
 

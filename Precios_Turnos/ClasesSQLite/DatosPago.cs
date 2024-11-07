@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Priceio.Cajero.Pago;
+﻿using static Priceio.Cajero.Pago;
 
-namespace Priceio.ClasesBD
+namespace Priceio.ClasesSQLite
 {
     internal class DatosPago
     {

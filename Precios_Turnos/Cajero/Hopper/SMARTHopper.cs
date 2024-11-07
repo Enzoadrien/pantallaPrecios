@@ -1,10 +1,8 @@
 ﻿using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -14,8 +12,8 @@ namespace Priceio.Cajero.Hopper
     internal class SMARTHopper
     {
         internal CHopper Hopper;
-        private string ComPort;
-        private byte SSPAddress;
+        private string? ComPort = "COM1";
+        private byte SSPAddress = 16;
         private int pollTimer = 250;
         private int reconnectionAttempts = 10;
         internal bool RunningHopper = false;
@@ -36,10 +34,12 @@ namespace Priceio.Cajero.Hopper
 
         internal SMARTHopper()
         {
-            Hopper = new CHopper();
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            ComPort = config.AppSettings.Settings["COMHopper"].Value;
-            SSPAddress = byte.Parse(config.AppSettings.Settings["SSPHopper"].Value);
+            Hopper = new CHopper(); ConfiguracionCajero? configuracionCajero = new SQLiteClassManager().GetConfiguracionCajero();
+            if (configuracionCajero != null)
+            {
+                ComPort = configuracionCajero.COMHopper;
+                SSPAddress = byte.Parse(configuracionCajero.SSPHopper.ToString());
+            }
             timer.Interval = TimeSpan.FromMilliseconds(pollTimer);
             timer.Tick += new EventHandler(TimerTick);
             reconnectionTimer.Tick += new EventHandler(reconnectionTimer_Tick);

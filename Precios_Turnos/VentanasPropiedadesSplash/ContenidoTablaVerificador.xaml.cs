@@ -1,5 +1,4 @@
-﻿using Azure;
-using Priceio;
+﻿using Priceio;
 using Priceio.ClasesGenericas;
 using System;
 using System.Collections.Generic;

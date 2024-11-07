@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Priceio.ClasesBD
+﻿
+namespace Priceio.ClasesSQLite
 {
     internal class ConfiguracionVentanaSplash
     {
@@ -13,7 +8,12 @@ namespace Priceio.ClasesBD
             get;
             set;
         }
-        public bool ActivarSplash
+        public string? Audio
+        {
+            get;
+            set;
+        }
+        public int Duracion
         {
             get;
             set;
@@ -28,13 +28,12 @@ namespace Priceio.ClasesBD
             get;
             set;
         }
-        public string? Audio
+        public bool? Voz
         {
             get;
             set;
         }
-        
-        public int Duracion
+        public bool? ActivarSplash
         {
             get;
             set;

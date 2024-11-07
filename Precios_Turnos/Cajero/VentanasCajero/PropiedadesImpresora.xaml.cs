@@ -18,7 +18,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Priceio.Cajero;
 using Priceio.ClasesGenericas;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Priceio
 {

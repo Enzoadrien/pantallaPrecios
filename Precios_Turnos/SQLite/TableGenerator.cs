@@ -1,19 +1,16 @@
-﻿using Microsoft.VisualBasic.Logging;
-using Priceio.Cajero;
-using Priceio.ClasesBD;
-using Priceio.Turnero;
+﻿using Priceio.Cajero;
+using Priceio.ClasesSQLite;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using System.Data;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Priceio.SQLite
 {
     internal class TableGenerator
     {
+        internal ManagerSQLite sqliteManager = new ManagerSQLite();
         internal bool GenenarBD()
         {
             List<TableClass> tables = new List<TableClass>();
@@ -21,16 +18,22 @@ namespace Priceio.SQLite
             // Get Types in the assembly.
             tables.Add(new TableClass(new ConfiguracionODBC().GetType()));
             tables.Add(new TableClass(new ConfiguracionVentanaSplash().GetType()));
+            tables.Add(new TableClass(new VozSplash().GetType()));
             tables.Add(new TableClass(new ConfiguracionTurnero().GetType()));
+            tables.Add(new TableClass(new ClientesTurnero().GetType()));
             tables.Add(new TableClass(new ConfiguracionVerificador().GetType()));
             tables.Add(new TableClass(new ConfiguracionCajero().GetType()));
             tables.Add(new TableClass(new ConfiguracionImpresora().GetType()));
 
+
+            sqliteManager.ConectarBD();
             // Create SQL for each table
             foreach (TableClass table in tables)
             {
-                Console.WriteLine(table.CreateTableScript());
-                Console.WriteLine();
+                if (sqliteManager.ExecuteQuery(table.CreateTableScript()) == 0)
+                {
+                    checkFields(table);
+                }
             }
 
             // Total Hacked way to find FK relationships! Too lazy to fix right now
@@ -52,32 +55,53 @@ namespace Priceio.SQLite
                     }
                 }
             }
+            sqliteManager.DesconectarBD();
             return true;
         }
+
+        private void checkFields(TableClass table)
+        {
+            List<string> cols = new List<string>();
+
+            foreach (DataRow row in sqliteManager.GetDataQuerry("PRAGMA table_info(" + table.ClassName + ")").Rows)
+            {
+
+                cols.Add(row[1].ToString());
+            }
+            foreach (KeyValuePair<String, Type> field in table.Fields)
+            {
+                if (!cols.Contains(field.Key))
+                {
+                    sqliteManager.ExecuteQuery("ALTER TABLE " + table.ClassName + " ADD COLUMN " + field.Key + " " + TableClass.dataMapper[field.Value]);
+                }
+            }
+        }
     }
+
 
     public class TableClass
     {
         private List<KeyValuePair<String, Type>> _fieldInfo = new List<KeyValuePair<String, Type>>();
         private string _className = String.Empty;
-
-        private Dictionary<Type, String> dataMapper
+        object _oClass;
+        internal static Dictionary<Type, String> dataMapper
         {
             get
             {
                 // Add the rest of your CLR Types to SQL Types mapping here
                 Dictionary<Type, String> dataMapper = new Dictionary<Type, string>();
-                dataMapper.Add(typeof(int), "BIGINT");
+                dataMapper.Add(typeof(int), "INTEGER");
                 dataMapper.Add(typeof(string), "TEXT");
-                dataMapper.Add(typeof(bool), "BIT");
-                dataMapper.Add(typeof(DateTime), "DATETIME");
-                dataMapper.Add(typeof(float), "FLOAT");
-                dataMapper.Add(typeof(decimal), "DECIMAL(18,0)");
-                dataMapper.Add(typeof(double), "DECIMAL(18,0)");
+                dataMapper.Add(typeof(Char), "TEXT");
+                dataMapper.Add(typeof(bool), "INTEGER");
+                dataMapper.Add(typeof(bool?), "INTEGER");
+                dataMapper.Add(typeof(DateTime), "TEXT");
+                dataMapper.Add(typeof(float), "REAL");
+                dataMapper.Add(typeof(decimal), "REAL");
+                dataMapper.Add(typeof(double), "REAL");
                 dataMapper.Add(typeof(Guid), "UNIQUEIDENTIFIER");
-                dataMapper.Add(typeof(Pago.Tipo), "BIGINT");
-                dataMapper.Add(typeof(Pago.Estado), "BIGINT");
-
+                dataMapper.Add(typeof(Pago.Tipo), "INTEGER");
+                dataMapper.Add(typeof(Pago.Estado), "INTEGER");
                 return dataMapper;
             }
         }
@@ -94,10 +118,16 @@ namespace Priceio.SQLite
             set { _className = value; }
         }
 
-        public TableClass(Type t)
+        public object Class
+        {
+            get { return _oClass; }
+            set { _oClass = value; }
+        }
+
+        public TableClass(Type t, object oClass = null)
         {
             this._className = t.Name;
-
+            _oClass = oClass;
             foreach (PropertyInfo p in t.GetProperties())
             {
                 KeyValuePair<String, Type> field = new KeyValuePair<String, Type>(p.Name, p.PropertyType);
@@ -112,7 +142,7 @@ namespace Priceio.SQLite
 
             script.AppendLine("CREATE TABLE " + ClassName);
             script.AppendLine("(");
-            script.AppendLine("\t ID BIGINT,");
+            script.AppendLine("\t ID INTEGER PRIMARY KEY AUTOINCREMENT,");
             for (int i = 0; i < Fields.Count; i++)
             {
                 KeyValuePair<String, Type> field = Fields[i];
@@ -134,9 +164,7 @@ namespace Priceio.SQLite
 
                 script.Append(Environment.NewLine);
             }
-
             script.AppendLine(")");
-
             return script.ToString();
         }
     }

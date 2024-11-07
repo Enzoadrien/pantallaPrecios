@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
     <PackageReference Include="MySql.Data" Version="9.0.0" />
     <PackageReference Include="System.Data.Odbc" Version="8.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="System.Speech" Version="8.0.0" />
@@ -64,36 +64,21 @@
     <Compile Update="Cajero\VentanasCajero\VentanaLogSmart.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Properties\Cajero.Designer.cs">
+    <Compile Update="Properties\ENG%28US%29.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Cajero.settings</DependentUpon>
+      <DependentUpon>ENG(US).settings</DependentUpon>
     </Compile>
-    <Compile Update="Properties\DNS.Designer.cs">
+    <Compile Update="Properties\ESP(MX).Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
-      <DependentUpon>DNS.settings</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Turnero.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Turnero.settings</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\VentanaSplash.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VentanaSplash.settings</DependentUpon>
+      <DependentUpon>ESP%28MX%29.settings</DependentUpon>
     </Compile>
     <Compile Update="VentanasGenericas\ConfigurarNombres.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="VentanasGenericas\ConfigurarVoz.xaml.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Properties\Verificador.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Verificador.settings</DependentUpon>
     </Compile>
     <Compile Update="Cajero\VentanasCajero\PropiedadesImpresora.xaml.cs">
       <SubType>Code</SubType>
@@ -122,25 +107,13 @@
     <None Update="ITLlib.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Properties\Cajero.settings">
+    <None Update="Properties\ENG%28US%29.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Cajero.Designer.cs</LastGenOutput>
+      <LastGenOutput>ENG(US).Designer.cs</LastGenOutput>
     </None>
-    <None Update="Properties\DNS.settings">
+    <None Update="Properties\ESP(MX).settings">
       <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>DNS.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="Properties\Verificador.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Verificador.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="Properties\Turnero.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Turnero.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="Properties\VentanaSplash.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>VentanaSplash.Designer.cs</LastGenOutput>
+      <LastGenOutput>ESP%28MX%29.Designer.cs</LastGenOutput>
     </None>
     <None Update="Recursos\audios\bells-1.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -221,9 +194,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\turnoAnt.3k">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Recursos\voz.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

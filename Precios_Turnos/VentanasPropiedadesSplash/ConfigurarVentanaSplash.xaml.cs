@@ -1,34 +1,22 @@
-﻿
-using System;
-using System.Buffers.Text;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Security;
 using System.Speech.Synthesis;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Org.BouncyCastle.Asn1.X509;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
 using Priceio.ClasesGenericas;
 using Priceio.Turnero;
 using Priceio.Turnero.Kretz;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using System.Linq;
 using static Priceio.Cajero.ChannelData;
 
 namespace Priceio
@@ -46,8 +34,8 @@ namespace Priceio
 
         private BackgroundWorker backgroundWorker = new BackgroundWorker();
 
-        private SMARTPayout smartPayout;
-        private SMARTHopper smartHopper;
+        private SMARTPayout? smartPayout;
+        private SMARTHopper? smartHopper;
 
         internal ConfigurarVentanaSplash(MainWindow pmainWindow, SMARTPayout? payout = null, SMARTHopper? hopper = null)
         {
@@ -55,6 +43,7 @@ namespace Priceio
             smartHopper = hopper;
             InitializeComponent();
             CargarDatos();
+
             mainWindow = pmainWindow;
             FocusManager.SetFocusedElement(this, cbxTipo);
             backgroundWorker.WorkerReportsProgress = true;
@@ -71,6 +60,7 @@ namespace Priceio
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             esInicio = false;
+            cambioTipoSplash();
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -145,71 +135,106 @@ namespace Priceio
 
         private void CargarDatos()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            chkActivarSplash.IsChecked = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
-            cbxTipoSplash.SelectedValue = config.AppSettings.Settings["TipoSplash"].Value;
-            cbxTipo.SelectedValue = config.AppSettings.Settings["TipoTurnero"].Value;
-            cbxProtocolo.SelectedValue = config.AppSettings.Settings["ProtocoloTurnero"].Value;
-            Puerto.Text = config.AppSettings.Settings["PuertoTCP"].Value;
-            PuertoTCPCajero.Text = config.AppSettings.Settings["PuertoTCP"].Value;
-            cbxPuertoComNV22.SelectedValue = config.AppSettings.Settings["COMNV22"].Value;
-            SSPNV22Spectral.Text = config.AppSettings.Settings["SSPNV22"].Value;
-            cbxPuertoComSMARTHopper.SelectedValue = config.AppSettings.Settings["COMHopper"].Value;
-            SSPSMARTHopper.Text = config.AppSettings.Settings["SSPHopper"].Value;
-            chkLogPago.IsChecked = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
-            Durar.Text = config.AppSettings.Settings["Duracion"].Value;
-            cbxTurnosAnt.SelectedValue = config.AppSettings.Settings["TurnosAnteriores"].Value;
-            cbxAudio.SelectedItem = config.AppSettings.Settings["Audio"].Value;
-            chkVoz.IsChecked = config.AppSettings.Settings["Voz"].Value.Equals("true") ? true : false;
-            string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
-            if (clientes[0].Length > 0)
-                foreach (string cliente in clientes)
-                {
-                    cbxTurneros.Items.Add(cliente);
-                }
-            lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
-            chkMostrarNombres.IsChecked = config.AppSettings.Settings["MostrarNombres"].Value.Equals("true") ? true : false;
-
-
+            ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+            if (SQLiteClass != null)
+            {
+                cbxTipoSplash.SelectedValue = SQLiteClass.TipoSplash;
+                chkActivarSplash.IsChecked = SQLiteClass.ActivarSplash;
+                cbxAudio.SelectedItem = SQLiteClass.Audio;
+                Durar.Text = SQLiteClass.Duracion.ToString();
+                Ancho.Text = SQLiteClass.Ancho.ToString();
+                Alto.Text = SQLiteClass.Alto.ToString();
+                chkVoz.IsChecked = SQLiteClass.Voz;
+            }
+            ConfiguracionTurnero? SQLiteClassTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+            if (SQLiteClassTurnero != null)
+            {
+                cbxTipo.SelectedValue = SQLiteClassTurnero.TipoTurnero;
+                cbxProtocolo.SelectedValue = SQLiteClassTurnero.ProtocoloTurnero;
+                Puerto.Text = SQLiteClassTurnero.PuertoTCP.ToString();
+                cbxTurnosAnt.SelectedValue = SQLiteClassTurnero.TurnosAnteriores;
+                List<ClientesTurnero>? ListClientesTurnero = new SQLiteClassManager().GetClientesTurnero();
+                if (ListClientesTurnero != null)
+                    cbxTurneros.ItemsSource = ListClientesTurnero.Select(i => i.Cliente);
+                lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
+                chkMostrarNombres.IsChecked = SQLiteClassTurnero.MostrarNombres;
+            }
+            ConfiguracionVerificador? SQLiteClassVerificador = new SQLiteClassManager().GetConfiguracionVerificador();
+            if (SQLiteClassVerificador != null)
+            {
+            }
+            ConfiguracionCajero? SQLiteClassCajero = new SQLiteClassManager().GetConfiguracionCajero();
+            if (SQLiteClassCajero != null)
+            {
+                PuertoTCPCajero.Text = SQLiteClassCajero.PuertoTCP.ToString();
+                cbxPuertoComNV22.SelectedValue = SQLiteClassCajero.COMPayout;
+                SSPNV22Spectral.Text = SQLiteClassCajero.SSPPayout.ToString();
+                cbxPuertoComSMARTHopper.SelectedValue = SQLiteClassCajero.COMHopper;
+                SSPSMARTHopper.Text = SQLiteClassCajero.SSPHopper.ToString();
+                chkLogPagos.IsChecked = SQLiteClassCajero.LogPagos;
+            }
         }
 
         private void GuardarDatos()
         {
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["ActivarSplash"].Value = chkActivarSplash.IsChecked == true ? "true" : "false";
-            config.AppSettings.Settings["TipoSplash"].Value = ((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["TipoTurnero"].Value = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["ProtocoloTurnero"].Value = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
-            if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
-                config.AppSettings.Settings["PuertoTCP"].Value = PuertoTCPCajero.Text;
+            if (!GuardarDatosVentanaSplash() || !GuardarDatosTurnero()
+                || !GuardarDatosClientesTurnero() || !GuardarDatosCajero())
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                dialog.btnCancelar.Visibility = Visibility.Visible;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
+        }
 
-            else
-                config.AppSettings.Settings["PuertoTCP"].Value = Puerto.Text;
-            config.AppSettings.Settings["COMNV22"].Value = ((ComboBoxItem)cbxPuertoComNV22.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["SSPNV22"].Value = SSPNV22Spectral.Text;
-            config.AppSettings.Settings["COMHopper"].Value = ((ComboBoxItem)cbxPuertoComSMARTHopper.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["SSPHopper"].Value = SSPSMARTHopper.Text;
-            config.AppSettings.Settings["LogPago"].Value = chkLogPago.IsChecked == true ? "true" : "false";
-            config.AppSettings.Settings["Duracion"].Value = Durar.Text;
-            config.AppSettings.Settings["TurnosAnteriores"].Value = ((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["Audio"].Value = cbxAudio.SelectedItem.ToString();
-            config.AppSettings.Settings["Voz"].Value = chkVoz.IsChecked == true ? "true" : "false";
-            string clientes = string.Empty;
+        private bool GuardarDatosVentanaSplash()
+        {
+            ConfiguracionVentanaSplash SQLiteClass = new ConfiguracionVentanaSplash();
+            SQLiteClass.TipoSplash = ((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString();
+            SQLiteClass.Audio = cbxAudio.SelectedItem.ToString();
+            SQLiteClass.Duracion = int.Parse(Durar.Text);
+            SQLiteClass.Ancho = int.Parse(Ancho.Text);
+            SQLiteClass.Alto = int.Parse(Alto.Text);
+            SQLiteClass.Voz = chkVoz.IsChecked;
+            SQLiteClass.ActivarSplash = chkActivarSplash.IsChecked;
+            return new SQLiteClassManager().SetConfiguracionVentanaSplash(SQLiteClass);
+        }
+
+        private bool GuardarDatosTurnero()
+        {
+            ConfiguracionTurnero SQLiteClassTurnero = new ConfiguracionTurnero();
+            SQLiteClassTurnero.TipoTurnero = ((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString();
+            SQLiteClassTurnero.ProtocoloTurnero = ((ComboBoxItem)cbxProtocolo.SelectedItem).Tag.ToString();
+            SQLiteClassTurnero.PuertoTCP = int.Parse(Puerto.Text);
+            SQLiteClassTurnero.TurnosAnteriores = int.Parse(((ComboBoxItem)cbxTurnosAnt.SelectedItem).Tag.ToString());
+            SQLiteClassTurnero.MostrarNombres = chkMostrarNombres.IsChecked;
+            return new SQLiteClassManager().SetConfiguracionTurnero(SQLiteClassTurnero);
+        }
+
+        private bool GuardarDatosClientesTurnero()
+        {
+            List<ClientesTurnero> ListClientesTurnero = new List<ClientesTurnero>();
             foreach (string cliente in cbxTurneros.Items)
             {
-                clientes += cliente + "|";
+                ListClientesTurnero.Add(new ClientesTurnero { Cliente = cliente });
             }
-            if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S") && clientes.Length > 0)
-                config.AppSettings.Settings["Clientes"].Value = clientes.Substring(0, clientes.Length - 1);
+            if (ListClientesTurnero.Count > 0)
+                return new SQLiteClassManager().SetClientesTurnero(ListClientesTurnero);
             else
-                config.AppSettings.Settings["Clientes"].Value = "";
+                return true;
+        }
 
-            config.AppSettings.Settings["MostrarNombres"].Value = chkMostrarNombres.IsChecked == true ? "true" : "false";
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
-
+        private bool GuardarDatosCajero()
+        {
+            ConfiguracionCajero SQLiteClassCajero = new ConfiguracionCajero();
+            SQLiteClassCajero.PuertoTCP = int.Parse(PuertoTCPCajero.Text);
+            SQLiteClassCajero.COMPayout = ((ComboBoxItem)cbxPuertoComNV22.SelectedItem).Tag.ToString();
+            SQLiteClassCajero.SSPPayout = int.Parse(SSPNV22Spectral.Text);
+            SQLiteClassCajero.COMHopper = ((ComboBoxItem)cbxPuertoComSMARTHopper.SelectedItem).Tag.ToString();
+            SQLiteClassCajero.SSPHopper = int.Parse(SSPSMARTHopper.Text);
+            SQLiteClassCajero.LogPagos = chkLogPagos.IsChecked;
+            return new SQLiteClassManager().SetConfiguracionCajero(SQLiteClassCajero);
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
@@ -306,15 +331,15 @@ namespace Priceio
             }));
         }
 
-        private void DoWork(object sender, DoWorkEventArgs e)
+        private async void DoWork(object sender, DoWorkEventArgs e)
         {
             while (true)
             {
                 // Simulate long running work
-                Thread.Sleep(500);
                 backgroundWorker.ReportProgress(count);
                 if (count == 255)
                     break;
+                await Task.Delay(500);
             }
         }
 
@@ -328,31 +353,34 @@ namespace Priceio
 
         private void cbxTipo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            try
+            if (!esInicio)
             {
-                if ((ComboBoxItem)cbxTipo.SelectedItem != null)
-                    if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
-                    {
-                        IP.IsEnabled = true;
-                        string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
-                        if (ip.Length == 4)
+                try
+                {
+                    if ((ComboBoxItem)cbxTipo.SelectedItem != null)
+                        if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
                         {
-                            IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                            IP.IsEnabled = true;
+                            string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
+                            if (ip.Length == 4)
+                            {
+                                IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                            }
+                            btnBuscar.IsEnabled = true;
+                            cbxTurneros.IsEnabled = true;
+                            lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
                         }
-                        btnBuscar.IsEnabled = true;
-                        cbxTurneros.IsEnabled = true;
-                        lblEncontrados.Content = "Encontrados: " + cbxTurneros.Items.Count;
-                    }
-                    else
-                    {
-                        IP.IsEnabled = false;
-                        IP.Text = "";
-                        btnBuscar.IsEnabled = false;
-                        cbxTurneros.IsEnabled = false;
-                        lblEncontrados.Content = "Encontrados: 0";
-                    }
+                        else
+                        {
+                            IP.IsEnabled = false;
+                            IP.Text = "";
+                            btnBuscar.IsEnabled = false;
+                            cbxTurneros.IsEnabled = false;
+                            lblEncontrados.Content = "Encontrados: 0";
+                        }
+                }
+                catch { }
             }
-            catch { }
         }
 
         private void btnNombresEquipos_Click(object sender, RoutedEventArgs e)
@@ -433,23 +461,12 @@ namespace Priceio
 
         private void vozDemo()
         {
-            string line = string.Empty;
-            try
+            VozSplash? SQLiteClass = new SQLiteClassManager().GetVozSplash();
+            if (SQLiteClass != null)
             {
-                synthesizer.SpeakAsyncCancelAll();
-                using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
-                {
-                    var sr = new StreamReader(stream);
-
-                    line = sr.ReadToEnd();
-                    stream.Close();
-                }
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (!config.AppSettings.Settings["TipoVoz"].Value.Equals(""))
-                    synthesizer.SelectVoice(config.AppSettings.Settings["TipoVoz"].Value);
-                synthesizer.SpeakAsync(line);
+                synthesizer.SelectVoice(SQLiteClass.TipoVoz);
+                synthesizer.SpeakAsync(SQLiteClass.TextoVoz);
             }
-            catch { }
         }
 
         private void chkVoz_Unchecked(object sender, RoutedEventArgs e)
@@ -459,6 +476,12 @@ namespace Priceio
         }
 
         private void cbxTipoSplash_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!esInicio)
+                cambioTipoSplash();
+        }
+
+        private void cambioTipoSplash()
         {
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
             {
@@ -542,11 +565,48 @@ namespace Priceio
             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (dialog.ShowDialog() == true)
             {
-
+                if (!new SQLiteClassManager().ResetConfigSplash())
+                {
+                    dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                    dialog.btnCancelar.Visibility = Visibility.Visible;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                }
+                else
+                    LimpiarDatosVentana();
             }
         }
 
+        private void LimpiarDatosVentana()
+        {
+            cbxTipoSplash.SelectedIndex = 0;
+            esInicio = true;
+            cbxAudio.SelectedIndex = 0;
+            Durar.Text = "5";
+            Ancho.Text = "600";
+            Alto.Text = "600";
+            chkVoz.IsChecked = false;
+            cbxTipo.SelectedIndex = 0;
+            cbxProtocolo.SelectedIndex = 0;
+            Puerto.Text = "9101";
+            cbxTurnosAnt.SelectedIndex = 0;
+            IP.Text = "";
+            cbxTurneros.ItemsSource = null; ;
+            lblEncontrados.Content = "Encontrados: 0";
+            chkMostrarNombres.IsChecked = false;
+            PuertoTCPCajero.Text = "9101";
+            cbxPuertoComNV22.SelectedIndex = 0;
+            SSPNV22Spectral.Text = "0";
+            cbxPuertoComSMARTHopper.SelectedIndex = 0;
+            SSPSMARTHopper.Text = "0";
+            chkLogPagos.IsChecked = false;
+            chkActivarSplash.IsChecked = false;
 
+            esInicio = false;
+            count = 0;
+            countEncontrados = 0;
+        }
     }
     public class ViewModelAudio
     {

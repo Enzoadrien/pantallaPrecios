@@ -13,11 +13,11 @@ namespace Priceio.Properties {
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
-    internal sealed partial class Cajero : global::System.Configuration.ApplicationSettingsBase {
+    internal sealed partial class ENG_US_ : global::System.Configuration.ApplicationSettingsBase {
         
-        private static Cajero defaultInstance = ((Cajero)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Cajero())));
+        private static ENG_US_ defaultInstance = ((ENG_US_)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new ENG_US_())));
         
-        public static Cajero Default {
+        public static ENG_US_ Default {
             get {
                 return defaultInstance;
             }
@@ -25,25 +25,13 @@ namespace Priceio.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("9101")]
-        public int PuertoTCP {
+        [global::System.Configuration.DefaultSettingValueAttribute("File")]
+        public string Archivo {
             get {
-                return ((int)(this["PuertoTCP"]));
+                return ((string)(this["Archivo"]));
             }
             set {
-                this["PuertoTCP"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ValorLogPago {
-            get {
-                return ((string)(this["ValorLogPago"]));
-            }
-            set {
-                this["ValorLogPago"] = value;
+                this["Archivo"] = value;
             }
         }
     }

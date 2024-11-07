@@ -1,27 +1,12 @@
 ﻿using Microsoft.Win32;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Data;
 using System.Data.Odbc;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Priceio
 {
@@ -35,13 +20,15 @@ namespace Priceio
         {
             InitializeComponent();
             DataContext = new ViewModel();
-            CargarInfo();
+            CargarDatos();
             FocusManager.SetFocusedElement(this, cbxODBC);
         }
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
+
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             try { DragMove(); } catch (Exception) { }
@@ -49,7 +36,7 @@ namespace Priceio
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            GuardarInfo();
+            GuardarDatos();
             Close();
         }
 
@@ -74,32 +61,38 @@ namespace Priceio
             }
         }
 
-        private void CargarInfo()
+        private void CargarDatos()
         {
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            cbxODBC.SelectedItem = config.AppSettings.Settings["ODBC"].Value;
-            Usuario.Text = config.AppSettings.Settings["UsuarioODBC"].Value;
-            Contrasena.Password = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
-
+            ConfiguracionODBC? SQLiteClass = new SQLiteClassManager().GetConfiguracionODBC();
+            if (SQLiteClass != null)
+            {
+                cbxODBC.SelectedItem = SQLiteClass.ODBC;
+                Usuario.Text = SQLiteClass.UsuarioODBC;
+                Contrasena.Password = SQLiteClass.ContrasenaODBC;
+            }
         }
 
-        private void GuardarInfo()
+        private void GuardarDatos()
         {
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["ODBC"].Value = cbxODBC.Text;
-            config.AppSettings.Settings["UsuarioODBC"].Value = Usuario.Text;
-            config.AppSettings.Settings["ContrasenaODBC"].Value = vSeguridad.EncryptString(MainWindow.nombreApp, Contrasena.Password);
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
+            ConfiguracionODBC SQLiteClass = new ConfiguracionODBC();
+            SQLiteClass.ODBC = cbxODBC.Text;
+            SQLiteClass.UsuarioODBC = Usuario.Text;
+            SQLiteClass.ContrasenaODBC = vSeguridad.EncryptString(MainWindow.nombreApp, Contrasena.Password);
+            if (!new SQLiteClassManager().SetConfiguracionODBC(SQLiteClass))
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                dialog.btnCancelar.Visibility = Visibility.Visible;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                GuardarInfo();
+                GuardarDatos();
                 Close();
             }
         }
@@ -111,7 +104,7 @@ namespace Priceio
         public ViewModel()
         {
             CmbContent = new ObservableCollection<string>();
-            RegistryKey regKey = Registry.CurrentUser.OpenSubKey(@"Software\ODBC\ODBC.INI\ODBC Data Sources");
+            RegistryKey? regKey = Registry.CurrentUser.OpenSubKey(@"Software\ODBC\ODBC.INI\ODBC Data Sources");
             if (regKey != null)
                 foreach (string name in regKey.GetValueNames())
                     CmbContent.Add(name);

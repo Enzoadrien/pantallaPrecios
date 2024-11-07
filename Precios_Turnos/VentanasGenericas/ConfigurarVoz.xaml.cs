@@ -1,4 +1,7 @@
 ﻿using Microsoft.Win32;
+using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,7 +35,7 @@ namespace Priceio
         {
             InitializeComponent();
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            CargarInfo();
+            CargarDatos();
 
         }
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -55,7 +58,7 @@ namespace Priceio
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
-            GuardarTexto();
+            GuardarDatos();
             Close();
         }
 
@@ -65,47 +68,35 @@ namespace Priceio
             Close();
         }
 
-        private void GuardarTexto()
+        private void GuardarDatos()
         {
-            using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
+            VozSplash SQLiteClass = new VozSplash();
+            SQLiteClass.TipoVoz = cbxTipoVoz.SelectedItem.ToString();
+            SQLiteClass.TextoVoz = lblTexto.Text;
+            if (!new SQLiteClassManager().SetVozSplash(SQLiteClass))
             {
-                stream.SetLength(0);
-                byte[] bytes = Encoding.UTF8.GetBytes(lblTexto.Text);
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Close();
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                dialog.btnCancelar.Visibility = Visibility.Visible;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["TipoVoz"].Value = cbxTipoVoz.SelectedItem.ToString();
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
         }
-        private void CargarInfo()
+        
+        private void CargarDatos()
         {
-
-            string line = string.Empty;
-            try
-            {
-                using (Stream stream = new FileStream(@".\Recursos\voz.3k", FileMode.Open))
-                {
-                    var sr = new StreamReader(stream);
-
-                    line = sr.ReadToEnd();
-                    stream.Close();
-                }
-            
-            lblTexto.Text = line;
-
             // show installed voices
             foreach (var v in synthesizer.GetInstalledVoices().Select(v => v.VoiceInfo))
             {
                 cbxTipoVoz.Items.Add(v.Name);
             }
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            cbxTipoVoz.SelectedItem = config.AppSettings.Settings["TipoVoz"].Value;
+
+            VozSplash? SQLiteClass = new SQLiteClassManager().GetVozSplash();
+            if (SQLiteClass != null)
+            {
+                lblTexto.Text = SQLiteClass.TextoVoz;
+                cbxTipoVoz.SelectedItem = SQLiteClass.TipoVoz;
             }
-            catch { }
             esInicio = false;
         }
 
@@ -121,7 +112,7 @@ namespace Priceio
                 }
                 catch { }
             }
-            
+
         }
     }
 }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Priceio.ClasesBD
+﻿
+namespace Priceio.ClasesSQLite
 {
     internal class ConfiguracionODBC
     {
@@ -23,5 +18,6 @@ namespace Priceio.ClasesBD
             get;
             set;
         }
+
     }
 }

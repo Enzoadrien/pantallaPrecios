@@ -13,13 +13,25 @@ namespace Priceio.Properties {
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
-    internal sealed partial class Verificador : global::System.Configuration.ApplicationSettingsBase {
+    internal sealed partial class ESP_MX_ : global::System.Configuration.ApplicationSettingsBase {
         
-        private static Verificador defaultInstance = ((Verificador)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Verificador())));
+        private static ESP_MX_ defaultInstance = ((ESP_MX_)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new ESP_MX_())));
         
-        public static Verificador Default {
+        public static ESP_MX_ Default {
             get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Archivo")]
+        public string Archivo {
+            get {
+                return ((string)(this["Archivo"]));
+            }
+            set {
+                this["Archivo"] = value;
             }
         }
     }

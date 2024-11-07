@@ -1,5 +1,4 @@
-﻿using Microsoft.Identity.Client.NativeInterop;
-using Microsoft.Web.WebView2.Core;
+﻿using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
 using Priceio;
@@ -8,6 +7,7 @@ using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
 using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
 using Priceio.SQLite;
 using Priceio.Turnero;
 using System;
@@ -46,8 +46,8 @@ using System.Windows.Resources;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Linq;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 using static Priceio.Cajero.ChannelData;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Priceio
 {
@@ -65,7 +65,7 @@ namespace Priceio
         private bool editar = false;
         private bool animaciones = false;
         private bool maximizado = false;
-        private bool activarSplash = false;
+        private bool? activarSplash = false;
         private string? tipoSplash;
         private bool estaSaliendo = false;
         public Color ultimoColorLetra;
@@ -89,9 +89,9 @@ namespace Priceio
         public MainWindow()
         {
             InitializeComponent();
-            //new TableGenerator().GenenarBD();
-
             crearDirectorios();
+
+            new TableGenerator().GenenarBD();
             Coordenadas.Visibility = Visibility.Hidden;
             CargarVistaPrevia();
 
@@ -309,6 +309,7 @@ namespace Priceio
             ImportarDiseno.IsEnabled = false;
             ExportarDiseno.IsEnabled = false;
             EditarDiseno.IsEnabled = false;
+            ConfigurarSplash.IsEnabled = false;
             ResizeMode = ResizeMode.NoResize;
         }
 
@@ -317,6 +318,7 @@ namespace Priceio
             Conexion.IsEnabled = true;
             ImportarDiseno.IsEnabled = true;
             ExportarDiseno.IsEnabled = true;
+            ConfigurarSplash.IsEnabled = true;
             EditarDiseno.IsEnabled = true;
         }
 
@@ -344,38 +346,42 @@ namespace Priceio
                 CargarAnimaciones();
                 Task.Run(() => ComportamientoObjetos());
 
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
-                tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
-                seMuestraLogSmart = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
-                if (activarSplash)
+                ConfiguracionVentanaSplash? configuracionVentanaSplash = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                if (configuracionVentanaSplash != null)
                 {
-                    switch (tipoSplash)
+                    activarSplash = configuracionVentanaSplash.ActivarSplash;
+                    tipoSplash = configuracionVentanaSplash.TipoSplash;
+                    if (activarSplash == true)
                     {
-                        case "T":
-                            EscucharTurnos();
-                            break;
-                        case "V":
-                            break;
-                        case "C":
-                            EscucharPagos();
-                            try
-                            {
-                                if (seMuestraLogSmart)
+                        switch (tipoSplash)
+                        {
+                            case "T":
+                                EscucharTurnos();
+                                break;
+                            case "V":
+                                break;
+                            case "C":
+                                EscucharPagos();
+                                try
                                 {
-                                    timer.Tick += new EventHandler(TimerTickLog);
-                                    MostrarLogPagos();
+                                    ConfiguracionCajero? configuracionCajero = new SQLiteClassManager().GetConfiguracionCajero();
+                                    if (configuracionCajero != null)
+                                    {
+                                        if (configuracionCajero.LogPagos == true)
+                                        {
+                                            timer.Tick += new EventHandler(TimerTickLog);
+                                            MostrarLogPagos();
+                                        }
+                                    }
                                 }
-                            }
-                            catch
-                            {
-                            }
-                            break;
+                                catch
+                                {
+                                }
+                                break;
+                        }
                     }
-                    
                 }
             }
-
             else if (WindowState == WindowState.Maximized && editar)
             {
                 //Topmost = false;
@@ -410,34 +416,28 @@ namespace Priceio
                 CenterWindowOnScreen();
                 LogoPrincipal.Opacity = 1;
 
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
-                tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
-                seMuestraLogSmart = config.AppSettings.Settings["LogPago"].Value.Equals("true") ? true : false;
-                if (activarSplash)
+                ConfiguracionVentanaSplash? configuracionVentanaSplash = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                if (configuracionVentanaSplash != null)
                 {
-                    switch (tipoSplash)
+                    activarSplash = configuracionVentanaSplash.ActivarSplash;
+                    tipoSplash = configuracionVentanaSplash.TipoSplash;
+                    if (activarSplash == true)
                     {
-                        case "T":
-                            AsynchronousSocketListener.StopListening();
-                            break;
-                        case "V":
-                            break;
-                        case "C":
-                            DetenerPagos();
-                            if (ventanaLogSmart != null)
-                                ventanaLogSmart.Close();
-                            break;
+                        switch (tipoSplash)
+                        {
+                            case "T":
+                                AsynchronousSocketListener.StopListening();
+                                break;
+                            case "V":
+                                break;
+                            case "C":
+                                DetenerPagos();
+                                if (ventanaLogSmart != null)
+                                    ventanaLogSmart.Close();
+                                break;
+                        }
                     }
-                    ConfigurarSplash.Visibility = Visibility.Visible;
                 }
-                else
-                {
-                    ConfigurarSplash.Visibility = Visibility.Hidden;
-                }
-
-
-
                 if (esAplicacion)
                 {
                     QuitarAnimaciones();
@@ -457,7 +457,7 @@ namespace Priceio
                 SalirMaximizar();
                 estaSaliendo = false;
             }
-            else if (maximizado && activarSplash)
+            else if (maximizado && activarSplash == true)
             {
 
                 switch (tipoSplash)
@@ -1161,7 +1161,7 @@ namespace Priceio
                         Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
                         tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
                         activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
-                        if (activarSplash)
+                        if (activarSplash == true)
                         {
                             ((MenuItem)cm.Items[9]).IsEnabled = true;
                             if (tipoSplash.Equals("T"))
@@ -3167,7 +3167,7 @@ namespace Priceio
 
                 Task.Run(() => smartHopper.RunHopper());
                 Task.Run(() => smartPayout.RunPayout());
-                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout,smartHopper));
+                Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout, smartHopper));
             }
             catch (Exception e)
             {
@@ -3184,7 +3184,7 @@ namespace Priceio
                 smartHopper.detenerHopper();
                 AsynchronousSocketListenerCajero.StopListening();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message, "ERROR");
             }
@@ -3758,6 +3758,11 @@ namespace Priceio
 
         public static void crearDirectorios()
         {
+            //Carpeta multimedia principal
+            if (!Directory.Exists(@".\data"))
+            {
+                Directory.CreateDirectory(@".\data");
+            }
             //Carpetas de animaciones
             if (!Directory.Exists(@".\objetos\animaciones"))
             {

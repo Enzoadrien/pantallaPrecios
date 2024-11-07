@@ -1,12 +1,7 @@
-﻿using Microsoft.VisualBasic.Logging;
-using Org.BouncyCastle.Asn1.X509;
-using Priceio.ClasesGenericas;
+﻿using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -16,8 +11,8 @@ namespace Priceio.Cajero.Payout
     internal class SMARTPayout
     {
         internal CPayout Payout;
-        private string ComPort;
-        private byte SSPAddress;
+        private string? ComPort = "COM1";
+        private byte SSPAddress = 0;
         internal bool RunningPayout = false;
         private int pollTimer = 500; // timer in ms
         private int reconnectionAttempts = 5;
@@ -33,15 +28,18 @@ namespace Priceio.Cajero.Payout
         internal bool BoolEmptyCash = false;
         internal bool BoolRouteNote = false;
         internal bool BoolDisableRouteNote = false;
-        internal int chanelRoute = 0; 
+        internal int chanelRoute = 0;
         private string moneda = "MXN";
 
         internal SMARTPayout()
         {
             Payout = new CPayout();
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            ComPort = config.AppSettings.Settings["COMNV22"].Value;
-            SSPAddress = byte.Parse(config.AppSettings.Settings["SSPNV22"].Value);
+            ConfiguracionCajero? configuracionCajero = new SQLiteClassManager().GetConfiguracionCajero();
+            if (configuracionCajero != null)
+            {
+                ComPort = configuracionCajero.COMPayout;
+                SSPAddress = byte.Parse(configuracionCajero.SSPPayout.ToString());
+            }
             timer.Interval = TimeSpan.FromMilliseconds(pollTimer);
             timer.Tick += new EventHandler(TimerTick);
             reconnectionTimer.Tick += new EventHandler(reconnectionTimer_Tick);
@@ -275,7 +273,7 @@ namespace Priceio.Cajero.Payout
         {
             Payout.SmartEmpty(ref logPagoPayout);
         }
-        
+
         private void RouteNote()
         {
             // Get the data from the payout
@@ -283,7 +281,7 @@ namespace Priceio.Cajero.Payout
             Payout.GetDataByChannel(chanelRoute, ref d);
             Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref logPagoPayout);
         }
-        
+
         private void DisableRouteNote()
         {
             ChannelData d = new ChannelData();

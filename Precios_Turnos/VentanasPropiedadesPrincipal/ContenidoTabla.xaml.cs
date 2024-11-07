@@ -11,7 +11,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using Priceio;
 using System.Linq;
-using Azure;
 using Priceio.ClasesGenericas;
 
 namespace Priceio

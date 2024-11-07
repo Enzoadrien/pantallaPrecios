@@ -1,25 +1,11 @@
-﻿using DataGate;
-using Precios_Turnos;
-using Priceio;
-using Priceio.Cajero.Hopper;
+﻿using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
-using Priceio.Cajero.VentanasCajero;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Printing;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Threading;
 using static Priceio.Cajero.StateObjectCajero;
 
 namespace Priceio.Cajero
