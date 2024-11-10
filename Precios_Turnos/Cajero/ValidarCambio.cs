@@ -3,6 +3,7 @@ using Org.BouncyCastle.Asn1.X509;
 using Precios_Turnos;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -261,6 +262,14 @@ namespace Priceio.Cajero
             }
             billetesCambio = totalBilletes;
             return total - totalBilletes;
+        }
+
+        internal bool cambioPayoutByChanel(int total, int chanel,List<ChannelData> chanelsData)
+        {
+            foreach (ChannelData chanelData in chanelsData)
+                if(chanelData.Channel== chanel && chanelData.Level>= total)
+                    return true;
+           return false;
         }
     }
 }

@@ -4,6 +4,7 @@ using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
 using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -604,6 +605,69 @@ namespace Priceio
             if (dialog != null)
             {
                 runLog = false;
+            }
+        }
+
+        private void btnRetirarDenominacion_Click(object sender, RoutedEventArgs e)
+        {
+            if (Cantidad.Text.Length > 0 && cbxDenominacion.SelectedIndex != -1)
+            {
+                int cantidad = int.Parse(Cantidad.Text);
+                if (cantidad > 0)
+                {
+                    ValidarCambio validarCambio = new ValidarCambio();
+                    Pago pago = new Pago();
+                    pago.Cambio = cantidad;
+                    pago.Canal = cbxDenominacion.SelectedIndex;
+                    bool seEntrego = false;
+                    if (tipoSMART == TipoSMART.PAYOUT)
+                    {
+                        seEntrego = validarCambio.cambioPayoutByChanel(cantidad, cbxDenominacion.SelectedIndex + 1, smartPayout.Payout.UnitDataList);
+                        if (seEntrego)
+                        {
+                            pago.BilletesCambio = cantidad;
+                            smartPayout.ActualizaPago(ref pago);
+                            smartPayout.BoolCalculatePayoutDenomination = true;
+                        }
+                    }
+                    else
+                    {
+                        seEntrego = validarCambio.cambioPayoutByChanel(cantidad, cbxDenominacion.SelectedIndex + 1, smartHopper.Hopper.UnitDataList);
+                        if (seEntrego)
+                        {
+                            pago.MonedasCambio = cantidad;
+                            smartHopper.ActualizaPago(ref pago);
+                            smartHopper.BoolCalculatePayoutDenomination = true;
+                        }
+                    }
+                    if (!seEntrego)
+                    {
+                        Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false);
+                        dialog.lblNombre.Content = "¡Advertencia!";
+                        dialog.lblTexto.Text = "El cajero no puede entregar la cantidad indicada, por favor revise que los datos sean correctos";
+                        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                        dialog.ShowDialog();
+                        FocusManager.SetFocusedElement(this, Cantidad);
+                    }
+                }
+                else
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Indique un valor diferente de cero en el retiro";
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
+                    FocusManager.SetFocusedElement(this, Cantidad);
+                }
+            }
+            else
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Indique un valor en el retiro";
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowDialog();
+                FocusManager.SetFocusedElement(this, Cantidad);
             }
         }
     }

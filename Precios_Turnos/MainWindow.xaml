@@ -54,7 +54,7 @@
         </Style>
     </Window.Resources>
     <Grid x:Name="Principal" PreviewMouseMove="Principal_PreviewMouseMove" PreviewMouseLeftButtonDown="Principal_PreviewMouseDown" PreviewMouseLeftButtonUp="Principal_PreviewMouseUp" MouseLeftButtonDown="Principal_MouseLeftButtonDown" Background="White">
-        <Grid x:Name="Base" />
+        <Grid x:Name="Base" Background="White" />
         <Image x:Name="Fondo" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Fill" />
         <Grid x:Name="VistaPrevia" Panel.ZIndex="1000"/>
         <Menu x:Name="Menu" Background="White" HorizontalAlignment="Left" VerticalAlignment="Top" Panel.ZIndex="1000" Height="25">
@@ -72,8 +72,8 @@
             <MenuItem x:Name="Editar" Header="Editar" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="EditarDiseno" Header="Editar diseño" Click="EditarDiseno_Click" FontFamily="Arial Rounded MT"/>
                 <Separator />
-                <MenuItem x:Name="ImportarDiseno" Header="Importar diseño" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
-                <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="ImportarDiseno" Header="Importar diseño y configuración" Click="ImportarDiseno_Click" FontFamily="Arial Rounded MT"/>
+                <MenuItem x:Name="ExportarDiseno" Header="Exportar diseño y configuración" Click="ExportarDiseno_Click" FontFamily="Arial Rounded MT"/>
             </MenuItem>
             <MenuItem x:Name="Ayuda" Header="Ayuda" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Sobre" Header="Sobre Priceio" FontFamily="Arial Rounded MT" Click="Sobre_Click"/>

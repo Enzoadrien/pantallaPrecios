@@ -577,7 +577,7 @@ namespace Priceio
             List<DataTable> ListTablas = mainWindow.CargarListaTablas(NombreControl.Text, control.Tag.ToString(),"");
             control.ItemsSource = ListTablas[0].DefaultView;
 
-            DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+            DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
             foreach (var file in info.GetFiles())
             {
                 if (file.Name.Equals(NombreControl.Text + ".sql"))

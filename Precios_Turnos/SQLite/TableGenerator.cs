@@ -1,5 +1,4 @@
-﻿using Priceio.Cajero;
-using Priceio.ClasesSQLite;
+﻿using Priceio.ClasesSQLite;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -21,9 +20,14 @@ namespace Priceio.SQLite
             tables.Add(new TableClass(new VozSplash().GetType()));
             tables.Add(new TableClass(new ConfiguracionTurnero().GetType()));
             tables.Add(new TableClass(new ClientesTurnero().GetType()));
+            tables.Add(new TableClass(new NombresClientesTurnero().GetType()));
             tables.Add(new TableClass(new ConfiguracionVerificador().GetType()));
             tables.Add(new TableClass(new ConfiguracionCajero().GetType()));
             tables.Add(new TableClass(new ConfiguracionImpresora().GetType()));
+            tables.Add(new TableClass(new ConfiguracionLector().GetType()));
+            tables.Add(new TableClass(new Pago().GetType()));
+            //tables.Add(new TableClass(new Turno().GetType()));
+
 
 
             sqliteManager.ConectarBD();

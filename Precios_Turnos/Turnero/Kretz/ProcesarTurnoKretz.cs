@@ -67,7 +67,7 @@ namespace Priceio.Turnero.Kretz
             nuevoTurno.SetCodTurnero(cmd85.Substring(0, 1));
             nuevoTurno.SetNumTurnero(cmd85.Substring(1, 2));
             nuevoTurno.SetNumEquipo(cmd85.Substring(7, 2));
-            int numTurno = new Recursos().CargarNumeroTurno();
+            int numTurno = new ControlTurno().CargarNumeroTurno();
             nuevoTurno.SetNumTurno(++numTurno);
 
             while (true)
@@ -102,7 +102,7 @@ namespace Priceio.Turnero.Kretz
             nuevoTurno.SetCodTurnero(cmd85.Substring(0, 1));
             nuevoTurno.SetNumTurnero(cmd85.Substring(1, 2));
             nuevoTurno.SetNumEquipo(cmd85.Substring(7, 2));
-            int numTurno = new Recursos().CargarNumeroTurno();
+            int numTurno = new ControlTurno().CargarNumeroTurno();
             if (numTurno == 0)
                 nuevoTurno.SetNumTurno(numTurno);
             else
@@ -204,8 +204,8 @@ namespace Priceio.Turnero.Kretz
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     respuesta += turnosAnt(pvStateObject.GetTurno().GetTurnosAnt());
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new ControlTurno().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new ControlTurno().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     MainWindow.listaTurnosKretz.Add(pvStateObject);
                     break;
                 case EstadoTurno.ANTERIOR_TURNO:
@@ -213,8 +213,8 @@ namespace Priceio.Turnero.Kretz
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new ControlTurno().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new ControlTurno().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     MainWindow.listaTurnosKretz.Add(pvStateObject);
                     break;
                 case EstadoTurno.SETEAR_TURNO:
@@ -222,8 +222,8 @@ namespace Priceio.Turnero.Kretz
                     respuesta += pvStateObject.GetTurno().GetNumTurnero();
                     respuesta += new Seguridad().CadenaConCeros(pvStateObject.GetTurno().GetNumTurno().ToString(), 6);
                     pvStateObject.SetEstadoActual(EstadoTurno.ESTADOINICIAL);
-                    new Recursos().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
-                    new Recursos().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
+                    new ControlTurno().GuardarNumeroTurno(pvStateObject.GetTurno().GetNumTurno());
+                    new ControlTurno().GuardarTurnoAnt(pvStateObject.GetTurno().GetNumTurno(), pvStateObject.GetTurno().GetNumEquipo());
                     MainWindow.listaTurnosKretz.Add(pvStateObject);
                     break;
             }

@@ -11,7 +11,8 @@ using System.Collections;
 using System.IO;
 using Priceio.Cajero.Payout;
 using Priceio.Cajero.Hopper;
-using Org.BouncyCastle.Asn1.X509;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 
 namespace Priceio.Cajero
 {
@@ -32,8 +33,12 @@ namespace Priceio.Cajero
             // The DNS name of the computer  
             // running the listener is "host.contoso.com".
             //  //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            int Puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
+            int Puerto = 0;
+            ConfiguracionCajero ? configuracionCajero = new SQLiteClassManager().GetConfiguracionCajero();
+            if (configuracionCajero != null)
+            {
+                Puerto = configuracionCajero.PuertoTCP;
+            }
             IPAddress ipAddress = IPAddress.Any;
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, Puerto);
 

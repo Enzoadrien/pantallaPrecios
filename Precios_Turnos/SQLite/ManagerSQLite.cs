@@ -35,7 +35,10 @@ namespace Priceio.SQLite
             try
             {
                 if (Connection != null)
+                {
                     Connection.Close();
+                    SqliteConnection.ClearPool(Connection);
+                }
                 return true;
 
             }
@@ -54,6 +57,7 @@ namespace Priceio.SQLite
             {
                 command = new SqliteCommand(query, Connection);
                 dt.Load(command.ExecuteReader());
+                command.Dispose();
             }
             catch { }
             return dt;
@@ -65,7 +69,9 @@ namespace Priceio.SQLite
             try
             {
                 command = new SqliteCommand(query, Connection);
-                return command.ExecuteNonQuery();
+                int response = command.ExecuteNonQuery();
+                command.Dispose();
+                return response;
             }
             catch { }
             return 0;

@@ -199,24 +199,24 @@ namespace Priceio
                 FileInfo fi = new FileInfo(dlg.FileName);
                 try
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetosSplash\multimedia\" + fi.Name);
-                    if (File.Exists(@".\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    FileInfo fileImg = new FileInfo(@".\data\objetosSplash\multimedia\" + fi.Name);
+                    if (File.Exists(@".\data\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
                         Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
-                            fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
+                            fi.CopyTo(@".\data\objetosSplash\multimedia\" + fi.Name, true);
                         }
                     }
                     else
-                        fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
+                        fi.CopyTo(@".\data\objetosSplash\multimedia\" + fi.Name, true);
                 }
                 catch
                 {
                 }
-                FileInfo Img = new FileInfo(@".\objetosSplash\multimedia\" + fi.Name);
+                FileInfo Img = new FileInfo(@".\data\objetosSplash\multimedia\" + fi.Name);
                 // Open document 
                 ContenidoTextBox.Text = Img.Name;
                 ContenidoTextBox.ToolTip = Img.Name;
@@ -224,7 +224,7 @@ namespace Priceio
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                image.UriSource = new Uri(@".\data\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 image.EndInit();
                 mainWindow.Fondo.Source = image;
                 Opacidad.IsEnabled = true;

@@ -25,6 +25,7 @@ namespace Priceio.Cajero.Payout
         internal bool BoolEnablePayout = false;
         internal bool BoolDisablePayout = false;
         internal bool BoolCalculatePayout = false;
+        internal bool BoolCalculatePayoutDenomination = false;
         internal bool BoolEmptyCash = false;
         internal bool BoolRouteNote = false;
         internal bool BoolDisableRouteNote = false;
@@ -80,6 +81,11 @@ namespace Priceio.Cajero.Payout
                 {
                     CalculatePayout(pago.BilletesCambio.ToString(), moneda.ToCharArray());
                     BoolCalculatePayout = false;
+                }
+                if (BoolCalculatePayoutDenomination)
+                {
+                    CalculatePayoutDenomination(pago.BilletesCambio.ToString(), pago.Canal, moneda.ToCharArray());
+                    BoolCalculatePayoutDenomination = false;
                 }
                 if (BoolEmptyCash)
                 {
@@ -251,6 +257,50 @@ namespace Priceio.Cajero.Payout
             }
             // Make payout
             return Payout.PayoutAmount(n, currency, ref logPagoPayout);
+        }
+
+        private bool CalculatePayoutDenomination(string amount, int chanel, char[] currency)
+        {
+            bool payoutRequired = false;
+            byte[] data = new byte[9]; // create to size of maximum possible
+            byte length = 9;
+            byte denomsToPayout = byte.Parse(amount);
+            // For each denomination
+            try
+            {
+                payoutRequired = true; // need to do a payout as there is now > 0 denoms
+
+                // Number of this denomination to payout
+                UInt16 numToPayout = UInt16.Parse(amount);
+                byte[] b = CHelpers.ConvertIntToBytes(numToPayout);
+                data[0] = b[0];
+                data[1] = b[1];
+
+                // Value of this denomination
+                ChannelData d = Payout.UnitDataList[chanel];
+                b = CHelpers.ConvertIntToBytes(d.Value);
+                data[2] = b[0];
+                data[3] = b[1];
+                data[4] = b[2];
+                data[5] = b[3];
+
+                // Currency of this denomination
+                data[6] = (Byte)d.Currency[0];
+                data[7] = (Byte)d.Currency[1];
+                data[8] = (Byte)d.Currency[2];
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                payoutRequired = false; // don't payout on exception
+            }
+
+            if (payoutRequired)
+            {
+                // Send payout command and shut this form
+                return Payout.PayoutByDenomination(denomsToPayout, data, length, ref logPagoPayout);
+            }
+            return false;
         }
 
         private void ResetPayout()

@@ -90,6 +90,7 @@ namespace Priceio.SQLite
             catch { return null; }
             return SQLiteClass;
         }
+        
         internal bool SetConfiguracionTurnero(ConfiguracionTurnero SQLiteClass)
         {
             try
@@ -160,6 +161,38 @@ namespace Priceio.SQLite
             return true;
         }
 
+        internal List<NombresClientesTurnero>? GetNombresClientesTurnero()
+        {
+            List<NombresClientesTurnero> SQLiteClass = new List<NombresClientesTurnero>();
+            try
+            {
+                managerSQLite.ConectarBD();
+                foreach (DataRow dr in managerSQLite.GetAllTableData(new NombresClientesTurnero().GetType().Name).Rows)
+                    SQLiteClass.Add(new NombresClientesTurnero()
+                    {
+                        Identificador = dr.Field<string>("Identificador"),
+                        Nombre = dr.Field<string>("Nombre")
+                    });
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetNombresClientesTurnero(List<NombresClientesTurnero> SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(new NombresClientesTurnero().GetType().Name);
+                foreach (NombresClientesTurnero nombresClientesTurnero in SQLiteClass)
+                    managerSQLite.SaveTableData(new TableClass(nombresClientesTurnero.GetType(), nombresClientesTurnero));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
         internal ConfiguracionVerificador? GetConfiguracionVerificador()
         {
             ConfiguracionVerificador SQLiteClass = new ConfiguracionVerificador();
@@ -217,7 +250,73 @@ namespace Priceio.SQLite
             catch { return false; }
             return true;
         }
+        
+        internal ConfiguracionImpresora? GetConfiguracionImpresora()
+        {
+            ConfiguracionImpresora SQLiteClass = new ConfiguracionImpresora();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.Nombre = row.Field<string>("Nombre");
+                SQLiteClass.TipoLetra = row.Field<string>("TipoLetra");
+                SQLiteClass.TamanoLetra = (int)row.Field<long>("TamanoLetra");
+                SQLiteClass.Negrita = Convert.ToBoolean(row.Field<long>("Negrita"));
+                SQLiteClass.Cursiva = Convert.ToBoolean(row.Field<long>("Cursiva"));
+                SQLiteClass.Logo = Convert.ToBoolean(row.Field<long>("Logo"));
+                SQLiteClass.RutaLogo = row.Field<string>("RutaLogo");
+                SQLiteClass.TamanoLogo = (int)row.Field<long>("TamanoLogo");
+                SQLiteClass.CordenadaXLogo = (int)row.Field<long>("CordenadaXLogo");
+                SQLiteClass.CordenadaYLogo = (int)row.Field<long>("CordenadaYLogo");
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
 
+        internal bool SetConfiguracionImpresora(ConfiguracionImpresora SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+        internal ConfiguracionLector? GetConfiguracionLector()
+        {
+            ConfiguracionLector SQLiteClass = new ConfiguracionLector();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+
+                SQLiteClass.Activo = Convert.ToBoolean(row.Field<long>("Activo"));
+                SQLiteClass.FormatoCodigo = row.Field<string>("FormatoCodigo");
+                SQLiteClass.Imprmir = Convert.ToBoolean(row.Field<long>("Imprmir"));
+                SQLiteClass.FormatoImpresora = row.Field<string>("FormatoImpresora");
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetConfiguracionLector(ConfiguracionLector SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
 
         internal bool ResetConfigSplash()
         {

@@ -26,6 +26,7 @@ namespace Priceio.Cajero.Hopper
         internal bool BoolEnableCoinMech = false;
         internal bool BoolDisableCoinMech = false;
         internal bool BoolCalculatePayoutHopper = false;
+        internal bool BoolCalculatePayoutDenomination = false;
         internal bool BoolEmptyCash = false;
         internal bool BoolRouteCash = false;
         internal bool BoolDisableRouteCash = false;
@@ -84,6 +85,11 @@ namespace Priceio.Cajero.Hopper
                 {
                     CalculatePayoutHopper(pago.MonedasCambio.ToString(), moneda.ToCharArray());
                     BoolCalculatePayoutHopper = false;
+                }
+                if (BoolCalculatePayoutDenomination)
+                {
+                    CalculatePayoutDenomination(pago.MonedasCambio.ToString(), pago.Canal, moneda.ToCharArray());
+                    BoolCalculatePayoutDenomination = false;
                 }
                 if (BoolEmptyCash)
                 {
@@ -283,6 +289,49 @@ namespace Priceio.Cajero.Hopper
             return Hopper.PayoutAmount(payoutAmount, currency, ref logPagoHopper);
         }
 
+        private bool CalculatePayoutDenomination(string amount, int chanel, char[] currency)
+        {
+            bool payoutRequired = false;
+            byte[] data = new byte[9]; // create to size of maximum possible
+            byte length = 9;
+            byte denomsToPayout = byte.Parse(amount);
+            // For each denomination
+            try
+            {
+                payoutRequired = true; // need to do a payout as there is now > 0 denoms
+
+                // Number of this denomination to payout
+                UInt16 numToPayout = UInt16.Parse(amount);
+                byte[] b = CHelpers.ConvertIntToBytes(numToPayout);
+                data[0] = b[0];
+                data[1] = b[1];
+
+                // Value of this denomination
+                ChannelData d = Hopper.UnitDataList[chanel];
+                b = CHelpers.ConvertIntToBytes(d.Value);
+                data[2] = b[0];
+                data[3] = b[1];
+                data[4] = b[2];
+                data[5] = b[3];
+
+                // Currency of this denomination
+                data[6] = (Byte)d.Currency[0];
+                data[7] = (Byte)d.Currency[1];
+                data[8] = (Byte)d.Currency[2];
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                payoutRequired = false; // don't payout on exception
+            }
+
+            if (payoutRequired)
+            {
+                // Send payout command and shut this form
+                return Hopper.PayoutByDenomination(denomsToPayout, data, length, ref logPagoHopper);
+            }
+            return false;
+        }
         private void ResetHopper()
         {
             Hopper.Reset(ref logPagoHopper);

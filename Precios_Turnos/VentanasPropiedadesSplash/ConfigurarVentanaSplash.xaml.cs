@@ -18,6 +18,8 @@ using Priceio.ClasesSQLite;
 using Priceio.SQLite;
 using System.Linq;
 using static Priceio.Cajero.ChannelData;
+using System.Net;
+using Priceio.Cajero.VentanasCajero;
 
 namespace Priceio
 {
@@ -27,12 +29,12 @@ namespace Priceio
     public partial class ConfigurarVentanaSplash : Window
     {
         private MainWindow mainWindow;
-        bool esInicio = true;
-        int count = 0;
-        int countEncontrados = 0;
+        private bool esInicio = true;
+        private int count = 0;
+        private int countEncontrados = 0;
+        private bool bucando = false;
         public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 
-        private BackgroundWorker backgroundWorker = new BackgroundWorker();
 
         private SMARTPayout? smartPayout;
         private SMARTHopper? smartHopper;
@@ -42,14 +44,11 @@ namespace Priceio
             smartPayout = payout;
             smartHopper = hopper;
             InitializeComponent();
+            CargarIPs();
             CargarDatos();
 
             mainWindow = pmainWindow;
             FocusManager.SetFocusedElement(this, cbxTipo);
-            backgroundWorker.WorkerReportsProgress = true;
-            backgroundWorker.WorkerSupportsCancellation = true;
-            backgroundWorker.ProgressChanged += ProgressChanged;
-            backgroundWorker.DoWork += DoWork;
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -201,6 +200,24 @@ namespace Priceio
             return new SQLiteClassManager().SetConfiguracionVentanaSplash(SQLiteClass);
         }
 
+        private void CargarIPs()
+        {
+            String strHostName = Dns.GetHostName();
+
+            // Find host by name
+            IPHostEntry iphostentry = Dns.GetHostByName(strHostName);
+
+            // Enumerate IP addresses
+            foreach (IPAddress ipaddress in iphostentry.AddressList)
+            {
+                string[] ipVal = ipaddress.ToString().Split('.');
+                if (ipVal.Length == 4)
+                {
+                    cbxIP.Items.Add(ipVal[0] + "." + ipVal[1] + "." + ipVal[2] + ".0");
+                }       
+            }
+        }
+
         private bool GuardarDatosTurnero()
         {
             ConfiguracionTurnero SQLiteClassTurnero = new ConfiguracionTurnero();
@@ -257,47 +274,20 @@ namespace Priceio
 
         }
 
-        private async void btnBuscar_Click(object sender, RoutedEventArgs e)
+        private void btnBuscar_Click(object sender, RoutedEventArgs e)
         {
-            if (IP.Text.Length > 0)
+            if (cbxIP.SelectedIndex != -1)
             {
-                string[] ipVal = IP.Text.Split('.');
+                string[] ipVal = cbxIP.Text.Split('.');
                 if (ipVal.Length == 4)
                 {
                     if (ipVal[0].Length > 0 && ipVal[1].Length > 0 && ipVal[2].Length > 0 && ipVal[3].Length > 0)
                     {
-                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        int puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
-                        List<string> lista = new List<string>();
-                        string IPBase = IP.Text;
                         btnBuscar.IsEnabled = false;
                         cbxTurneros.IsEnabled = false;
-                        backgroundWorker.RunWorkerAsync();
-                        await Task.Run(async () =>
-                        {
-                            count = 0;
-                            string[] ip = IPBase.Split('.');
-                            string baseIP = ip[0] + "." + ip[1] + "." + ip[2] + ".";
-
-                            List<string> Equipos = new List<string>();
-                            for (int x = 1; x <= 255; x++)
-                            {
-                                Equipos.Add(baseIP + x.ToString());
-                            }
-                            Comunicacion com = new Comunicacion();
-
-                            foreach (string adr in Equipos)
-                            {
-                                bool respuesta = await new AsynchronousClient().StartClient(adr, puerto, com.CrearComandoBascula("D018500"));
-                                if (respuesta)
-                                {
-                                    lista.Add(adr);
-                                    countEncontrados++;
-                                }
-                                count++;
-
-                            }
-                        }).ContinueWith(result => { Callback(lista); });
+                        btnDetener.Visibility = Visibility.Visible;
+                        bucando = true;
+                        Task.Run(() => encontrarTurneros());
                     }
                     else
                     {
@@ -318,9 +308,46 @@ namespace Priceio
             }
         }
 
-        private void Callback(List<string> lista)
+        private async void encontrarTurneros()
         {
-            backgroundWorker.CancelAsync();
+            int puerto = 0;
+            string IPBase = string.Empty;
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                puerto = int.Parse(Puerto.Text);
+
+                IPBase = cbxIP.Text;
+            }));
+            List<string> lista = new List<string>();
+            count = 0;
+            string[] ip = IPBase.Split('.');
+            string baseIP = ip[0] + "." + ip[1] + "." + ip[2] + ".";
+
+            List<string> Equipos = new List<string>();
+            for (int x = 1; x <= 255; x++)
+            {
+                Equipos.Add(baseIP + x.ToString());
+            }
+            Comunicacion com = new Comunicacion();
+
+            foreach (string adr in Equipos)
+            {
+                if (!bucando)
+                    break;
+                bool respuesta = await new AsynchronousClient().StartClient(adr, puerto, com.CrearComandoBascula("D018500"));
+                if (respuesta)
+                {
+                    lista.Add(adr);
+                    countEncontrados++;
+                }
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    BarraP.Value = count++;
+                    lblIPS.Content = adr;
+                    Progress.Text = count + "/255";
+                    lblEncontrados.Content = "Encontrados: " + countEncontrados;
+                }));
+            }
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 cbxTurneros.ItemsSource = null;
@@ -328,27 +355,12 @@ namespace Priceio
                     cbxTurneros.ItemsSource = lista;
                 btnBuscar.IsEnabled = true;
                 cbxTurneros.IsEnabled = true;
+
+                BarraP.Value = 0;
+                lblIPS.Content = string.Empty;
+                Progress.Text = 0 + "/255";
             }));
-        }
-
-        private async void DoWork(object sender, DoWorkEventArgs e)
-        {
-            while (true)
-            {
-                // Simulate long running work
-                backgroundWorker.ReportProgress(count);
-                if (count == 255)
-                    break;
-                await Task.Delay(500);
-            }
-        }
-
-        private void ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            // This is called on the UI thread when ReportProgress method is called
-            BarraP.Value = e.ProgressPercentage;
-            Progress.Text = e.ProgressPercentage + "/255";
-            lblEncontrados.Content = "Encontrados: " + countEncontrados;
+            bucando = false;
         }
 
         private void cbxTipo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -360,11 +372,11 @@ namespace Priceio
                     if ((ComboBoxItem)cbxTipo.SelectedItem != null)
                         if (((ComboBoxItem)cbxTipo.SelectedItem).Tag.ToString().Equals("S"))
                         {
-                            IP.IsEnabled = true;
+                            cbxIP.IsEnabled = true;
                             string[] ip = new Seguridad().DisplayIPAddresses().Split('.');
                             if (ip.Length == 4)
                             {
-                                IP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
+                                cbxIP.Text = ip[0] + "." + ip[1] + "." + ip[2] + ".0";
                             }
                             btnBuscar.IsEnabled = true;
                             cbxTurneros.IsEnabled = true;
@@ -372,8 +384,8 @@ namespace Priceio
                         }
                         else
                         {
-                            IP.IsEnabled = false;
-                            IP.Text = "";
+                            cbxIP.IsEnabled = false;
+                            cbxIP.SelectedIndex = -1;
                             btnBuscar.IsEnabled = false;
                             cbxTurneros.IsEnabled = false;
                             lblEncontrados.Content = "Encontrados: 0";
@@ -508,6 +520,7 @@ namespace Priceio
 
         private void btnImpresora_Click(object sender, RoutedEventArgs e)
         {
+            GuardarDatos();
             PropiedadesImpresora dialog = new PropiedadesImpresora();
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
@@ -591,7 +604,7 @@ namespace Priceio
             cbxProtocolo.SelectedIndex = 0;
             Puerto.Text = "9101";
             cbxTurnosAnt.SelectedIndex = 0;
-            IP.Text = "";
+            cbxIP.SelectedIndex = -1;
             cbxTurneros.ItemsSource = null; ;
             lblEncontrados.Content = "Encontrados: 0";
             chkMostrarNombres.IsChecked = false;
@@ -606,6 +619,34 @@ namespace Priceio
             esInicio = false;
             count = 0;
             countEncontrados = 0;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            bucando = false;
+        }
+
+        private void btnDetener_Click(object sender, RoutedEventArgs e)
+        {
+            bucando = false;
+            btnDetener.Visibility = Visibility.Hidden;
+        }
+
+        private void btnLector_Click(object sender, RoutedEventArgs e)
+        {
+            GuardarDatos();
+            ConfigurarLector dialog = new ConfigurarLector();
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
         }
     }
     public class ViewModelAudio

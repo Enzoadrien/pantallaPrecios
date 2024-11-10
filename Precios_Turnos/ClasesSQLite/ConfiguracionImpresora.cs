@@ -18,17 +18,23 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
-        public bool Negrita
+        public bool? Negrita
         {
             get;
             set;
         }
-        public bool Cursiva
+        public bool? Cursiva
         {
             get;
             set;
         }
-        public string? Logo
+
+        public bool? Logo
+        {
+            get;
+            set;
+        }
+        public string? RutaLogo
         {
             get;
             set;
@@ -38,7 +44,12 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
-        public bool SinLogo
+        public int CordenadaXLogo
+        {
+            get;
+            set;
+        }
+        public int CordenadaYLogo
         {
             get;
             set;

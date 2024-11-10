@@ -1,4 +1,5 @@
 ﻿using ITLlib;
+using Priceio.ClasesSQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -406,7 +407,7 @@ namespace Priceio.Cajero.Payout
         // notes. Due to the variable length of the data that could be passed to the function, the user 
         // passes an array containing the data to payout and the length of that array along with the number
         // of denominations they are paying out.
-        public void PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, ref string log)
+        public bool PayoutByDenomination(byte numDenoms, byte[] data, byte dataLength, ref string log)
         {
             // First is the command byte
             m_cmd.CommandData[0] = CCommands.SSP_CMD_PAYOUT_BY_DENOMINATION;
@@ -426,12 +427,14 @@ namespace Priceio.Cajero.Payout
             dataLength += 3;
             m_cmd.CommandDataLength = dataLength;
 
-            if (!SendCommand(ref log)) return;
+            if (!SendCommand(ref log)) return false;
             if (CheckGenericResponses(ref log))
             {
                 if (log != null)
                     log += "Paying out by denomination...\r\n";
+                return true;
             }
+            return false;
         }
 
         // This function performs a number of commands in order to setup the encryption between the host and the validator.

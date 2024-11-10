@@ -72,7 +72,7 @@ namespace Priceio
 
         private void CargarInfo()
         {
-            DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+            DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
             foreach (var file in info.GetFiles())
             {
                 if (@file.Name.Equals(NombreControl + ".sql"))
@@ -227,7 +227,7 @@ namespace Priceio
                                 bitmapImage.BeginInit();
                                 bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                bitmapImage.UriSource = new Uri(@".\Objetos\" + NombreControl + "\\" +imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                bitmapImage.UriSource = new Uri(@".\data\Objetos\" + NombreControl + "\\" +imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
                                 bitmapImage.EndInit();
 
                                 ((Image)item).Source = bitmapImage;
@@ -239,7 +239,7 @@ namespace Priceio
                                 bitmapImage.BeginInit();
                                 bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                bitmapImage.UriSource = new Uri(@".\Objetos\" + NombreControl + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                bitmapImage.UriSource = new Uri(@".\data\Objetos\" + NombreControl + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
                                 bitmapImage.EndInit();
 
                                 ((Image)item).Source = bitmapImage;
@@ -278,7 +278,7 @@ namespace Priceio
         {
             try
             {
-                using (Stream stream = new FileStream(@".\objetos\consultasSQL\" + pvStrNombreObjeto + ".sql", FileMode.Create))
+                using (Stream stream = new FileStream(@".\data\objetos\consultasSQL\" + pvStrNombreObjeto + ".sql", FileMode.Create))
                 {
                     stream.SetLength(0);
                     byte[] bytes = Encoding.UTF8.GetBytes(pvStrConsulta);
@@ -361,9 +361,9 @@ namespace Priceio
             lblID.Visibility = Visibility.Visible;
             ID.Visibility = Visibility.Visible;
             //Carpetas de animaciones
-            if (!Directory.Exists(@".\objetos\"+NombreControl))
+            if (!Directory.Exists(@".\data\objetos\" + NombreControl))
             {
-                Directory.CreateDirectory(@".\objetos\"+ NombreControl);
+                Directory.CreateDirectory(@".\data\objetos\" + NombreControl);
             }
             string pNombre = "Img_"+NombreControl;
             var item = mainWindow.FindName(pNombre) as UIElement;
@@ -430,9 +430,9 @@ namespace Priceio
                     mainWindow.Principal.Children.Remove(item);
                     NameScope.GetNameScope(mainWindow).UnregisterName(pNombre);
 
-                    if (Directory.Exists(@".\objetos\" + NombreControl))
+                    if (Directory.Exists(@".\data\objetos\" + NombreControl))
                     {
-                        Directory.Delete(@".\objetos\" + NombreControl, true);
+                        Directory.Delete(@".\data\objetos\" + NombreControl, true);
                     }
                 }
             }
@@ -449,7 +449,7 @@ namespace Priceio
             dialog.lblTexto.Text = "Las imágenes cargadas deberán tener por nombre el campo a buscar y deberán estar en formato png";
             dialog.ShowDialog();
 
-            Process.Start("explorer.exe", @".\objetos\" + NombreControl);
+            Process.Start("explorer.exe", @".\data\objetos\" + NombreControl);
         }
     }
 }

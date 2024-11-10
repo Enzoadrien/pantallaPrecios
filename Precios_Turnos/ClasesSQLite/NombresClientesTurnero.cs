@@ -1,7 +1,7 @@
 ﻿
 namespace Priceio.ClasesSQLite
 {
-    internal class NombresClientesTurneros
+    internal class NombresClientesTurnero
     {
         public string? Identificador
         {

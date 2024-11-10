@@ -1,19 +1,22 @@
 ﻿using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using static Priceio.Cajero.StateObjectCajero;
 
 namespace Priceio.Cajero
 {
     class ProcesarPagoCajero
     {
-        private SMARTPayout smartPayout;
-        private SMARTHopper smartHopper;
+        private SMARTPayout? smartPayout;
+        private SMARTHopper? smartHopper;
 
         internal async Task<string> ProcesarComando(string pvSrtComando, StateObjectCajero pvStateObject, SMARTPayout pSmartPayout, SMARTHopper pSmartHopper)
         {
@@ -66,11 +69,20 @@ namespace Priceio.Cajero
                         break;
     
                     case Pago.Tipo.IMPRESION:
+                        ConfiguracionImpresora? SQLiteClass = new SQLiteClassManager().GetConfiguracionImpresora();
                         pvStateObject.SetPago(pago);
                         PrintDocument pdoc = new PrintDocument();
                         pdoc.DocumentName = pago.NumPago.ToString();
-                        pdoc.PrinterSettings.PrinterName = "POS58";
-                        pdoc.PrintPage += (sender, e) => Document_PrintText(e, pago.Impresion.Replace("<br>", "\n"));
+                        if (SQLiteClass != null)
+                        {
+                            pdoc.PrinterSettings.PrinterName = SQLiteClass.Nombre;
+                            pdoc.PrintPage += (sender, e) => Document_PrintText(e, pago.Impresion.Replace("<br>", "\n"), SQLiteClass);
+                        }
+                        else
+                        {
+                            pdoc.PrinterSettings.PrinterName = "POS58";
+                            pdoc.PrintPage += (sender, e) => Document_PrintText(e, pago.Impresion.Replace("<br>", "\n"), null);
+                        }
                         pdoc.Print();
                         pvStateObject.SetEstadoActual(EstadoCajero.OK);
                         break;
@@ -87,11 +99,35 @@ namespace Priceio.Cajero
             return Respuesta(pvStateObject);
         }
 
-        private void Document_PrintText(PrintPageEventArgs e, string inputString)
+        private void Document_PrintText(PrintPageEventArgs e, string inputString, ConfiguracionImpresora? configuracionImpresora)
         {
-            Image img = Image.FromFile(@".\Recursos\logo.png");
-            e.Graphics.DrawImage(img, 0, 0, 70, 70);
-            e.Graphics.DrawString(inputString, new Font("Courier New", 8, System.Drawing.FontStyle.Bold), Brushes.Black, 0, 0);
+            if (configuracionImpresora != null)
+            {
+                if (configuracionImpresora.Logo == true)
+                {
+                    System.Drawing.Image img = System.Drawing.Image.FromFile(@".\Recursos\logo.png");
+                    if (configuracionImpresora.RutaLogo.Length > 0)
+                        img = System.Drawing.Image.FromFile(@".\data\impresora\"+configuracionImpresora.RutaLogo);
+                    e.Graphics.DrawImage(img, configuracionImpresora.CordenadaXLogo, configuracionImpresora.CordenadaYLogo, configuracionImpresora.TamanoLogo, configuracionImpresora.TamanoLogo);
+                }
+
+                if (configuracionImpresora.Negrita == true && configuracionImpresora.Cursiva == true)
+                    e.Graphics.DrawString(inputString, new Font(configuracionImpresora.TipoLetra, configuracionImpresora.TamanoLetra, System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
+                else if (configuracionImpresora.Negrita == true && configuracionImpresora.Cursiva == false)
+                    e.Graphics.DrawString(inputString, new Font(configuracionImpresora.TipoLetra, configuracionImpresora.TamanoLetra, System.Drawing.FontStyle.Bold), System.Drawing.Brushes.Black, 0, 0);
+                else if (configuracionImpresora.Negrita == false && configuracionImpresora.Cursiva == true)
+                    e.Graphics.DrawString(inputString, new Font(configuracionImpresora.TipoLetra, configuracionImpresora.TamanoLetra, System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
+                else
+                    e.Graphics.DrawString(inputString, new Font(configuracionImpresora.TipoLetra, configuracionImpresora.TamanoLetra), System.Drawing.Brushes.Black, 0, 0);
+
+            }
+            else
+            {
+                System.Drawing.Image img = System.Drawing.Image.FromFile(@".\Recursos\logo.png");
+                e.Graphics.DrawImage(img, 0, 0, 70, 70);
+                e.Graphics.DrawString(inputString, new Font("Courier New", 8, System.Drawing.FontStyle.Bold), Brushes.Black, 0, 0);
+            }
+            
         }
 
         internal Pago? NuevoRetiro(Pago? pvPago)

@@ -18,6 +18,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Priceio.Cajero;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Priceio
 {
@@ -27,7 +30,7 @@ namespace Priceio
     public partial class PropiedadesImpresora : Window
     {
         
-        internal string nombreControl;
+        internal string? nombreControl;
         public PropiedadesImpresora()
         {
             InitializeComponent();
@@ -54,56 +57,79 @@ namespace Priceio
 
         private void CargarDatos()
         {
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            cbxImpresora.SelectedValue = config.AppSettings.Settings["Impresora"].Value;
-            lblLetraDemo.SetValue(FontFamilyProperty, new System.Windows.Media.FontFamily(config.AppSettings.Settings["TipoLetraImpresora"].Value));
-            cbxFuente.SelectedItem = lblLetraDemo.GetValue(FontFamilyProperty);
-            cbxTamano.SelectedValue = config.AppSettings.Settings["TamanoLetraImpresora"].Value;
-            chkNegrita.IsChecked = config.AppSettings.Settings["NegritaLetraImpresora"].Value.Equals("true") ? true : false;
-            chkCursiva.IsChecked = config.AppSettings.Settings["CursivaLetraImpresora"].Value.Equals("true") ? true : false;
-            cbxTamanoLogo.SelectedValue = config.AppSettings.Settings["TamanoLogoImpresora"].Value;
-            imgLogo.Tag = config.AppSettings.Settings["LogoImpresora"].Value;
-            CoordenadaX.Text = config.AppSettings.Settings["CordenadaX"].Value;
-            CoordenadaY.Text = config.AppSettings.Settings["CordenadaY"].Value;
-
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-            image.CacheOption = BitmapCacheOption.OnLoad;
-
-            if(File.Exists(@".\objetosSplash\multimedia\" + imgLogo.Tag))
-                image.UriSource = new Uri(@".\objetosSplash\multimedia\" + imgLogo.Tag, UriKind.RelativeOrAbsolute);
+            ConfiguracionImpresora? SQLiteClass = new SQLiteClassManager().GetConfiguracionImpresora();
+            if (SQLiteClass != null)
+            {
+                cbxImpresora.SelectedValue = SQLiteClass.Nombre;
+                lblLetraDemo.SetValue(FontFamilyProperty, new System.Windows.Media.FontFamily(SQLiteClass.TipoLetra));
+                cbxFuente.SelectedItem = lblLetraDemo.GetValue(FontFamilyProperty);
+                cbxTamano.SelectedValue = SQLiteClass.TamanoLetra;
+                chkNegrita.IsChecked = SQLiteClass.Negrita;
+                chkCursiva.IsChecked = SQLiteClass.Cursiva;
+                chkLogo.IsChecked = true;
+                chkLogo.IsChecked = SQLiteClass.Logo;
+                cbxTamanoLogo.SelectedValue = SQLiteClass.TamanoLogo;
+                CoordenadaX.Text = SQLiteClass.CordenadaXLogo.ToString();
+                CoordenadaY.Text = SQLiteClass.CordenadaYLogo.ToString();
+                imgLogo.Tag = SQLiteClass.RutaLogo;
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                if (File.Exists(@".\data\objetosSplash\multimedia\" + imgLogo.Tag))
+                    image.UriSource = new Uri(@".\data\objetosSplash\multimedia\" + imgLogo.Tag, UriKind.RelativeOrAbsolute);
+                else
+                    image.UriSource = new Uri(@".\Recursos\logo.png", UriKind.RelativeOrAbsolute);
+                image.EndInit();
+                imgLogo.Source = image;
+            }
             else
+            {
+                cbxImpresora.SelectedValue = "POS58";
+                lblLetraDemo.SetValue(FontFamilyProperty, new System.Windows.Media.FontFamily("Courier New"));
+                cbxFuente.SelectedItem = lblLetraDemo.GetValue(FontFamilyProperty);
+                cbxTamano.SelectedValue = 8;
+                chkNegrita.IsChecked = true;
+                chkCursiva.IsChecked = false;
+                chkLogo.IsChecked = true;
+                cbxTamanoLogo.SelectedValue = 70;
+                CoordenadaX.Text = "0";
+                CoordenadaY.Text = "0";
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                image.CacheOption = BitmapCacheOption.OnLoad;
                 image.UriSource = new Uri(@".\Recursos\logo.png", UriKind.RelativeOrAbsolute);
-            image.EndInit();
+                image.EndInit();
+                imgLogo.Source = image;
+                imgLogo.Tag = "";
+            }
 
-            //FormatConvertedBitmap newFormatedBitmapSource = new FormatConvertedBitmap();
-            //newFormatedBitmapSource.BeginInit();
-            //newFormatedBitmapSource.Source = image;
-            //newFormatedBitmapSource.DestinationFormat = PixelFormats.Gray16;
-            //newFormatedBitmapSource.EndInit();
 
-            imgLogo.Source = image;
         }
 
         private void GuardarDatos()
         {
-            //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            config.AppSettings.Settings["Impresora"].Value = cbxImpresora.SelectedItem.ToString();
-            config.AppSettings.Settings["TipoLetraImpresora"].Value = cbxFuente.SelectedItem.ToString();
-            config.AppSettings.Settings["TamanoLetraImpresora"].Value = ((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["NegritaLetraImpresora"].Value = chkNegrita.IsChecked == true ? "true" : "false";
-            config.AppSettings.Settings["CursivaLetraImpresora"].Value = chkCursiva.IsChecked == true ? "true" : "false";
-            config.AppSettings.Settings["TamanoLogoImpresora"].Value = ((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString();
-            config.AppSettings.Settings["LogoImpresora"].Value = imgLogo.Tag.ToString();
-            config.AppSettings.Settings["CordenadaX"].Value = CoordenadaX.Text;
-            config.AppSettings.Settings["CordenadaY"].Value = CoordenadaY.Text;
+            ConfiguracionImpresora SQLiteClass = new ConfiguracionImpresora();
+            SQLiteClass.Nombre = cbxImpresora.SelectedItem.ToString();
+            SQLiteClass.TipoLetra = cbxFuente.SelectedItem.ToString();
+            SQLiteClass.TamanoLetra = int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString());
+            SQLiteClass.Negrita = chkNegrita.IsChecked;
+            SQLiteClass.Cursiva = chkCursiva.IsChecked;
+            SQLiteClass.Logo = chkLogo.IsChecked;
+            SQLiteClass.RutaLogo = imgLogo.Tag.ToString();
+            SQLiteClass.TamanoLogo = int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString());
+            SQLiteClass.CordenadaXLogo = int.Parse(CoordenadaX.Text);
+            SQLiteClass.CordenadaYLogo = int.Parse(CoordenadaY.Text);
 
-
-            config.Save(ConfigurationSaveMode.Modified);
-            ConfigurationManager.RefreshSection("appSettings");
-
+            if (!new SQLiteClassManager().SetConfiguracionImpresora(SQLiteClass))
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                dialog.btnCancelar.Visibility = Visibility.Visible;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            }
         }
 
         private void btnAbrir_Click(object sender, RoutedEventArgs e)
@@ -125,31 +151,31 @@ namespace Priceio
                 FileInfo fi = new FileInfo(dlg.FileName);
                 try
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetosSplash\multimedia\" + fi.Name);
-                    if (File.Exists(@".\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    FileInfo fileImg = new FileInfo(@".\data\impresora\" + fi.Name);
+                    if (File.Exists(@".\data\impresora\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
                         Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
-                            fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
+                            fi.CopyTo(@".\data\impresora\" + fi.Name, true);
                         }
                     }
                     else
-                        fi.CopyTo(@".\objetosSplash\multimedia\" + fi.Name, true);
+                        fi.CopyTo(@".\data\impresora\" + fi.Name, true);
                 }
                 catch
                 {
                 }
-                FileInfo Img = new FileInfo(@".\objetosSplash\multimedia\" + fi.Name);
+                FileInfo Img = new FileInfo(@".\data\impresora\" + fi.Name);
                 // Open document 
                 imgLogo.Tag = Img.Name;
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(@".\objetosSplash\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                image.UriSource = new Uri(@".\data\impresora\" + fi.Name, UriKind.RelativeOrAbsolute);
                 image.EndInit();
 
                 imgLogo.Source = image;
@@ -214,7 +240,7 @@ namespace Priceio
                 PrintDocument pdoc = new PrintDocument();
                 pdoc.DocumentName = "PBA" + new Random();
                 pdoc.PrinterSettings.PrinterName = cbxImpresora.SelectedItem.ToString();
-                pdoc.PrintPage += (sender, e) => Document_PrintText(e, "          3K MANTENIMIENTO<br>          PROFESIONAL<br>          HERNANDO MARTELL<br>          No. 96-A<br>          COLONIAL LA LOMA<br>          33-3390-5151<br><br>ESTACION: ESTACION01<br>USUARIO: GRUPO<br>FECHA: 13-11-2022<br>HORA: 00:17:55<br>FOLIO: 15<br>CLIENTE: (SYS)<br> Cliente de mostrador<br><br>CANT.     PRECIO     TOTAL<br>--------------------------<br>   CARE DOG CACHORRO<br>5.00       22.00    110.00<br>   CARE DOG CACHORRO<br>10.00      22.00    220.00<br>   CROQUETA PERRON<br>10.00      25.00    250.00<br>   DOG CHOU  ADULTO<br>20.00      47.00    940.00<br>   DOG CHOU CACHORRO<br>10.00      50.00    500.00<br><br><br> Importe:       $ 2,020.00<br> Impuesto:          $ 0.00<br> Total:         $ 2,020.00<br><br>DOS MIL  VEINTE PESOS<br>00/100 PESOS MEXICANOS<br><br><br>-----------Pago-----------<br> Pago en EFE:   $ 5,000.00<br> Cambio:        $ 2,980.00<br><br><br>* GRACIAS POR SU COMPRA *<br>".Replace("<br>", "\n"));
+                pdoc.PrintPage += (sender, e) => Document_PrintText(e, "          3K MANTENIMIENTO<br>          PROFESIONAL<br>          JUAN MANUEL<br>          #276<br>          COLONIA CENTRO<br>          33-3390-5151<br><br>ESTACION: ESTACION01<br>USUARIO: GRUPO<br>FECHA: 13-11-2022<br>HORA: 00:17:55<br>FOLIO: 1<br>CLIENTE: (SYS)<br> Cliente de mostrador<br><br>CANT.     PRECIO     TOTAL<br>--------------------------<br>   CARE DOG CACHORRO<br>5.00       22.00    110.00<br>   CARE DOG CACHORRO<br>10.00      22.00    220.00<br>   CROQUETA PERRON<br>10.00      25.00    250.00<br>   DOG CHOU  ADULTO<br>20.00      47.00    940.00<br>   DOG CHOU CACHORRO<br>10.00      50.00    500.00<br><br><br> Importe:       $ 2,020.00<br> Impuesto:          $ 0.00<br> Total:         $ 2,020.00<br><br>DOS MIL  VEINTE PESOS<br>00/100 PESOS MEXICANOS<br><br><br>-----------Pago-----------<br> Pago en EFE:   $ 5,000.00<br> Cambio:        $ 2,980.00<br><br><br>* GRACIAS POR SU COMPRA *<br>".Replace("<br>", "\n"));
                 pdoc.Print();
             }
             catch(Exception ex) {
@@ -233,9 +259,11 @@ namespace Priceio
                 CoordenadaX.Text = "0";
             if (CoordenadaY.Text.Length == 0)
                 CoordenadaY.Text = "0";
-
-            System.Drawing.Image img = System.Drawing.Image.FromFile(imgLogo.Source.ToString());
-            e.Graphics.DrawImage(img, float.Parse(CoordenadaX.Text), float.Parse(CoordenadaY.Text), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()));
+            if(chkLogo.IsChecked == true)
+            {
+                System.Drawing.Image img = System.Drawing.Image.FromFile(imgLogo.Source.ToString());
+                e.Graphics.DrawImage(img, float.Parse(CoordenadaX.Text), float.Parse(CoordenadaY.Text), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()), int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()));
+            }
 
             if (chkNegrita.IsChecked == true && chkCursiva.IsChecked == true)
                 e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
@@ -268,6 +296,24 @@ namespace Priceio
             // more error handling would be needed here - this is asking for trouble!
             String s = (String)e.DataObject.GetData(typeof(String));
             if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void chkLogo_Checked(object sender, RoutedEventArgs e)
+        {
+            btnAbrir.IsEnabled = true;
+            cbxTamanoLogo.IsEnabled = true;
+            CoordenadaX.IsEnabled = true;
+            CoordenadaY.IsEnabled = true;
+            imgLogo.Visibility = Visibility.Visible;
+        }
+
+        private void chkLogo_Unchecked(object sender, RoutedEventArgs e)
+        {
+            btnAbrir.IsEnabled = false;
+            cbxTamanoLogo.IsEnabled = false;
+            CoordenadaX.IsEnabled = false;
+            CoordenadaY.IsEnabled = false;
+            imgLogo.Visibility = Visibility.Hidden;
         }
     }
 

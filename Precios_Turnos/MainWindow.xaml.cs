@@ -48,6 +48,7 @@ using System.Xml;
 using System.Xml.Linq;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using static Priceio.Cajero.ChannelData;
+using static Priceio.Cajero.StateObjectCajero;
 
 namespace Priceio
 {
@@ -77,6 +78,7 @@ namespace Priceio
         private SolidColorBrush? ultimoColor;
         internal double ultimaOpacidad;
         private string? datosVerificador;
+        private string? datosCajero;
 
         private SMARTPayout smartPayout = new SMARTPayout();
         private SMARTHopper smartHopper = new SMARTHopper();
@@ -449,7 +451,7 @@ namespace Priceio
             }
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private async void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape && maximizado && !estaSaliendo)
             {
@@ -459,13 +461,15 @@ namespace Priceio
             }
             else if (maximizado && activarSplash == true)
             {
-
                 switch (tipoSplash)
                 {
                     case "T":
-                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        if (config.AppSettings.Settings["ProtocoloTurnero"].Value.Equals("T"))
-                            Task.Run(() => ProcesarTecla(e));
+                        ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                        if (configuracionTurnero != null)
+                        {
+                            if (configuracionTurnero.ProtocoloTurnero.Equals("T"))
+                                Task.Run(() => ProcesarTecla(e));
+                        }
                         break;
                     case "V":
                         switch (e.Key)
@@ -481,11 +485,101 @@ namespace Priceio
                         }
                         break;
                     case "C":
-                        break;
-
+                        ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
+                        if (configuracionLector != null)
+                        {
+                            if (configuracionLector.Activo == true)
+                            {
+                                switch (e.Key)
+                                {
+                                    case Key.Enter:
+                                        string datoEnviar = datosCajero;
+                                        await Task.Run(() => ProcesarPagoLector(datoEnviar));
+                                        datosCajero = string.Empty;
+                                        break;
+                                    default:
+                                        datosCajero += (char)KeyInterop.VirtualKeyFromKey(e.Key);
+                                        break;
+                                }
+                            }
+                        }
+                            break;
                 }
             }
+        }
+        
+        internal async void ProcesarPagoLector(string pvStrDatosLector)
+        {
+            ProcesarPagoCajero PT = new ProcesarPagoCajero();
+            StateObjectCajero state = new StateObjectCajero();
+            state.SetEstadoActual(EstadoCajero.NUEVO_PAGO);
+            pvStrDatosLector = pvStrDatosLector.Replace("\u0014", "");
+            ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
+            if (configuracionLector != null)
+            {
+                string numPago = string.Empty;
+                string numEquipo = string.Empty;
+                string totalPago = string.Empty;
 
+                bool formatoValido = true;
+                char[] formato = configuracionLector.FormatoCodigo.ToCharArray();
+                char[] cadena = pvStrDatosLector.ToCharArray();
+                if(formato.Length <= cadena.Length && Char.IsNumber(cadena[0]))
+                {
+
+                    for (int x = 0; x < formato.Length; x++)
+                    {
+                        if (Char.IsNumber(formato[x]))
+                        {
+                            if (!formato[x].Equals(cadena[x]))
+                            {
+                                formatoValido = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            switch (formato[x])
+                            {
+                                case 'N':
+                                    numPago += cadena[x];
+                                    break;
+                                case 'E':
+                                    numEquipo += cadena[x];
+                                    break;
+                                case 'I':
+                                    totalPago += cadena[x];
+                                    break;
+                            }
+
+                        }
+                    }
+                    Pago pago = new Pago();
+                    pago.TipoPago = Pago.Tipo.PAGO;
+                    pago.NumPago = int.Parse(numPago);
+                    pago.Equipo = numEquipo;
+                    pago.CantidadTotal = int.Parse(totalPago);
+
+                    string dato = JsonSerializer.Serialize(pago);
+                    string resultado = await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
+                    if(configuracionLector.Imprmir == true)
+                    {
+                        string[] res = resultado.Split('|');
+
+                        switch(res[0])
+                        {
+                            case "OK":
+                                string cadenaImpresion = "          3K MANTENIMIENTO<br>          PROFESIONAL<br>          JUAN MANUEL<br>          #276<br>          COLONIA CENTRO<br>          33-3390-5151<br><br>EQUIPO: " + pago.Equipo + "<br>USUARIO: GRUPO<br>FECHA: " + DateTime.Now.ToString("dd/MM/yyyy")+"<br>HORA: " + DateTime.Now.ToString("HH:mm:ss tt") + "<br>FOLIO: " + pago.NumPago + "<br><br><br>-----------Pago-----------<br> Total:         $ " + string.Format("{0:#.00}", pago.CantidadTotal) + "<br> Pago en EFE:   $ " + string.Format("{0:#.00}", Convert.ToDecimal(res[1])) + "<br> Cambio:        $ " + string.Format("{0:#.00}", Convert.ToDecimal(res[2])) + "<br><br><br>* GRACIAS POR SU COMPRA *<br>";
+                                Pago pagoImp = new Pago();
+                                pagoImp.TipoPago = Pago.Tipo.IMPRESION;
+                                pagoImp.Impresion = cadenaImpresion;
+                                dato = JsonSerializer.Serialize(pagoImp);
+                                await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
+                                break;
+                        }
+                    } 
+                }
+            }
         }
 
         internal void ProcesarVerificador(string pvStrDatosVerificador)
@@ -567,12 +661,12 @@ namespace Priceio
 
         public void SetearNumeroTurno(int numeroTurno)
         {
-            new Recursos().GuardarNumeroTurno(numeroTurno);
+            new ControlTurno().GuardarNumeroTurno(numeroTurno);
         }
 
         private async Task ProcesarTurno(bool siguiente, string pvSrtrEquipo)
         {
-            int turno = new Recursos().CargarNumeroTurno();
+            int turno = new ControlTurno().CargarNumeroTurno();
             string equipo = pvSrtrEquipo;
             List<string>? turnosAnteriores = new List<string>();
 
@@ -607,9 +701,9 @@ namespace Priceio
                 }
             }
 
-            new Recursos().GuardarNumeroTurno(turno);
-            new Recursos().GuardarTurnoAnt(turno, equipo);
-            await new Recursos().MostrarTurno(turno, equipo, turnosAnteriores, this);
+            new ControlTurno().GuardarNumeroTurno(turno);
+            new ControlTurno().GuardarTurnoAnt(turno, equipo);
+            await new ControlTurno().MostrarTurno(turno, equipo, turnosAnteriores, this);
             MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
             CargarTurnosPrincipal();
         }
@@ -642,7 +736,7 @@ namespace Priceio
                     if (listaTurnosKretz.Count > 0)
                     {
                         var first = listaTurnosKretz.First();
-                        await new Recursos().MostrarTurno(first.GetTurno().GetNumTurno(), first.GetTurno().GetNumEquipo(), first.GetTurno().GetTurnosAnt(), this);
+                        await new ControlTurno().MostrarTurno(first.GetTurno().GetNumTurno(), first.GetTurno().GetNumEquipo(), first.GetTurno().GetTurnosAnt(), this);
                         MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
                         CargarTurnosPrincipal();
                         listaTurnosKretz.Remove(first);
@@ -784,14 +878,20 @@ namespace Priceio
 
                             using (var archive = ZipFile.Open(openFileDialog.FileName, ZipArchiveMode.Read))
                             {
-                                if (Directory.Exists(@".\objetos"))
-                                    Directory.Delete(@".\objetos", true);
+                                if (Directory.Exists(@".\data\objetos"))
+                                    Directory.Delete(@".\data\objetos", true);
 
-                                if (Directory.Exists(@".\objetosSplash"))
-                                    Directory.Delete(@".\objetosSplash", true);
+                                if (Directory.Exists(@".\data\objetosSplash"))
+                                    Directory.Delete(@".\data\objetosSplash", true);
 
-                                if (File.Exists(@"./Principal.png"))
-                                    File.Delete(@"./Principal.png");
+                                if (Directory.Exists(@".\data\impresora"))
+                                    Directory.Delete(@".\data\impresora", true);
+
+                                if (File.Exists(@".\data\Principal.png"))
+                                    File.Delete(@".\data\Principal.png");
+
+                                if (File.Exists(@".\data\priceio.3kdb"))
+                                    File.Delete(@".\data\priceio.3kdb");
 
                                 archive.ExtractToDirectory(@".\");
                             }
@@ -836,21 +936,28 @@ namespace Priceio
                 {
                     Mouse.OverrideCursor = Cursors.Wait;
                     //Carpeta multimedia principal
-                    if (Directory.Exists(@".\objetos"))
+                    if (Directory.Exists(@".\data\objetos"))
                     {
-                        Directory.CreateDirectory(@".\temp\objetos");
-                        CopyDirectory(@".\objetos", @".\temp\objetos", true);
+                        Directory.CreateDirectory(@".\temp\data\objetos");
+                        CopyDirectory(@".\data\objetos", @".\temp\data\objetos", true);
                     }
-                    if (Directory.Exists(@".\objetosSplash"))
+                    if (Directory.Exists(@".\data\objetosSplash"))
                     {
-                        Directory.CreateDirectory(@".\temp\objetosSplash");
-                        CopyDirectory(@".\objetosSplash", @".\temp\objetosSplash", true);
+                        Directory.CreateDirectory(@".\temp\data\objetosSplash");
+                        CopyDirectory(@".\data\objetosSplash", @".\temp\data\objetosSplash", true);
+                    }
+                    if (Directory.Exists(@".\data\impresora"))
+                    {
+                        Directory.CreateDirectory(@".\temp\data\impresora");
+                        CopyDirectory(@".\data\impresora", @".\temp\data\impresora", true);
                     }
 
-
-                    FileInfo fi = new FileInfo(@"./Principal.png");
+                    FileInfo fi = new FileInfo(@".\data\Principal.png");
                     if (fi.Exists)
-                        fi.CopyTo(@".\temp\Principal.png", true);
+                        fi.CopyTo(@".\temp\data\Principal.png", true);
+                    fi = new FileInfo(@".\data\priceio.3kdb");
+                    if (fi.Exists)
+                        fi.CopyTo(@".\temp\data\priceio.3kdb", true);
 
                     if (File.Exists(dlg.FileName))
                         File.Delete(dlg.FileName);
@@ -1158,9 +1265,17 @@ namespace Priceio
                         else
                             ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar equipos anteriores";
 
-                        Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                        tipoSplash = config.AppSettings.Settings["TipoSplash"].Value;
-                        activarSplash = config.AppSettings.Settings["ActivarSplash"].Value.Equals("true") ? true : false;
+                        ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                        if (SQLiteClass != null)
+                        {
+                            tipoSplash = SQLiteClass.TipoSplash;
+                            activarSplash = SQLiteClass.ActivarSplash;
+                        }
+                        else 
+                        {
+                            tipoSplash = "T";
+                            activarSplash = false;
+                        }
                         if (activarSplash == true)
                         {
                             ((MenuItem)cm.Items[9]).IsEnabled = true;
@@ -1261,7 +1376,7 @@ namespace Priceio
 
                 }
                 catch { }
-                SaveFrameworkElementToPng(Principal, 900, 557, @".\Principal.png");
+                SaveFrameworkElementToPng(Principal, 900, 557, @".\data\Principal.png");
                 GuardarControles();
                 editar = false;
             }
@@ -1284,7 +1399,7 @@ namespace Priceio
                 image.BeginInit();
                 image.CacheOption = BitmapCacheOption.OnLoad;
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                image.UriSource = new Uri(@"./Principal.png", UriKind.RelativeOrAbsolute);
+                image.UriSource = new Uri(@".\data\Principal.png", UriKind.RelativeOrAbsolute);
                 image.EndInit();
                 myBrush.ImageSource = image;
                 myBrush.Stretch = Stretch.Fill;
@@ -1390,15 +1505,15 @@ namespace Priceio
                 string extension = fi.Extension;
                 try
                 {
-                    FileInfo fileImg = new FileInfo(@".\objetos\multimedia\" + fi.Name);
-                    if (File.Exists(@".\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
+                    FileInfo fileImg = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
+                    if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
                         Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
-                            fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                            fi.CopyTo(@".\data\objetos\multimedia\" + fi.Name, true);
                             foreach (var itemObjets in Principal.Children)
                             {
                                 string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
@@ -1409,13 +1524,13 @@ namespace Priceio
                                         case "Image":
                                             try
                                             {
-                                                if (((BitmapImage)((Image)itemObjets).Source).UriSource.Equals(@".\objetos\multimedia\" + fi.Name))
+                                                if (((BitmapImage)((Image)itemObjets).Source).UriSource.Equals(@".\data\objetos\multimedia\" + fi.Name))
                                                 {
                                                     BitmapImage bitmapImage = new BitmapImage();
                                                     bitmapImage.BeginInit();
                                                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                                                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                                                    bitmapImage.UriSource = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                     bitmapImage.EndInit();
 
                                                     ((Image)itemObjets).Source = bitmapImage;
@@ -1426,13 +1541,13 @@ namespace Priceio
                                         case "MediaElement":
                                             try
                                             {
-                                                if (((MediaElement)itemObjets).Source.Equals(@".\objetos\multimedia\" + fi.Name))
+                                                if (((MediaElement)itemObjets).Source.Equals(@".\data\objetos\multimedia\" + fi.Name))
                                                 {
                                                     Application.Current.Dispatcher.Invoke(new Action(async () =>
                                                     {
                                                         ((MediaElement)itemObjets).Source = null;
                                                         await Task.Delay(100);
-                                                        ((MediaElement)itemObjets).Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                                                        ((MediaElement)itemObjets).Source = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                     }));
                                                 }
                                             }
@@ -1446,7 +1561,7 @@ namespace Priceio
                         }
                     }
                     else
-                        fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                        fi.CopyTo(@".\data\objetos\multimedia\" + fi.Name, true);
                 }
                 catch
                 {
@@ -1457,7 +1572,7 @@ namespace Priceio
                     MediaElement obj = new MediaElement();
                     obj.Name = dialog.NombreText.ToUpper();
                     obj.ToolTip = dialog.NombreText.ToUpper();
-                    obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    obj.Source = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     obj.MediaEnded += MediaElement_MediaEnded;
                     obj.HorizontalAlignment = HorizontalAlignment.Center;
                     obj.VerticalAlignment = VerticalAlignment.Center;
@@ -1469,7 +1584,7 @@ namespace Priceio
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
                     obj.Height = bitmapImage.Height;
                     obj.Tag = "";
@@ -1488,7 +1603,7 @@ namespace Priceio
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     obj.Source = bitmapImage;
@@ -2107,7 +2222,7 @@ namespace Priceio
 
                     try
                     {
-                        DirectoryInfo info = new DirectoryInfo(@"objetos\");
+                        DirectoryInfo info = new DirectoryInfo(@".\data\objetos\");
 
 
                         foreach (var file in info.GetFiles())
@@ -2117,7 +2232,7 @@ namespace Priceio
                                 File.Delete(file.FullName);
                         }
 
-                        info = new DirectoryInfo(@"objetos\animaciones");
+                        info = new DirectoryInfo(@".\data\objetos\animaciones");
 
 
                         foreach (var file in info.GetFiles())
@@ -2126,7 +2241,7 @@ namespace Priceio
                                 File.Delete(file.FullName);
                         }
 
-                        info = new DirectoryInfo(@"objetos\consultasSQL");
+                        info = new DirectoryInfo(@".\data\objetos\consultasSQL");
 
 
                         foreach (var file in info.GetFiles())
@@ -2144,9 +2259,9 @@ namespace Priceio
                                 {
                                     Principal.Children.Remove(itemImg);
                                     NameScope.GetNameScope(this).UnregisterName("Img_" + pNombre);
-                                    if (Directory.Exists(@".\objetos\" + pNombre))
+                                    if (Directory.Exists(@".\data\objetos\" + pNombre))
                                     {
-                                        Directory.Delete(@".\objetos\" + pNombre, true);
+                                        Directory.Delete(@".\data\objetos\" + pNombre, true);
                                     }
                                 }
                                 break;
@@ -2190,22 +2305,15 @@ namespace Priceio
                 propiedadesFondo.Top = mousePosition.Y - propiedadesFondo.Height;
             else
                 propiedadesFondo.Top = mousePosition.Y;
-            try
-            {
                 propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
-            }
-            catch (Exception)
-            {
-                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(Colors.White);
-            }
-            try
-            {
-                propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
-                propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
-                propiedadesFondo.Opacidad.IsEnabled = true;
-                propiedadesFondo.Opacidad.Value = Fondo.Opacity;
-            }
-            catch { }
+
+                if (Fondo.Source != null)
+                {
+                    propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
+                    propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
+                    propiedadesFondo.Opacidad.IsEnabled = true;
+                    propiedadesFondo.Opacidad.Value = Fondo.Opacity;
+                }
             propiedadesFondo.ShowDialog();
         }
 
@@ -2235,15 +2343,15 @@ namespace Priceio
                 FileInfo fi = new FileInfo(dialog.ContenidoText);
                 try
                 {
-                    FileInfo fileVid = new FileInfo(@".\objetos\multimedia\" + fi.Name);
-                    if (File.Exists(@".\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileVid.FullName))
+                    FileInfo fileVid = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
+                    if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileVid.FullName))
                     {
                         Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
                         {
-                            fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                            fi.CopyTo(@".\data\objetos\multimedia\" + fi.Name, true);
                             foreach (var itemObjets in Principal.Children)
                             {
                                 string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
@@ -2253,14 +2361,14 @@ namespace Priceio
                                     {
 
                                         case "MediaElement":
-                                            if (((MediaElement)itemObjets).Source.Equals(@".\objetos\multimedia\" + fi.Name))
+                                            if (((MediaElement)itemObjets).Source.Equals(@".\data\objetos\multimedia\" + fi.Name))
                                             {
                                                 Application.Current.Dispatcher.Invoke(new Action(async () =>
                                                 {
                                                     ((MediaElement)itemObjets).Stop();
                                                     ((MediaElement)itemObjets).Source = null;
                                                     await Task.Delay(100);
-                                                    ((MediaElement)itemObjets).Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                                                    ((MediaElement)itemObjets).Source = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                                                 }));
                                             }
                                             break;
@@ -2272,7 +2380,7 @@ namespace Priceio
                         }
                     }
                     else
-                        fi.CopyTo(@".\objetos\multimedia\" + fi.Name, true);
+                        fi.CopyTo(@".\data\objetos\multimedia\" + fi.Name, true);
                 }
                 catch
                 {
@@ -2280,7 +2388,7 @@ namespace Priceio
                 MediaElement obj = new MediaElement();
                 obj.Name = dialog.NombreText.ToUpper();
                 obj.ToolTip = dialog.NombreText.ToUpper();
-                obj.Source = new Uri(@".\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
+                obj.Source = new Uri(@".\data\objetos\multimedia\" + fi.Name, UriKind.RelativeOrAbsolute);
                 obj.LoadedBehavior = MediaState.Play;
                 obj.MediaEnded += MediaElement_MediaEnded;
                 obj.HorizontalAlignment = HorizontalAlignment.Center;
@@ -2735,7 +2843,7 @@ namespace Priceio
         {
             try
             {
-                DirectoryInfo di = new DirectoryInfo(@".\objetos");
+                DirectoryInfo di = new DirectoryInfo(@".\data\objetos");
                 foreach (FileInfo file in di.EnumerateFiles())
                 {
                     file.Delete();
@@ -2772,7 +2880,7 @@ namespace Priceio
                         XamlWriter.Save(itemObjets, dsm);
                         string savedControls = outstr.ToString();
                         Seguridad vSeguridad = new Seguridad();
-                        File.WriteAllText(@"objetos\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(nombreApp, savedControls));
+                        File.WriteAllText(@".\data\objetos\" + ++x + "-" + nombreControl + ".xaml", vSeguridad.EncryptString(nombreApp, savedControls));
                         if (esTabla)
                         {
                             ((DataGrid)itemObjets).ItemsSource = CargarListaTablas(nombreControl, ((DataGrid)itemObjets).Tag.ToString(), "")[0].DefaultView;
@@ -2789,7 +2897,7 @@ namespace Priceio
         {
             try
             {
-                DirectoryInfo info = new DirectoryInfo(@"objetos\");
+                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\");
                 foreach (var file in info.GetFiles().OrderBy(x => int.Parse(x.Name.Substring(0, x.Name.IndexOf('-')))).ToArray())
                 {
                     try
@@ -2907,7 +3015,7 @@ namespace Priceio
                 string consulta = string.Empty;
                 string nombreIndex = string.Empty;
 
-                DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
 
                 foreach (var file in info.GetFiles())
                 {
@@ -3142,20 +3250,23 @@ namespace Priceio
         {
             try
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                string Protocolo = config.AppSettings.Settings["ProtocoloTurnero"].Value;
-                switch (Protocolo)
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
                 {
-                    case "T":
-                        Task.Run(() => ProcesarListadoTurnosTeclado());
-                        break;
-                    case "K":
-                        Task.Run(() => AsynchronousSocketListener.StartListening());
-                        Task.Run(() => ProcesarListadoTurnosKretz());
-                        break;
-                    default:
-                        break;
-                }
+                    string Protocolo = configuracionTurnero.ProtocoloTurnero;
+                    switch (Protocolo)
+                    {
+                        case "T":
+                            Task.Run(() => ProcesarListadoTurnosTeclado());
+                            break;
+                        case "K":
+                            Task.Run(() => AsynchronousSocketListener.StartListening());
+                            Task.Run(() => ProcesarListadoTurnosKretz());
+                            break;
+                        default:
+                            break;
+                    }
+                } 
             }
             catch { }
         }
@@ -3179,7 +3290,7 @@ namespace Priceio
         {
             try
             {
-
+                datosCajero = "";
                 smartPayout.detenerPayout();
                 smartHopper.detenerHopper();
                 AsynchronousSocketListenerCajero.StopListening();
@@ -3230,7 +3341,7 @@ namespace Priceio
                     control.ItemsSource = null;
 
 
-                DirectoryInfo info = new DirectoryInfo(@".\objetos\consultasSQL");
+                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
 
                 foreach (var file in info.GetFiles())
                 {
@@ -3484,13 +3595,13 @@ namespace Priceio
                     {
                         BorarObjeto(ob, false);
                     }
-                    foreach (var item in Directory.GetFiles(@".\objetos\multimedia", "*.*"))
+                    foreach (var item in Directory.GetFiles(@".\data\objetos\multimedia", "*.*"))
                     {
                         File.SetAttributes(item, FileAttributes.Normal);
                         File.Delete(item);
                     }
 
-                    Directory.Delete(@".\objetosSplash", true);
+                    Directory.Delete(@".\data\objetosSplash", true);
                 }
                 catch { }
             }
@@ -3633,7 +3744,7 @@ namespace Priceio
                 }
 
                 TransformGroup myTransformGroup = new TransformGroup();
-                DirectoryInfo info = new DirectoryInfo(@"objetos\animaciones");
+                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\animaciones");
                 foreach (var file in info.GetFiles())
                 {
                     if (@file.Name.Equals(pNombreControl + ".anim"))
@@ -3758,27 +3869,28 @@ namespace Priceio
 
         public static void crearDirectorios()
         {
-            //Carpeta multimedia principal
-            if (!Directory.Exists(@".\data"))
-            {
-                Directory.CreateDirectory(@".\data");
-            }
             //Carpetas de animaciones
-            if (!Directory.Exists(@".\objetos\animaciones"))
+            if (!Directory.Exists(@".\data\objetos\animaciones"))
             {
-                Directory.CreateDirectory(@".\objetos\animaciones");
+                Directory.CreateDirectory(@".\data\objetos\animaciones");
             }
 
             //Carpeta de consultas sql
-            if (!Directory.Exists(@".\objetos\consultasSQL"))
+            if (!Directory.Exists(@".\data\objetos\consultasSQL"))
             {
-                Directory.CreateDirectory(@".\objetos\consultasSQL");
+                Directory.CreateDirectory(@".\data\objetos\consultasSQL");
             }
 
             //Carpeta multimedia principal
-            if (!Directory.Exists(@".\objetos\multimedia"))
+            if (!Directory.Exists(@".\data\objetos\multimedia"))
             {
-                Directory.CreateDirectory(@".\objetos\multimedia");
+                Directory.CreateDirectory(@".\data\objetos\multimedia");
+            }
+
+            //Carpeta multimedia principal
+            if (!Directory.Exists(@".\data\impresora"))
+            {
+                Directory.CreateDirectory(@".\data\impresora");
             }
 
         }

@@ -56,7 +56,7 @@ namespace Priceio
     
         private void CargarInfo()
         {
-            DirectoryInfo info = new DirectoryInfo(@".\objetosSplash\consultasSQL");
+            DirectoryInfo info = new DirectoryInfo(@".\data\objetosSplash\consultasSQL");
             foreach (var file in info.GetFiles())
             {
                 if (@file.Name.Equals(NombreControl + ".sql"))
@@ -126,7 +126,7 @@ namespace Priceio
                     bitmapImage.BeginInit();
                     bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmapImage.UriSource = new Uri(@".\objetosSplash\TablaDatos\" + DatoPrueba.Text + ".png", UriKind.RelativeOrAbsolute);
+                    bitmapImage.UriSource = new Uri(@".\data\objetosSplash\TablaDatos\" + DatoPrueba.Text + ".png", UriKind.RelativeOrAbsolute);
                     bitmapImage.EndInit();
 
                     ((Image)item).Source = bitmapImage;
@@ -153,7 +153,7 @@ namespace Priceio
         {
             try
             {
-                using (Stream stream = new FileStream(@".\objetosSplash\consultasSQL\" + pvStrNombreObjeto + ".sql", FileMode.Create))
+                using (Stream stream = new FileStream(@".\data\objetosSplash\consultasSQL\" + pvStrNombreObjeto + ".sql", FileMode.Create))
                 {
                     stream.SetLength(0);
                     byte[] bytes = Encoding.UTF8.GetBytes(pvStrConsulta);
@@ -205,9 +205,9 @@ namespace Priceio
         {
             btnAbrir.Visibility = Visibility.Visible;
             //Carpetas de animaciones
-            if (!Directory.Exists(@".\objetosSplash\TablaDatos"))
+            if (!Directory.Exists(@".\data\objetosSplash\TablaDatos"))
             {
-                Directory.CreateDirectory(@".\objetosSplash\TablaDatos");
+                Directory.CreateDirectory(@".\data\objetosSplash\TablaDatos");
             }
             string pNombre = "ImgTablaDatos";
             var item = mainWindow.FindName(pNombre) as UIElement;
@@ -271,9 +271,9 @@ namespace Priceio
                     mainWindow.Principal.Children.Remove(item);
                     NameScope.GetNameScope(mainWindow).UnregisterName(pNombre);
 
-                    if (Directory.Exists(@".\objetosSplash\TablaDatos"))
+                    if (Directory.Exists(@".\data\objetosSplash\TablaDatos"))
                     {
-                        Directory.Delete(@".\objetosSplash\TablaDatos", true);
+                        Directory.Delete(@".\data\objetosSplash\TablaDatos", true);
                     }
                 }
              }
@@ -290,7 +290,7 @@ namespace Priceio
             dialog.lblTexto.Text = "Las imágenes cargadas deberán tener por nombre el campo a buscar y deberán estar en formato png";
             dialog.ShowDialog();
 
-            Process.Start("explorer.exe", @".\objetosSplash\TablaDatos");
+            Process.Start("explorer.exe", @".\data\objetosSplash\TablaDatos");
         }
     }
 }

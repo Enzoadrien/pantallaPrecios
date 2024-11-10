@@ -1,5 +1,9 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
+using MySqlX.XDevAPI;
+using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -63,60 +67,40 @@ namespace Priceio
 
         private void GuardarContenido()
         {
-            try
+            List<NombresClientesTurnero> ListNombresClientesTurnero = new List<NombresClientesTurnero>();
+            foreach (Item item in Nombres.ItemsSource)
             {
-
-                using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
+                if (item.ID != null && item.Nombre != null)
                 {
-                    stream.SetLength(0);
-                    foreach (Item item in Nombres.ItemsSource)
+                    if (!item.ID.Equals(string.Empty) && !item.Nombre.Equals(string.Empty))
                     {
-                        if(item.ID != null && item.Nombre != null)
-                        {
-                            if (!item.ID.Equals(string.Empty) && !item.Nombre.Equals(string.Empty))
-                            {
-                                byte[] bytes = Encoding.UTF8.GetBytes(item.ID + "=" + item.Nombre + Environment.NewLine);
-                                stream.Write(bytes, 0, bytes.Length);
-                            }
-                        }
+                        ListNombresClientesTurnero.Add(new NombresClientesTurnero { Identificador = item.ID, Nombre = item.Nombre });
                     }
-                    stream.Close();
                 }
             }
-            catch
+            if(!new SQLiteClassManager().SetNombresClientesTurnero(ListNombresClientesTurnero))
             {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                dialog.lblNombre.Content = "¡Error!";
+                dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                dialog.btnCancelar.Visibility = Visibility.Visible;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             }
         }
         private void CargarInfo()
         {
-            try
+            List<NombresClientesTurnero>? SQLiteClass = new SQLiteClassManager().GetNombresClientesTurnero();
+            if (SQLiteClass != null)
             {
                 List<Item> items = new List<Item>();
-                using (Stream stream = new FileStream(@".\Recursos\nombreEquipos.3k", FileMode.Open))
+                foreach (NombresClientesTurnero clientes in SQLiteClass)
                 {
-                    var sr = new StreamReader(stream);
-
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        string[] datos = line.Split('=');
-                        if (datos.Length == 2)
-                        {
-                            items.Add(new Item { ID = datos[0], Nombre = datos[1] });
-                        }
-
-                    }
-                    stream.Close();
+                    items.Add(new Item { ID = clientes.Identificador, Nombre = clientes.Nombre });
                 }
+
                 Nombres.ItemsSource = items;
-       
-
-            }
-            catch
-            {
-            }
+            }    
         }
-
     }
     public class Item
     {

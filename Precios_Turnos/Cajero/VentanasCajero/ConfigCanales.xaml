@@ -105,16 +105,17 @@
         <Label x:Name="lblPagoMaximo" Content="Pago máximo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="3" Grid.ColumnSpan="2"/>
         <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="5" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
         <ComboBox x:Name="cbxDenominacion" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="12" Margin="5,0,5,0" Grid.ColumnSpan="2" />
-        <TextBox x:Name="Cantidad" Grid.Row="12" Margin="5,3,5,0" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2"/>
+        <Label x:Name="lblX" Content="X" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2" Margin="20,0,0,0"/>
+        <TextBox x:Name="Cantidad" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Width="65" Margin="0,0,35,0" />
         <StackPanel Grid.Row="12"
   Orientation="Horizontal"
-  Margin="5,5,5,5" Grid.Column="3" Grid.ColumnSpan="3" >
+  Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="3" HorizontalAlignment="Center" >
             <Button x:Name="btnRetirarDenominacion"
 Content="Retirar denominación"
 Height="20"
-Margin="0,0,0,0"
+Margin="0,0,20,0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnRetirar_Click" Width="150">
+FontSize="14" Width="150" Click="btnRetirarDenominacion_Click">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>

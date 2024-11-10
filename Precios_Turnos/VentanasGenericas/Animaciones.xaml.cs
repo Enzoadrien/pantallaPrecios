@@ -316,7 +316,7 @@ namespace Priceio
         private void CargarControles()
         {
             string lectura = string.Empty;
-            DirectoryInfo info = new DirectoryInfo((mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones");
+            DirectoryInfo info = new DirectoryInfo(@".\data\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones");
             foreach (var file in info.GetFiles())
             {
                 if (@file.Name.Equals(NombreControl + ".anim"))
@@ -538,7 +538,7 @@ namespace Priceio
         {
             try
             {
-                using (Stream stream = new FileStream(@".\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones\" + pvStrNombreObjeto + ".anim", FileMode.Create))
+                using (Stream stream = new FileStream(@".\data\" + (mainWindow.Name.Equals("VentanaPrincipal") ? "objetos" : "objetosSplash") + @"\animaciones\" + pvStrNombreObjeto + ".anim", FileMode.Create))
                 {
                     stream.SetLength(0);
                     byte[] bytes = Encoding.UTF8.GetBytes(pvStrAnimacion);
