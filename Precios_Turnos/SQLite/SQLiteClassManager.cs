@@ -3,6 +3,7 @@ using Priceio.ClasesSQLite;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using static Priceio.ClasesSQLite.Pago;
 
 namespace Priceio.SQLite
 {
@@ -318,6 +319,122 @@ namespace Priceio.SQLite
             return true;
         }
 
+        internal Turno? GetTurno()
+        {
+            Turno SQLiteClass = new Turno();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.NumeroEquipo = row.Field<string>("NumeroEquipo");
+                SQLiteClass.NumeroTurno = (int)row.Field<long>("NumeroTurno");
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetTurno(Turno SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+        internal List<TurnosAnteriores>? GetTurnosAnteriores()
+        {
+            List<TurnosAnteriores> SQLiteClass = new List<TurnosAnteriores>();
+            try
+            {
+                managerSQLite.ConectarBD();
+                foreach (DataRow dr in managerSQLite.GetAllTableData(new TurnosAnteriores().GetType().Name).Rows)
+                    SQLiteClass.Add(new TurnosAnteriores()
+                    {
+                        NumeroEquipo = dr.Field<string>("NumeroEquipo"),
+                        NumeroTurno = (int)dr.Field<long>("NumeroTurno")
+                    });
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetTurnosAnteriores(List<TurnosAnteriores> SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData("TurnosAnteriores");
+                foreach (TurnosAnteriores turnosAnteriores in SQLiteClass)
+                    managerSQLite.SaveTableData(new TableClass(turnosAnteriores.GetType(), turnosAnteriores));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+        internal bool EliminarDatosTabla(string nombre)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(nombre);
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+        internal Pago? GetPago()
+        {
+            Pago SQLiteClass = new Pago();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.TipoPago = (Tipo)row.Field<long>("TipoPago");
+                SQLiteClass.EstadoPago = (Estado)row.Field<long>("EstadoPago");
+                SQLiteClass.NumPago = (int)row.Field<long>("NumPago");
+                SQLiteClass.Equipo  = row.Field<string>("Equipo");
+                SQLiteClass.CantidadTotal = (int)row.Field<long>("CantidadTotal");
+                SQLiteClass.CantidadIngresada = (int)row.Field<long>("CantidadIngresada");
+                SQLiteClass.CantidadFaltante = (int)row.Field<long>("CantidadFaltante");
+                SQLiteClass.Cambio = (int)row.Field<long>("Cambio");
+                SQLiteClass.CambioCancelado = (int)row.Field<long>("CambioCancelado");
+                SQLiteClass.Pagado = Convert.ToBoolean(row.Field<long>("Pagado"));
+                SQLiteClass.CantidadBilletesIngresados = (int)row.Field<long>("CantidadBilletesIngresados");
+                SQLiteClass.CantidadMonedasIngresadas = (int)row.Field<long>("CantidadMonedasIngresadas");
+                SQLiteClass.Impresion = row.Field<string>("Impresion");
+                SQLiteClass.BilletesCambio = (int)row.Field<long>("BilletesCambio");
+                SQLiteClass.MonedasCambio = (int)row.Field<long>("MonedasCambio");
+                SQLiteClass.Canal = (int)row.Field<long>("Canal");
+                SQLiteClass.Fecha = DateOnly.Parse(row.Field<string>("Fecha"));
+                SQLiteClass.Hora = TimeOnly.Parse(row.Field<string>("Hora"));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetPago(Pago SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+
         internal bool ResetConfigSplash()
         {
             try
@@ -329,10 +446,12 @@ namespace Priceio.SQLite
                 managerSQLite.TruncateTableData(new ClientesTurnero().GetType().Name);
                 managerSQLite.TruncateTableData(new ConfiguracionVerificador().GetType().Name);
                 managerSQLite.TruncateTableData(new ConfiguracionCajero().GetType().Name);
+                managerSQLite.TruncateTableData(new ConfiguracionCajero().GetType().Name);
                 managerSQLite.DesconectarBD();
             }
             catch { return false; }
             return true;
         }
+
     }
 }

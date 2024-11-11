@@ -418,7 +418,6 @@ namespace Priceio
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
             {
                 dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
-                dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
                 dialog.Texto3.Content = "";
 
             }
@@ -448,7 +447,6 @@ namespace Priceio
                 if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
                 {
                     dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
-                    dialog.Texto2.Content = "*NumeroTurnoAnt   *NumeroEquipoAnt    *NombreEquipoAnt";
                     dialog.Texto3.Content = "";
 
                 }

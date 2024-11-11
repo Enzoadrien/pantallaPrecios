@@ -32,6 +32,7 @@ namespace Priceio.ClasesSQLite
         public int BilletesCambio { get; set; }
         public int MonedasCambio { get; set; }
         public int Canal { get; set; }
-
+        public DateOnly Fecha { get; set; }
+        public TimeOnly Hora { get; set; }
     }
 }

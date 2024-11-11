@@ -12,6 +12,9 @@ using System.IO;
 using Precios_Turnos;
 using Priceio.Turnero.Kretz;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using MySqlX.XDevAPI;
 
 namespace Priceio.Turnero
 {
@@ -30,46 +33,49 @@ namespace Priceio.Turnero
             // The DNS name of the computer  
             // running the listener is "host.contoso.com".
             //  //Create the object
-            Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            Protocolo = config.AppSettings.Settings["ProtocoloTurnero"].Value;
-            int PuertoTurnero = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
-            IPAddress ipAddress = IPAddress.Any;
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PuertoTurnero);
-
-            // Create a TCP/IP socket.  
-            listener = new Socket(ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
-
-            // Bind the socket to the local endpoint and listen for incoming connections.  
-            try
+            ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+            if (configuracionTurnero != null)
             {
-                listener.Bind(localEndPoint);
-                listener.Listen(100);
+                Protocolo = configuracionTurnero.ProtocoloTurnero;
+                int PuertoTurnero = configuracionTurnero.PuertoTCP;
 
+                IPAddress ipAddress = IPAddress.Any;
+                IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PuertoTurnero);
 
-                Console.WriteLine("Esperando conexiones...");
+                // Create a TCP/IP socket.  
+                listener = new Socket(ipAddress.AddressFamily,
+                    SocketType.Stream, ProtocolType.Tcp);
 
-                while (start)
+                // Bind the socket to the local endpoint and listen for incoming connections.  
+                try
                 {
-                    // Set the event to nonsignaled state.  
-                    allDone.Reset();
+                    listener.Bind(localEndPoint);
+                    listener.Listen(100);
 
-                    // Start an asynchronous socket to listen for connections. 
-                    listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
 
-                    // Wait until a connection is made before continuing.  
-                    allDone.WaitOne();
+                    Console.WriteLine("Esperando conexiones...");
+
+                    while (start)
+                    {
+                        // Set the event to nonsignaled state.  
+                        allDone.Reset();
+
+                        // Start an asynchronous socket to listen for connections. 
+                        listener.BeginAccept(new AsyncCallback(AcceptCallback), listener);
+
+                        // Wait until a connection is made before continuing.  
+                        allDone.WaitOne();
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
                 }
 
+                Console.WriteLine("\nPress ENTER to continue...");
+                Console.Read();
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-
-            Console.WriteLine("\nPress ENTER to continue...");
-            Console.Read();
-
         }
         public static void StopListening()
         {
@@ -131,14 +137,20 @@ namespace Priceio.Turnero
                             data = PT.ProcesarComando(data.Substring(1, data.Length - 2), state);
                             Task.Run(async () =>
                             {
-                                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                                if (config.AppSettings.Settings["TipoTurnero"].Value.Equals("S"))
+                                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                                if (configuracionTurnero != null)
                                 {
-                                    int puerto = int.Parse(config.AppSettings.Settings["PuertoTCP"].Value);
-                                    string[] clientes = config.AppSettings.Settings["Clientes"].Value.Split('|');
-                                    if (clientes[0].Length > 0)
-                                        foreach (string cliente in clientes)
-                                            await new AsynchronousClient().StartClient(cliente, puerto, new Comunicacion().CrearComandoBascula(data));
+                                    if (configuracionTurnero.TipoTurnero.Equals("S"))
+                                    {
+                                        int puerto = configuracionTurnero.PuertoTCP;
+
+                                        List<ClientesTurnero> clientesTurneros = new SQLiteClassManager().GetClientesTurnero();
+                                        if (clientesTurneros != null)
+                                        {
+                                           foreach(ClientesTurnero cliente in clientesTurneros)
+                                                await new AsynchronousClient().StartClient(cliente.Cliente, puerto, new Comunicacion().CrearComandoBascula(data));
+                                        }
+                                    }
                                 }
                             });
                             break;

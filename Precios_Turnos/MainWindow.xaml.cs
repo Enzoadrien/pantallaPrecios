@@ -346,6 +346,7 @@ namespace Priceio
                 animaciones = true;
                 CargarWEB(false);
                 CargarAnimaciones();
+                CargarTurnosPrincipal();
                 Task.Run(() => ComportamientoObjetos());
 
                 ConfiguracionVentanaSplash? configuracionVentanaSplash = new SQLiteClassManager().GetConfiguracionVentanaSplash();
@@ -503,11 +504,11 @@ namespace Priceio
                                 }
                             }
                         }
-                            break;
+                        break;
                 }
             }
         }
-        
+
         internal async void ProcesarPagoLector(string pvStrDatosLector)
         {
             ProcesarPagoCajero PT = new ProcesarPagoCajero();
@@ -524,7 +525,7 @@ namespace Priceio
                 bool formatoValido = true;
                 char[] formato = configuracionLector.FormatoCodigo.ToCharArray();
                 char[] cadena = pvStrDatosLector.ToCharArray();
-                if(formato.Length <= cadena.Length && Char.IsNumber(cadena[0]))
+                if (formato.Length <= cadena.Length && Char.IsNumber(cadena[0]))
                 {
 
                     for (int x = 0; x < formato.Length; x++)
@@ -562,14 +563,14 @@ namespace Priceio
 
                     string dato = JsonSerializer.Serialize(pago);
                     string resultado = await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
-                    if(configuracionLector.Imprmir == true)
+                    if (configuracionLector.Imprmir == true)
                     {
                         string[] res = resultado.Split('|');
 
-                        switch(res[0])
+                        switch (res[0])
                         {
                             case "OK":
-                                string cadenaImpresion = "          3K MANTENIMIENTO<br>          PROFESIONAL<br>          JUAN MANUEL<br>          #276<br>          COLONIA CENTRO<br>          33-3390-5151<br><br>EQUIPO: " + pago.Equipo + "<br>USUARIO: GRUPO<br>FECHA: " + DateTime.Now.ToString("dd/MM/yyyy")+"<br>HORA: " + DateTime.Now.ToString("HH:mm:ss tt") + "<br>FOLIO: " + pago.NumPago + "<br><br><br>-----------Pago-----------<br> Total:         $ " + string.Format("{0:#.00}", pago.CantidadTotal) + "<br> Pago en EFE:   $ " + string.Format("{0:#.00}", Convert.ToDecimal(res[1])) + "<br> Cambio:        $ " + string.Format("{0:#.00}", Convert.ToDecimal(res[2])) + "<br><br><br>* GRACIAS POR SU COMPRA *<br>";
+                                string cadenaImpresion = configuracionLector.FormatoImpresora.Replace("<FOLIO>", pago.NumPago.ToString()).Replace("<EQUIPO>", pago.Equipo).Replace("<FECHA>", DateTime.Now.ToString("dd/MM/yyyy")).Replace("<HORA>", DateTime.Now.ToString("HH:mm:ss tt")).Replace("<TOTAL>", string.Format("{0:#.00}", pago.CantidadTotal)).Replace("<PAGO>", string.Format("{0:#.00}", Convert.ToDecimal(res[1]))).Replace("<CAMBIO>", string.Format("{0:#.00}", Convert.ToDecimal(res[2])));
                                 Pago pagoImp = new Pago();
                                 pagoImp.TipoPago = Pago.Tipo.IMPRESION;
                                 pagoImp.Impresion = cadenaImpresion;
@@ -577,7 +578,7 @@ namespace Priceio
                                 await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
                                 break;
                         }
-                    } 
+                    }
                 }
             }
         }
@@ -602,11 +603,9 @@ namespace Priceio
                     {
                         case Key.Left:
                             listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { false, "00" } });
-                            //ProcesarTurnoTeclado(false, "00");
                             break;
                         case Key.Right:
                             listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
-                            //ProcesarTurnoTeclado(true, "00");
                             break;
                         case Key.Down:
                             Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
@@ -617,8 +616,8 @@ namespace Priceio
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog.ShowDialog() == true)
                             {
-                                SetearNumeroTurno(0);
-                                File.WriteAllText(@".\Recursos\turnoAnt.3k", string.Empty);
+                                SetearNumeroTurno(0, "PC");
+                                new SQLiteClassManager().EliminarDatosTabla("TurnosAnteriores");
                                 var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
                                 if (numeroTurnoAnt != null)
                                     numeroTurnoAnt.SetValue(ContentProperty, "");
@@ -637,7 +636,7 @@ namespace Priceio
                             if (dialog2.ShowDialog() == true)
                                 try
                                 {
-                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text));
+                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text), "PC");
                                 }
                                 catch (Exception)
                                 {
@@ -659,53 +658,38 @@ namespace Priceio
             catch (Exception) { }
         }
 
-        public void SetearNumeroTurno(int numeroTurno)
+        public void SetearNumeroTurno(int numeroTurno, string numeroEquipo)
         {
-            new ControlTurno().GuardarNumeroTurno(numeroTurno);
+            new ControlTurno().GuardarNumeroTurno(new Turno() { NumeroTurno = numeroTurno, NumeroEquipo = numeroEquipo });
+
         }
 
         private async Task ProcesarTurno(bool siguiente, string pvSrtrEquipo)
         {
-            int turno = new ControlTurno().CargarNumeroTurno();
-            string equipo = pvSrtrEquipo;
-            List<string>? turnosAnteriores = new List<string>();
-
-            while (true)
+            Turno? turno = new ControlTurno().CargarNumeroTurno();
+            int numTurno = 0;
+            if (turno != null)
             {
-                try
-                {
-                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
-                    {
-                        var sr = new StreamReader(stream);
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            turnosAnteriores.Add(line);
-                        }
-                        stream.Close();
-                        break;
-                    }
-                }
-                catch
-                {
-                }
+                numTurno = turno.NumeroTurno;
             }
-            if (turno >= 0)
+
+            if (numTurno >= 0)
             {
                 if (siguiente)
-                    ++turno;
+                    ++numTurno;
                 else
                 {
-                    if (turno > 1)
-                        --turno;
+                    if (numTurno > 1)
+                        --numTurno;
                 }
             }
 
-            new ControlTurno().GuardarNumeroTurno(turno);
-            new ControlTurno().GuardarTurnoAnt(turno, equipo);
-            await new ControlTurno().MostrarTurno(turno, equipo, turnosAnteriores, this);
+            new ControlTurno().GuardarNumeroTurno(new Turno() { NumeroTurno = numTurno, NumeroEquipo = pvSrtrEquipo });
+            new ControlTurno().GuardarTurnoAnt(numTurno, pvSrtrEquipo);
+            await new ControlTurno().MostrarTurno(numTurno, pvSrtrEquipo, new ControlTurno().CargarTurnosAnteriores(), this);
             MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
             CargarTurnosPrincipal();
+
         }
 
         private async void ProcesarListadoTurnosTeclado()
@@ -720,8 +704,7 @@ namespace Priceio
                         await ProcesarTurno(first.Value.First().Key, first.Value.First().Value);
                         listaTurnosTeclas.Remove(first.Key);
                     }
-                    await Task.Delay(1000);
-
+                    await Task.Delay(250);
                 }
                 catch (Exception) { }
             }
@@ -736,12 +719,12 @@ namespace Priceio
                     if (listaTurnosKretz.Count > 0)
                     {
                         var first = listaTurnosKretz.First();
-                        await new ControlTurno().MostrarTurno(first.GetTurno().GetNumTurno(), first.GetTurno().GetNumEquipo(), first.GetTurno().GetTurnosAnt(), this);
+                        await new ControlTurno().MostrarTurno(first.GetTurno().NumeroTurno, first.GetTurno().NumeroEquipo, first.GetTurno().GetTurnosAnt(), this);
                         MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
                         CargarTurnosPrincipal();
                         listaTurnosKretz.Remove(first);
                     }
-                    await Task.Delay(1000);
+                    await Task.Delay(250);
 
                 }
                 catch (Exception) { }
@@ -750,52 +733,31 @@ namespace Priceio
 
         public void CargarTurnosPrincipal()
         {
-            List<string>? turnosAnteriores = new List<string>();
-
-            while (true)
-            {
-                try
-                {
-                    using (Stream stream = new FileStream(@".\Recursos\turnoAnt.3k", FileMode.Open))
-                    {
-                        var sr = new StreamReader(stream);
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
-                        {
-                            turnosAnteriores.Add(line);
-                        }
-                        stream.Close();
-                        break;
-                    }
-                }
-                catch
-                { }
-            }
+            List<TurnosAnteriores>? turnosAnteriores = new SQLiteClassManager().GetTurnosAnteriores();
             if (turnosAnteriores != null)
             {
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
-                    var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
-                    if (numeroTurnoAnt != null)
-                        numeroTurnoAnt.SetValue(ContentProperty, "");
-                    if (numeroEquipoAnt != null)
-                        numeroEquipoAnt.SetValue(ContentProperty, "");
-
-                    foreach (string text in turnosAnteriores)
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
                     {
-                        string[] anteriores = text.Split('|');
+                        var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
+                        var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
                         if (numeroTurnoAnt != null)
-                            numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty) + anteriores[0] + "\n");
+                            numeroTurnoAnt.SetValue(ContentProperty, "");
                         if (numeroEquipoAnt != null)
-                            numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty) + anteriores[1] + "\n");
-                    }
-                    if (numeroTurnoAnt != null)
-                        numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
-                    if (numeroEquipoAnt != null)
-                        numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                            numeroEquipoAnt.SetValue(ContentProperty, "");
 
-                }));
+                        foreach (TurnosAnteriores turnoAnterior in turnosAnteriores)
+                        {
+                            if (numeroTurnoAnt != null)
+                                numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroTurno.ToString() + "\n");
+                            if (numeroEquipoAnt != null)
+                                numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroEquipo + "\n");
+                        }
+                        if (numeroTurnoAnt != null)
+                            numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                        if (numeroEquipoAnt != null)
+                            numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
+
+                    }));
             }
         }
 
@@ -1271,7 +1233,7 @@ namespace Priceio
                             tipoSplash = SQLiteClass.TipoSplash;
                             activarSplash = SQLiteClass.ActivarSplash;
                         }
-                        else 
+                        else
                         {
                             tipoSplash = "T";
                             activarSplash = false;
@@ -1834,30 +1796,32 @@ namespace Priceio
             }
             else
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
+                {
+                    int TurnosAnt = configuracionTurnero.TurnosAnteriores;
+                    Label obj = new Label();
+                    obj.Name = "NumeroTurnoAnt";
+                    obj.ToolTip = "NumeroTurnoAnt";
 
-                Label obj = new Label();
-                obj.Name = "NumeroTurnoAnt";
-                obj.ToolTip = "NumeroTurnoAnt";
+                    string turnosAntLista = string.Empty;
+                    for (int x = 1; x <= TurnosAnt; x++)
+                        turnosAntLista += "Turno " + x + "\n";
 
-                string turnosAntLista = string.Empty;
-                for (int x = 1; x <= TurnosAnt; x++)
-                    turnosAntLista += "Turno " + x + "\n";
+                    obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    obj.VerticalContentAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
 
-                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.HorizontalContentAlignment = HorizontalAlignment.Center;
-                obj.VerticalContentAlignment = VerticalAlignment.Center;
-                obj.FontSize = 24;
-                obj.FontFamily = new FontFamily("Arial");
-                obj.MouseLeave += objeto_MouseLeave;
-                obj.MouseEnter += objeto_MouseEnter;
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
-
-                itemCm.Header = "Eliminar turno anterior";
+                    itemCm.Header = "Eliminar turno anterior";
+                }
             }
         }
 
@@ -1873,32 +1837,35 @@ namespace Priceio
             }
             else
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
+                {
+                    int TurnosAnt = configuracionTurnero.TurnosAnteriores;
 
-                Label obj = new Label();
-                obj.Name = "NumeroEquipoAnt";
-                obj.ToolTip = "NumeroEquipoAnt";
+                    Label obj = new Label();
+                    obj.Name = "NumeroEquipoAnt";
+                    obj.ToolTip = "NumeroEquipoAnt";
 
-                string turnosAntLista = string.Empty;
-                for (int x = 1; x <= TurnosAnt; x++)
-                    if (x == 10)
-                        turnosAntLista += "Equipo" + x + "\n";
-                    else
-                        turnosAntLista += "Equipo 0" + x + "\n";
+                    string turnosAntLista = string.Empty;
+                    for (int x = 1; x <= TurnosAnt; x++)
+                        if (x == 10)
+                            turnosAntLista += "Equipo" + x + "\n";
+                        else
+                            turnosAntLista += "Equipo 0" + x + "\n";
 
-                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.HorizontalContentAlignment = HorizontalAlignment.Center;
-                obj.VerticalContentAlignment = VerticalAlignment.Center;
-                obj.FontSize = 24;
-                obj.FontFamily = new FontFamily("Arial");
-                obj.MouseLeave += objeto_MouseLeave;
-                obj.MouseEnter += objeto_MouseEnter;
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
-                itemCm.Header = "Eliminar equipo anterior";
+                    obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    obj.VerticalContentAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                    itemCm.Header = "Eliminar equipo anterior";
+                }
             }
         }
 
@@ -2305,15 +2272,15 @@ namespace Priceio
                 propiedadesFondo.Top = mousePosition.Y - propiedadesFondo.Height;
             else
                 propiedadesFondo.Top = mousePosition.Y;
-                propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
+            propiedadesFondo.btnColorFondo.Fill = new SolidColorBrush(((SolidColorBrush)Base.Background).Color);
 
-                if (Fondo.Source != null)
-                {
-                    propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
-                    propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
-                    propiedadesFondo.Opacidad.IsEnabled = true;
-                    propiedadesFondo.Opacidad.Value = Fondo.Opacity;
-                }
+            if (Fondo.Source != null)
+            {
+                propiedadesFondo.ContenidoTextBox.Text = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesFondo.ContenidoTextBox.ToolTip = Path.GetFileName(Fondo.Source.ToString());
+                propiedadesFondo.Opacidad.IsEnabled = true;
+                propiedadesFondo.Opacidad.Value = Fondo.Opacity;
+            }
             propiedadesFondo.ShowDialog();
         }
 
@@ -2959,8 +2926,6 @@ namespace Priceio
                                     if (!list[0].Rows[0][0].ToString().Equals("Sin datos"))
                                         control.ItemsSource = list[0].DefaultView;
 
-                                    //control.UpdateLayout();
-                                    //ColorFuenteFondoTabla(control.Name, control.Tag.ToString());
                                     item.MouseLeave += objetoMedia_MouseLeave;
                                     item.MouseEnter += objetoMedia_MouseEnter;
 
@@ -3006,43 +2971,46 @@ namespace Priceio
             List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre, pCampoImagen);
             try
             {
-                Seguridad vSeguridad = new Seguridad();
-                //Create the object
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                string odbc = config.AppSettings.Settings["ODBC"].Value;
-                string usuario = config.AppSettings.Settings["UsuarioODBC"].Value;
-                string contrasena = vSeguridad.DecryptString(nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
-                string consulta = string.Empty;
-                string nombreIndex = string.Empty;
-
-                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
-
-                foreach (var file in info.GetFiles())
+                ConfiguracionODBC? configuracionODBC = new SQLiteClassManager().GetConfiguracionODBC();
+                if (configuracionODBC != null)
                 {
-                    if (@file.Name.Equals(pNombre + ".sql"))
+                    Seguridad vSeguridad = new Seguridad();
+                    //Create the object
+                    string odbc = configuracionODBC.ODBC;
+                    string usuario = configuracionODBC.UsuarioODBC;
+                    string contrasena = vSeguridad.DecryptString(nombreApp, configuracionODBC.ContrasenaODBC);
+                    string consulta = string.Empty;
+                    string nombreIndex = string.Empty;
+
+                    DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
+
+                    foreach (var file in info.GetFiles())
                     {
-                        StreamReader sR = new StreamReader(@file.FullName);
-                        string lectura = sR.ReadToEnd();
-                        sR.Close();
-                        string[] datosC = vSeguridad.DecryptString(nombreApp, lectura).Split('|');
-                        consulta = datosC[0];
-                        if (datosC.Length > 3)
-                            nombreIndex = datosC[3];
-
-                        OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-
-                        connection.Open();
-                        OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
-                        OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                        if (MyDataReader.HasRows)
+                        if (@file.Name.Equals(pNombre + ".sql"))
                         {
-                            DataTable dt = new DataTable();
-                            dt.Load(MyDataReader);
-                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, datosC[2], nombreIndex);
+                            StreamReader sR = new StreamReader(@file.FullName);
+                            string lectura = sR.ReadToEnd();
+                            sR.Close();
+                            string[] datosC = vSeguridad.DecryptString(nombreApp, lectura).Split('|');
+                            consulta = datosC[0];
+                            if (datosC.Length > 3)
+                                nombreIndex = datosC[3];
 
+                            OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                            connection.Open();
+                            OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                            OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                            if (MyDataReader.HasRows)
+                            {
+                                DataTable dt = new DataTable();
+                                dt.Load(MyDataReader);
+                                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, datosC[2], nombreIndex);
+
+                            }
+                            connection.Close();
+                            break;
                         }
-                        connection.Close();
-                        break;
                     }
                 }
             }
@@ -3266,7 +3234,7 @@ namespace Priceio
                         default:
                             break;
                     }
-                } 
+                }
             }
             catch { }
         }
@@ -3322,6 +3290,7 @@ namespace Priceio
                 }
             }
         }
+
         private void TimerTickLog(object sender, EventArgs e)
         {
             timer.Stop();

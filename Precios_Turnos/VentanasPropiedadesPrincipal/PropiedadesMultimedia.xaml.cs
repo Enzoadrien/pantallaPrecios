@@ -74,6 +74,7 @@ namespace Priceio
             TextBox cajaTexto = (TextBox)item;
             if (cajaTexto.Text.Length == 0)
             {
+                item = mainWindow.FindName(NombreControl.Text) as UIElement;
                 Point point = item.TransformToAncestor(mainWindow.Principal).Transform(new Point(0, 0));
                 double pX = Math.Round(point.X);
                 double pY = Math.Round(point.Y);
@@ -179,8 +180,11 @@ namespace Priceio
                             try
                             {
                                 TranslateTransform _currentTT = item.RenderTransform as TranslateTransform;
-                                currentX = Math.Round(_currentTT.X);
-                                currentY = Math.Round(_currentTT.Y);
+                                if(_currentTT != null)
+                                {
+                                    currentX = Math.Round(_currentTT.X);
+                                    currentY = Math.Round(_currentTT.Y);
+                                }
                             }
                             catch { }
 

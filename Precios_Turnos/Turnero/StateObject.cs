@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Priceio.ClasesSQLite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -20,7 +21,7 @@ namespace Priceio.Turnero
         // Client socket.
         internal Socket workSocket = null;
 
-        internal Turno Turno;
+        internal Turnero Turno;
 
         internal EstadoTurno EstadoActual;
 
@@ -39,11 +40,11 @@ namespace Priceio.Turnero
             return EstadoActual;
         }
 
-        internal void SetTurno(Turno turno)
+        internal void SetTurno(Turnero turno)
         {
             Turno = turno;
         }
-        internal Turno GetTurno()
+        internal Turnero GetTurno()
         {
             return Turno;
         }

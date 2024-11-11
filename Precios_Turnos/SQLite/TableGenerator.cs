@@ -26,7 +26,8 @@ namespace Priceio.SQLite
             tables.Add(new TableClass(new ConfiguracionImpresora().GetType()));
             tables.Add(new TableClass(new ConfiguracionLector().GetType()));
             tables.Add(new TableClass(new Pago().GetType()));
-            //tables.Add(new TableClass(new Turno().GetType()));
+            tables.Add(new TableClass(new Turno().GetType()));
+            tables.Add(new TableClass(new TurnosAnteriores().GetType()));
 
 
 
@@ -100,6 +101,8 @@ namespace Priceio.SQLite
                 dataMapper.Add(typeof(bool), "INTEGER");
                 dataMapper.Add(typeof(bool?), "INTEGER");
                 dataMapper.Add(typeof(DateTime), "TEXT");
+                dataMapper.Add(typeof(DateOnly), "TEXT");
+                dataMapper.Add(typeof(TimeOnly), "TEXT");
                 dataMapper.Add(typeof(float), "REAL");
                 dataMapper.Add(typeof(decimal), "REAL");
                 dataMapper.Add(typeof(double), "REAL");

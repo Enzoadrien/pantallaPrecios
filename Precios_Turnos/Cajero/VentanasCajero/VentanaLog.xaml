@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio.Cajero.VentanasCajero"
         mc:Ignorable="d"
-         Title="Titulo" Background="#FFD2CBCB" WindowStyle="None" Height="370" Width="400" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing">
+         Title="Log..." Background="#FFD2CBCB" WindowStyle="None" Height="370" Width="400" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="400*"/>

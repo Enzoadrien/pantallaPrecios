@@ -205,12 +205,6 @@ namespace Priceio
                     Label NombreEquipo = (Label)FindName("NombreEquipo");
                     if (NombreEquipo != null)
                         line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
-                    Label NumeroTurnoAnt = (Label)FindName("NumeroTurnoAnt");
-                    if (NumeroTurnoAnt != null)
-                        line = line.Replace(@"NumeroTurnoAnt", NumeroTurnoAnt.Content.ToString());
-                    Label NumeroEquipoAnt = (Label)FindName("NumeroEquipoAnt");
-                    if (NumeroEquipoAnt != null)
-                        line = line.Replace(@"NumeroEquipoAnt", NumeroEquipoAnt.Content.ToString());
 
                     //Datos para Verificador de precios
                     DataGrid control = (DataGrid)FindName("TablaDatos");
@@ -733,7 +727,7 @@ namespace Priceio
                 actualizaPagoControles();
                 try
                 {
-                    if (pago.TipoPago == Pago.Tipo.RETIRO)
+                    if (pago.TipoPago == Pago.Tipo.RETIRO || pago.Pagado)
                     {
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
@@ -1228,11 +1222,13 @@ namespace Priceio
             dialog.lblTexto.Text = "Se eliminará todo el diseño de forma permanente. ¿Está seguro que desea continuar?";
             if (dialog.ShowDialog() == true)
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                config.AppSettings.Settings["Ancho"].Value = (SystemParameters.VirtualScreenWidth / 2).ToString();
-                config.AppSettings.Settings["Alto"].Value = (SystemParameters.VirtualScreenHeight / 2).ToString();
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
+                ConfiguracionVentanaSplash? configuracionVentanaSplash = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                if (configuracionVentanaSplash != null)
+                {
+                    configuracionVentanaSplash.Ancho = (int)(SystemParameters.VirtualScreenWidth / 2);
+                    configuracionVentanaSplash.Alto = (int)(SystemParameters.VirtualScreenHeight / 2);
+                    new SQLiteClassManager().SetConfiguracionVentanaSplash(configuracionVentanaSplash);
+                }
 
                 Width = SystemParameters.VirtualScreenWidth / 2;
                 Height = SystemParameters.VirtualScreenHeight / 2;
@@ -1640,30 +1636,31 @@ namespace Priceio
             }
             else
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
+                {
+                    int TurnosAnt = configuracionTurnero.TurnosAnteriores;
 
-                Label obj = new Label();
-                obj.Name = "NumeroTurnoAnt";
-                obj.ToolTip = "NumeroTurnoAnt";
+                    Label obj = new Label();
+                    obj.Name = "NumeroTurnoAnt";
+                    obj.ToolTip = "NumeroTurnoAnt";
 
-                string turnosAntLista = string.Empty;
-                for (int x = 1; x <= TurnosAnt; x++)
-                    turnosAntLista += "Turno " + x + "\n";
+                    string turnosAntLista = string.Empty;
+                    for (int x = 1; x <= TurnosAnt; x++)
+                        turnosAntLista += "Turno " + x + "\n";
 
-                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.FontSize = 24;
-                obj.FontFamily = new FontFamily("Arial");
-                obj.MouseLeave += objeto_MouseLeave;
-                obj.MouseEnter += objeto_MouseEnter;
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
-                itemCm.Header = "Agregar turno anterior";
+                    obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                    itemCm.Header = "Agregar turno anterior";
+                }
             }
-
-
         }
 
         private void MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1677,30 +1674,33 @@ namespace Priceio
             }
             else
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                int TurnosAnt = int.Parse(config.AppSettings.Settings["TurnosAnteriores"].Value);
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
+                {
+                    int TurnosAnt = configuracionTurnero.TurnosAnteriores;
 
-                Label obj = new Label();
-                obj.Name = "NumeroEquipoAnt";
-                obj.ToolTip = "NumeroEquipoAnt";
+                    Label obj = new Label();
+                    obj.Name = "NumeroEquipoAnt";
+                    obj.ToolTip = "NumeroEquipoAnt";
 
-                string turnosAntLista = string.Empty;
-                for (int x = 1; x <= TurnosAnt; x++)
-                    if (x == 10)
-                        turnosAntLista += "Equipo" + x + "\n";
-                    else
-                        turnosAntLista += "Equipo 0" + x + "\n";
+                    string turnosAntLista = string.Empty;
+                    for (int x = 1; x <= TurnosAnt; x++)
+                        if (x == 10)
+                            turnosAntLista += "Equipo" + x + "\n";
+                        else
+                            turnosAntLista += "Equipo 0" + x + "\n";
 
-                obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
-                obj.HorizontalAlignment = HorizontalAlignment.Center;
-                obj.VerticalAlignment = VerticalAlignment.Center;
-                obj.FontSize = 24;
-                obj.FontFamily = new FontFamily("Arial");
-                obj.MouseLeave += objeto_MouseLeave;
-                obj.MouseEnter += objeto_MouseEnter;
-                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                Principal.Children.Add(obj);
-                itemCm.Header = "Agregar equipo anterior";
+                    obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                    itemCm.Header = "Agregar equipo anterior";
+                }
             }
         }
 
@@ -1886,8 +1886,8 @@ namespace Priceio
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog.ShowDialog() == true)
                             {
-                                SetearNumeroTurno(0);
-                                File.WriteAllText(@".\Recursos\turnoAnt.3k", string.Empty);
+                                SetearNumeroTurno(0,"PC");
+                                new SQLiteClassManager().EliminarDatosTabla("TurnosAnteriores");
 
                                 var numeroTurnoAnt = mainWindow.FindName("NumeroTurnoAnt") as UIElement;
                                 var numeroEquipoAnt = mainWindow.FindName("NumeroEquipoAnt") as UIElement;
@@ -1908,7 +1908,7 @@ namespace Priceio
                             if (dialog2.ShowDialog() == true)
                                 try
                                 {
-                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text));
+                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text),"PC");
                                 }
                                 catch (Exception)
                                 {
@@ -1930,9 +1930,9 @@ namespace Priceio
             catch (Exception) { }
         }
 
-        internal void SetearNumeroTurno(int numeroTurno)
+        internal void SetearNumeroTurno(int numeroTurno, string numeroEquipo)
         {
-            new ControlTurno().GuardarNumeroTurno(numeroTurno);
+            new ControlTurno().GuardarNumeroTurno(new Turno() { NumeroTurno = numeroTurno, NumeroEquipo = numeroEquipo });
         }
 
         private void AgregarTablaDatos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -2003,61 +2003,64 @@ namespace Priceio
             List<DataTable> ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
             try
             {
-                Seguridad vSeguridad = new Seguridad();
-                //Create the object
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                string odbc = config.AppSettings.Settings["ODBC"].Value;
-                string usuario = config.AppSettings.Settings["UsuarioODBC"].Value;
-                string contrasena = vSeguridad.DecryptString(MainWindow.nombreApp, config.AppSettings.Settings["ContrasenaODBC"].Value);
-                string consulta = string.Empty;
-                string nombreIndex = string.Empty;
-
-                DirectoryInfo info = new DirectoryInfo(@".\data\objetosSplash\consultasSQL");
-
-                foreach (var file in info.GetFiles())
+                ConfiguracionODBC? configuracionODBC = new SQLiteClassManager().GetConfiguracionODBC();
+                if (configuracionODBC != null)
                 {
-                    if (@file.Name.Equals(pNombre + ".sql"))
+                    Seguridad vSeguridad = new Seguridad();
+                    //Create the object
+                    string odbc = configuracionODBC.ODBC;
+                    string usuario = configuracionODBC.UsuarioODBC;
+                    string contrasena = vSeguridad.DecryptString(MainWindow.nombreApp, configuracionODBC.ContrasenaODBC);
+                    string consulta = string.Empty;
+                    string nombreIndex = string.Empty;
+
+                    DirectoryInfo info = new DirectoryInfo(@".\data\objetosSplash\consultasSQL");
+
+                    foreach (var file in info.GetFiles())
                     {
-                        StreamReader sR = new StreamReader(@file.FullName);
-                        string lectura = sR.ReadToEnd();
-                        sR.Close();
-                        string[] datosC = vSeguridad.DecryptString(MainWindow.nombreApp, lectura).Split('|');
-
-                        if (datosC.Length > 1)
+                        if (@file.Name.Equals(pNombre + ".sql"))
                         {
-                            if (pStrDatoBuscar.Length == 0)
-                                pStrDatoBuscar = datosC[2];
+                            StreamReader sR = new StreamReader(@file.FullName);
+                            string lectura = sR.ReadToEnd();
+                            sR.Close();
+                            string[] datosC = vSeguridad.DecryptString(MainWindow.nombreApp, lectura).Split('|');
 
-                            switch (datosC[1])
+                            if (datosC.Length > 1)
                             {
-                                case "N":
-                                    consulta = datosC[0].Replace("DatoBuscar_", pStrDatoBuscar);
-                                    break;
-                                case "T":
-                                    consulta = datosC[0].Replace("DatoBuscar_", "'" + pStrDatoBuscar + "'");
-                                    break;
+                                if (pStrDatoBuscar.Length == 0)
+                                    pStrDatoBuscar = datosC[2];
+
+                                switch (datosC[1])
+                                {
+                                    case "N":
+                                        consulta = datosC[0].Replace("DatoBuscar_", pStrDatoBuscar);
+                                        break;
+                                    case "T":
+                                        consulta = datosC[0].Replace("DatoBuscar_", "'" + pStrDatoBuscar + "'");
+                                        break;
+                                }
                             }
+
+
+                            OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
+
+                            connection.Open();
+                            OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
+                            OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
+                            if (MyDataReader.HasRows)
+                            {
+                                DataTable dt = new DataTable();
+                                dt.Load(MyDataReader);
+                                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
+
+                            }
+                            else
+                            {
+                                ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
+                            }
+                            connection.Close();
+                            break;
                         }
-
-
-                        OdbcConnection connection = new OdbcConnection("DSN=" + odbc + ";uid=" + usuario + ";pwd=" + contrasena);
-
-                        connection.Open();
-                        OdbcCommand MyCommand = new OdbcCommand(consulta, connection);
-                        OdbcDataReader MyDataReader = MyCommand.ExecuteReader();
-                        if (MyDataReader.HasRows)
-                        {
-                            DataTable dt = new DataTable();
-                            dt.Load(MyDataReader);
-                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), dt, datos[2], pNombre, nombreIndex);
-
-                        }
-                        else
-                        {
-                            ListaTablas = LlenarListaTablas(int.Parse(datos[0]), int.Parse(datos[1]), new DataTable(), datos[2], pNombre);
-                        }
-                        connection.Close();
-                        break;
                     }
                 }
             }
@@ -2671,17 +2674,6 @@ namespace Priceio
                 }
             }
             catch{}
-        }
-        
-        private void TimerTickBtn(object sender, EventArgs e)
-        {
-            DispatcherTimer timer = (DispatcherTimer)sender;
-            timer.Stop();
-            timer.Tick -= TimerTickBtn;
-
-            Button controlBtn = (Button)FindName("BtnCancelar");
-            if (controlBtn != null)
-                controlBtn.IsEnabled = true;
         }
     }
 }

@@ -169,9 +169,6 @@
     <None Update="Recursos\ColorSwatchSquare2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Recursos\controlTurno.3k">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Recursos\ICONO.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -184,16 +181,10 @@
     <None Update="Recursos\logoPriceio.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Recursos\nombreEquipos.3k">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Recursos\pictureAdd.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Recursos\server.3k">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Recursos\turnoAnt.3k">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

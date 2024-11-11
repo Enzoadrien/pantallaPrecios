@@ -5,6 +5,7 @@ using Priceio.Cajero.Payout;
 using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -501,6 +502,18 @@ namespace Priceio
                             pago.BilletesCambio = cantidad;
                             smartPayout.ActualizaPago(ref pago);
                             smartPayout.BoolCalculatePayout = true;
+                            ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
+                            if (configuracionLector != null)
+                            {
+                                string cadenaImpresion = configuracionLector.FormatoImpresora.Replace("<FOLIO>", pago.NumPago.ToString()).Replace("<EQUIPO>", pago.Equipo).Replace("<FECHA>", DateTime.Now.ToString("dd/MM/yyyy")).Replace("<HORA>", DateTime.Now.ToString("HH:mm:ss tt")).Replace("<TOTAL>", string.Format("{0:#.00}", pago.CantidadTotal)).Replace("<PAGO>", string.Format("{0:#.00}", pago.CantidadIngresada)).Replace("<CAMBIO>", string.Format("{0:#.00}", pago.Cambio));
+                                Pago pagoImp = new Pago();
+                                pagoImp.TipoPago = Pago.Tipo.IMPRESION;
+                                pagoImp.Impresion = cadenaImpresion;
+                                string dato = JsonSerializer.Serialize(pagoImp);
+                                ProcesarPagoCajero PT = new ProcesarPagoCajero();
+                                StateObjectCajero state = new StateObjectCajero();
+                                Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
+                            }
                             seEntrego = true;
                         }
                         else
@@ -514,6 +527,18 @@ namespace Priceio
                             pago.MonedasCambio = cantidad;
                             smartHopper.ActualizaPago(ref pago);
                             smartHopper.BoolCalculatePayoutHopper = true;
+                            ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
+                            if (configuracionLector != null)
+                            {
+                                string cadenaImpresion = configuracionLector.FormatoImpresora.Replace("<FOLIO>", pago.NumPago.ToString()).Replace("<EQUIPO>", pago.Equipo).Replace("<FECHA>", DateTime.Now.ToString("dd/MM/yyyy")).Replace("<HORA>", DateTime.Now.ToString("HH:mm:ss tt")).Replace("<TOTAL>", string.Format("{0:#.00}", pago.CantidadTotal)).Replace("<PAGO>", string.Format("{0:#.00}", pago.CantidadIngresada)).Replace("<CAMBIO>", string.Format("{0:#.00}", pago.Cambio));
+                                Pago pagoImp = new Pago();
+                                pagoImp.TipoPago = Pago.Tipo.IMPRESION;
+                                pagoImp.Impresion = cadenaImpresion;
+                                string dato = JsonSerializer.Serialize(pagoImp);
+                                ProcesarPagoCajero PT = new ProcesarPagoCajero();
+                                StateObjectCajero state = new StateObjectCajero();
+                                Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
+                            }
                             seEntrego = true;
                         }
                         else

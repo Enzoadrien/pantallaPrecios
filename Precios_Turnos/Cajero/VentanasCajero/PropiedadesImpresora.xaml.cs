@@ -76,8 +76,8 @@ namespace Priceio
                 image.BeginInit();
                 image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 image.CacheOption = BitmapCacheOption.OnLoad;
-                if (File.Exists(@".\data\objetosSplash\multimedia\" + imgLogo.Tag))
-                    image.UriSource = new Uri(@".\data\objetosSplash\multimedia\" + imgLogo.Tag, UriKind.RelativeOrAbsolute);
+                if (File.Exists(@".\data\impresora\" + imgLogo.Tag))
+                    image.UriSource = new Uri(@".\data\impresora\" + imgLogo.Tag, UriKind.RelativeOrAbsolute);
                 else
                     image.UriSource = new Uri(@".\Recursos\logo.png", UriKind.RelativeOrAbsolute);
                 image.EndInit();
@@ -253,6 +253,7 @@ namespace Priceio
                 dialog.ShowDialog();
             }
         }
+        
         private void Document_PrintText(PrintPageEventArgs e, string inputString)
         {
             if (CoordenadaX.Text.Length == 0)
@@ -274,7 +275,6 @@ namespace Priceio
             else
                 e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString())), System.Drawing.Brushes.Black, 0, 0);
         }
-
 
         private Boolean TextAllowed(String s)
         {

@@ -98,7 +98,19 @@ namespace Priceio.Cajero.VentanasCajero
 
         private void btnFormato_Click(object sender, RoutedEventArgs e)
         {
+            FormatoPagoEscaner dialog = new FormatoPagoEscaner(formatoImpresion);
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+
+            dialog.ShowDialog();
+            formatoImpresion = dialog.formatoImpresora;
         }
     }
 }
