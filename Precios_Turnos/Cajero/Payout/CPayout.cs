@@ -1,10 +1,13 @@
 ﻿using ITLlib;
 using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Priceio.Cajero.Payout
@@ -1252,6 +1255,26 @@ namespace Priceio.Cajero.Payout
             {
                 try
                 {
+                    try
+                    {
+                        ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                        if (SQLiteClass != null)
+                        {
+                            if(SQLiteClass.Voz == true)
+                            {
+                                VozSplash? vozSplash = new SQLiteClassManager().GetVozSplash();
+                                if (vozSplash != null)
+                                {
+                                    if (vozSplash.VozIngresoEfectivo == true)
+                                    {
+                                        MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
+                                        MostrarVentanaSplash.synthesizer.SpeakAsync(String.Format("{0:C}", ingresado));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
                     pago.CantidadBilletesIngresados += ingresado;
                     pago.CantidadIngresada += ingresado;
                     pago.CantidadFaltante -= ingresado;

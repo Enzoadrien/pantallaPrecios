@@ -142,7 +142,7 @@ namespace Priceio.Cajero.Hopper
                     dialog.ShowDialog();
                 }));
             }
-
+            ConfigCargada = false;
             RunningHopper = false;
         }
 
@@ -332,6 +332,7 @@ namespace Priceio.Cajero.Hopper
             }
             return false;
         }
+        
         private void ResetHopper()
         {
             Hopper.Reset(ref logPagoHopper);

@@ -22,7 +22,7 @@ namespace Priceio.Cajero.VentanasCajero
     /// </summary>
     public partial class ConfigurarLector : Window
     {
-        private string formatoImpresion;
+        private string formatoImpresion = "          3K MANTENIMIENTO\r\n          PROFESIONAL\r\n          JUAN MANUEL #276\r\n          COLONIA CENTRO\r\n          33-3390-5151\r\n\r\nFOLIO: <FOLIO>\r\nEQUIPO: <EQUIPO>\r\nFECHA: <FECHA>\r\nHORA: <HORA>\r\n\r\n-----------PAGO-----------\r\nTOTAL:\t\t  $ <TOTAL>\r\nPAGO EN EFE:\t  $ <PAGO>\r\nCAMBIO:\t  $ <CAMBIO>\r\n\r\n\r\n* GRACIAS POR SU COMPRA *";
         public ConfigurarLector()
         {
             InitializeComponent();
@@ -55,6 +55,7 @@ namespace Priceio.Cajero.VentanasCajero
 
                 chkLector.IsChecked = SQLiteClass.Activo;
                 Formato.Text = SQLiteClass.FormatoCodigo;
+                cbxDecimales.SelectedValue = SQLiteClass.CantidadDecimales;
                 chkImprimirPago.IsChecked = SQLiteClass.Imprmir;
                 formatoImpresion = SQLiteClass.FormatoImpresora;
             }
@@ -65,6 +66,7 @@ namespace Priceio.Cajero.VentanasCajero
             ConfiguracionLector SQLiteClass = new ConfiguracionLector();
             SQLiteClass.Activo = chkLector.IsChecked;
             SQLiteClass.FormatoCodigo = Formato.Text;
+            SQLiteClass.CantidadDecimales = int.Parse(((ComboBoxItem)cbxDecimales.SelectedItem).Tag.ToString());
             SQLiteClass.Imprmir = chkImprimirPago.IsChecked;
             SQLiteClass.FormatoImpresora = formatoImpresion;
 

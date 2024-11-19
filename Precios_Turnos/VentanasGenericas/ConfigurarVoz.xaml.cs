@@ -72,7 +72,10 @@ namespace Priceio
         {
             VozSplash SQLiteClass = new VozSplash();
             SQLiteClass.TipoVoz = cbxTipoVoz.SelectedItem.ToString();
-            SQLiteClass.TextoVoz = lblTexto.Text;
+            SQLiteClass.TextoVoz1 = Voz1.Text;
+            SQLiteClass.TextoVoz2 = Voz2.Text;
+            SQLiteClass.TextoVoz3 = Voz3.Text;
+            SQLiteClass.VozIngresoEfectivo = chkVozEfectivo.IsChecked;
             if (!new SQLiteClassManager().SetVozSplash(SQLiteClass))
             {
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
@@ -94,7 +97,10 @@ namespace Priceio
             VozSplash? SQLiteClass = new SQLiteClassManager().GetVozSplash();
             if (SQLiteClass != null)
             {
-                lblTexto.Text = SQLiteClass.TextoVoz;
+                Voz1.Text = SQLiteClass.TextoVoz1;
+                Voz2.Text = SQLiteClass.TextoVoz2;
+                Voz3.Text = SQLiteClass.TextoVoz3;
+                chkVozEfectivo.IsChecked = SQLiteClass.VozIngresoEfectivo;
                 cbxTipoVoz.SelectedItem = SQLiteClass.TipoVoz;
             }
             esInicio = false;
@@ -108,7 +114,7 @@ namespace Priceio
                 {
                     synthesizer.SpeakAsyncCancelAll();
                     synthesizer.SelectVoice(cbxTipoVoz.SelectedItem.ToString());
-                    synthesizer.SpeakAsync(lblTexto.Text);
+                    synthesizer.SpeakAsync(Voz1.Text);
                 }
                 catch { }
             }

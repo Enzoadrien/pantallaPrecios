@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio.Cajero.VentanasCajero"
         mc:Ignorable="d"
-         Title="Log..." Background="#FFD2CBCB" WindowStyle="None" Height="370" Width="400" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing">
+         Title="Log..." Background="#FFD2CBCB" Height="370" Width="400" ResizeMode="NoResize" KeyDown="Window_KeyDown" MouseLeftButtonDown="Window_MouseLeftButtonDown" Closing="Window_Closing" WindowStyle="None" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="400*"/>
@@ -41,7 +41,7 @@ Background="#FF989090" Grid.ColumnSpan="4">
             </Button.Style>
         </Button>
         <ScrollViewer x:Name="MyScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <TextBlock x:Name="lblTexto"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,0,5,5"/>
+            <TextBlock x:Name="lblTexto"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="" TextWrapping="Wrap" Margin="5,0,5,5"/>
         </ScrollViewer>
     </Grid>
 </Window>

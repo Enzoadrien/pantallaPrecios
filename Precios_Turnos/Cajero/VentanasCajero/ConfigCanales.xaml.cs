@@ -1,4 +1,6 @@
-﻿using Precios_Turnos;
+﻿using Org.BouncyCastle.Asn1.Crmf;
+using Org.BouncyCastle.Asn1.X509;
+using Precios_Turnos;
 using Priceio.Cajero;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
@@ -26,6 +28,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
 using static Priceio.Cajero.ChannelData;
 
 namespace Priceio
@@ -59,7 +62,7 @@ namespace Priceio
             if (tipoSMART == TipoSMART.PAYOUT)
             {
                 Titulo.Content = "Configurar SMART Payout";
-                Task.Run( ()=> smartPayout.RunPayout());
+                Task.Run(() => smartPayout.RunPayout());
             }
             else
             {
@@ -69,9 +72,69 @@ namespace Priceio
             bloquearControles();
         }
 
+        private bool TextAllowed(string s)
+        {
+            foreach (char c in s.ToCharArray())
+            {
+                if (char.IsDigit(c)) continue;
+                else return false;
+            }
+            return true;
+        }
+
+        private void ResponseTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+
+            e.Handled = !TextAllowed(e.Text);
+
+        }
+
+        private void PastingHandler(object sender, DataObjectPastingEventArgs e)
+        {
+            // more error handling would be needed here - this is asking for trouble!
+            String s = (String)e.DataObject.GetData(typeof(String));
+            if (!TextAllowed(s)) e.CancelCommand();
+        }
+
+        private void ResponseTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+
+            if (e.Key == Key.Space && cajaTexto.IsFocused == true)
+                e.Handled = true;
+        }
+
+        private void Text_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var item = e.Source as UIElement;
+            TextBox cajaTexto = (TextBox)item;
+
+            if (cajaTexto.Text.Length == 0)
+                cajaTexto.Text = "0";
+        }
+        
         private void TimerTick(object sender, EventArgs e)
         {
             timer.Stop();
+        }
+
+
+        private void Text_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!cargando)
+            {
+                var item = e.Source as UIElement;
+                TextBox cajaTexto = (TextBox)item;
+                if (cajaTexto.Text.Length > 0)
+                    CalcularNivelesTotales();
+            }
+        }
+
+        private void CalcularNivelesTotales()
+        {
+            lblTotalesNiveleMin.Content = int.Parse(Ch1Min.Text) + int.Parse(Ch2Min.Text) + int.Parse(Ch3Min.Text) + int.Parse(Ch4Min.Text) + int.Parse(Ch5Min.Text) + int.Parse(Ch6Min.Text) + int.Parse(Ch7Min.Text) + int.Parse(Ch8Min.Text);
+            lblTotalesNiveleMax.Content = int.Parse(Ch1Max.Text) + int.Parse(Ch2Max.Text) + int.Parse(Ch3Max.Text) + int.Parse(Ch4Max.Text) + int.Parse(Ch5Max.Text) + int.Parse(Ch6Max.Text) + int.Parse(Ch7Max.Text) + int.Parse(Ch8Max.Text);
         }
 
         internal async Task RacargarNiveles()
@@ -93,6 +156,8 @@ namespace Priceio
                             cargando = false;
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
+                            double total = 0;
+                            string moneda = string.Empty;
                             foreach (ChannelData d in smartPayout.Payout.UnitDataList)
                             {
                                 string s = string.Empty;
@@ -100,12 +165,16 @@ namespace Priceio
                                 s += " [" + d.Level + "] = " + (d.Level * d.Value / 100f).ToString();
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
+                                total += d.Level * d.Value / 100f;
+                                moneda = " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 if (cargando)
                                 {
                                     cbxDenominacion.Items.Add((d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2]);
                                     cargarCheck(d.Channel, d.Recycling);
                                 }
                             }
+
+                            lblTotalesNivele.Content = total + moneda;
                         }));
                     }
                 }
@@ -119,6 +188,8 @@ namespace Priceio
                             cargando = false;
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
+                            double total = 0;
+                            string moneda = string.Empty;
                             foreach (ChannelData d in smartHopper.Hopper.UnitDataList)
                             {
                                 string s = string.Empty;
@@ -126,12 +197,15 @@ namespace Priceio
                                 s += " [" + d.Level + "] = " + (d.Level * d.Value / 100f).ToString();
                                 s += " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 Niveles.Items.Add(s);
+                                total += d.Level * d.Value / 100f;
+                                moneda = " " + d.Currency[0] + d.Currency[1] + d.Currency[2];
                                 if (cargando)
                                 {
                                     cbxDenominacion.Items.Add((d.Value / 100f).ToString() + " " + d.Currency[0] + d.Currency[1] + d.Currency[2]);
                                     cargarCheck(d.Channel, d.Recycling);
                                 }
                             }
+                            lblTotalesNivele.Content = total + moneda;
                         }));
                     }
                 }
@@ -148,32 +222,193 @@ namespace Priceio
                 {
                     case 1:
                         chkCh1.IsChecked = activar;
+                        if (chkCh1.IsChecked == false)
+                        {
+                            Ch1Min.IsEnabled = false;
+                            Ch1Max.IsEnabled = false;
+                        }
                         break;
                     case 2:
                         chkCh2.IsChecked = activar;
+                        if (chkCh2.IsChecked == false)
+                        {
+                            Ch2Min.IsEnabled = false;
+                            Ch2Max.IsEnabled = false;
+                        }
                         break;
                     case 3:
                         chkCh3.IsChecked = activar;
+                        if (chkCh3.IsChecked == false)
+                        {
+                            Ch3Min.IsEnabled = false;
+                            Ch3Max.IsEnabled = false;
+                        }
                         break;
                     case 4:
                         chkCh4.IsChecked = activar;
+                        if (chkCh4.IsChecked == false)
+                        {
+                            Ch4Min.IsEnabled = false;
+                            Ch4Max.IsEnabled = false;
+                        }
                         break;
                     case 5:
                         chkCh5.IsChecked = activar;
+                        if (chkCh5.IsChecked == false)
+                        {
+                            Ch5Min.IsEnabled = false;
+                            Ch5Max.IsEnabled = false;
+                        }
                         break;
                     case 6:
                         chkCh6.IsChecked = activar;
+                        if (chkCh6.IsChecked == false)
+                        {
+                            Ch6Min.IsEnabled = false;
+                            Ch6Max.IsEnabled = false;
+                        }
                         break;
                     case 7:
-                        chkCh6.IsChecked = activar;
+                        chkCh7.IsChecked = activar;
+                        if (chkCh7.IsChecked == false)
+                        {
+                            Ch7Min.IsEnabled = false;
+                            Ch7Max.IsEnabled = false;
+                        }
                         break;
                     case 8:
-                        chkCh6.IsChecked = activar;
+                        chkCh8.IsChecked = activar;
+                        if (chkCh8.IsChecked == false)
+                        {
+                            Ch8Min.IsEnabled = false;
+                            Ch8Max.IsEnabled = false;
+                        }
                         break;
                     default:
                         break;
                 }
             }));
+        }
+
+        private void BloquearDesbloquearMaxMin(int canal)
+        {
+            switch (canal)
+            {
+                case 1:
+                    if (chkCh1.IsChecked == false)
+                    {
+                        Ch1Min.Text = "0";
+                        Ch1Max.Text = "0";
+                        Ch1Min.IsEnabled = false;
+                        Ch1Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch1Min.IsEnabled = true;
+                        Ch1Max.IsEnabled = true;
+                    }
+                    break;
+                case 2:
+                    if (chkCh2.IsChecked == false)
+                    {
+                        Ch2Min.Text = "0";
+                        Ch2Max.Text = "0";
+                        Ch2Min.IsEnabled = false;
+                        Ch2Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch2Min.IsEnabled = true;
+                        Ch2Max.IsEnabled = true;
+                    }
+                    break;
+                case 3:
+                    if (chkCh3.IsChecked == false)
+                    {
+                        Ch3Min.Text = "0";
+                        Ch3Max.Text = "0";
+                        Ch3Min.IsEnabled = false;
+                        Ch3Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch3Min.IsEnabled = true;
+                        Ch3Max.IsEnabled = true;
+                    }
+                    break;
+                case 4:
+                    if (chkCh4.IsChecked == false)
+                    {
+                        Ch4Min.Text = "0";
+                        Ch4Max.Text = "0";
+                        Ch4Min.IsEnabled = false;
+                        Ch4Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch4Min.IsEnabled = true;
+                        Ch4Max.IsEnabled = true;
+                    }
+                    break;
+                case 5:
+                    if (chkCh5.IsChecked == false)
+                    {
+                        Ch5Min.Text = "0";
+                        Ch5Max.Text = "0";
+                        Ch5Min.IsEnabled = false;
+                        Ch5Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch5Min.IsEnabled = true;
+                        Ch5Max.IsEnabled = true;
+                    }
+                    break;
+                case 6:
+                    if (chkCh6.IsChecked == false)
+                    {
+                        Ch6Min.Text = "0";
+                        Ch6Max.Text = "0";
+                        Ch6Min.IsEnabled = false;
+                        Ch6Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch6Min.IsEnabled = true;
+                        Ch6Max.IsEnabled = true;
+                    }
+                    break;
+                case 7:
+                    if (chkCh7.IsChecked == false)
+                    {
+                        Ch7Min.Text = "0";
+                        Ch7Max.Text = "0";
+                        Ch7Min.IsEnabled = false;
+                        Ch7Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch7Min.IsEnabled = true;
+                        Ch7Max.IsEnabled = true;
+                    }
+                    break;
+                case 8:
+                    if (chkCh8.IsChecked == false)
+                    {
+                        Ch8Min.Text = "0";
+                        Ch8Max.Text = "0";
+                        Ch8Min.IsEnabled = false;
+                        Ch8Max.IsEnabled = false;
+                    }
+                    else
+                    {
+                        Ch8Min.IsEnabled = true;
+                        Ch8Max.IsEnabled = true;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void desbloquearControles()
@@ -370,14 +605,15 @@ namespace Priceio
                 if (tipoSMART == TipoSMART.PAYOUT)
                 {
                     smartPayout.chanelRoute = int.Parse(ck.Tag.ToString());
-                    smartPayout.BoolDisableRouteNote = true;
+                    smartPayout.BoolRouteNote = true;
 
                 }
                 else
                 {
                     smartHopper.chanelRoute = int.Parse(ck.Tag.ToString());
-                    smartHopper.BoolDisableRouteCash = true;
+                    smartHopper.BoolRouteCash = true;
                 }
+                BloquearDesbloquearMaxMin(int.Parse(ck.Tag.ToString()));
             }
         }
 
@@ -389,20 +625,21 @@ namespace Priceio
                 if (tipoSMART == TipoSMART.PAYOUT)
                 {
                     smartPayout.chanelRoute = int.Parse(ck.Tag.ToString());
-                    smartPayout.BoolRouteNote = true;
-
+                    smartPayout.BoolDisableRouteNote = true;
                 }
                 else
                 {
                     smartHopper.chanelRoute = int.Parse(ck.Tag.ToString());
-                    smartHopper.BoolRouteCash = true;
+                    smartHopper.BoolDisableRouteCash = true;
                 }
+                BloquearDesbloquearMaxMin(int.Parse(ck.Tag.ToString()));
             }
         }
 
         private void btnOK_Click(object sender, RoutedEventArgs e)
         {
-            Close();
+            if (GuardarDatos())
+                Close();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -417,6 +654,7 @@ namespace Priceio
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            CargarDatos();
             Task.Run(() => RacargarNiveles());
         }
 
@@ -695,5 +933,170 @@ namespace Priceio
                 FocusManager.SetFocusedElement(this, Cantidad);
             }
         }
+
+        private void CargarDatos()
+        {
+            if (tipoSMART == TipoSMART.PAYOUT)
+            {
+                ConfiguracionCanalesPayout SQLiteClass = new SQLiteClassManager().GetConfiguracionCanalesPayout();
+
+                if (SQLiteClass != null)
+                {
+                    Ch1Min.Text = SQLiteClass.MinCh1.ToString();
+                    Ch2Min.Text = SQLiteClass.MinCh2.ToString();
+                    Ch3Min.Text = SQLiteClass.MinCh3.ToString();
+                    Ch4Min.Text = SQLiteClass.MinCh4.ToString();
+                    Ch5Min.Text = SQLiteClass.MinCh5.ToString();
+                    Ch6Min.Text = SQLiteClass.MinCh6.ToString();
+                    Ch7Min.Text = SQLiteClass.MinCh7.ToString();
+                    Ch8Min.Text = SQLiteClass.MinCh8.ToString();
+                    Ch1Max.Text = SQLiteClass.MaxCh1.ToString();
+                    Ch2Max.Text = SQLiteClass.MaxCh2.ToString();
+                    Ch3Max.Text = SQLiteClass.MaxCh3.ToString();
+                    Ch4Max.Text = SQLiteClass.MaxCh4.ToString();
+                    Ch5Max.Text = SQLiteClass.MaxCh5.ToString();
+                    Ch6Max.Text = SQLiteClass.MaxCh6.ToString();
+                    Ch7Max.Text = SQLiteClass.MaxCh7.ToString();
+                    Ch8Max.Text = SQLiteClass.MaxCh8.ToString();
+                    chkCh1.IsChecked = SQLiteClass.ActivoCh1;
+                    chkCh2.IsChecked = SQLiteClass.ActivoCh2;
+                    chkCh3.IsChecked = SQLiteClass.ActivoCh3;
+                    chkCh4.IsChecked = SQLiteClass.ActivoCh4;
+                    chkCh5.IsChecked = SQLiteClass.ActivoCh5;
+                    chkCh6.IsChecked = SQLiteClass.ActivoCh6;
+                    chkCh7.IsChecked = SQLiteClass.ActivoCh7;
+                    chkCh8.IsChecked = SQLiteClass.ActivoCh8;
+                    PagoMinimo.Text = SQLiteClass.PagoMin.ToString();
+                    PagoMaximo.Text = SQLiteClass.PagoMax.ToString();
+                    chkLog.IsChecked = SQLiteClass.MostrarLog;
+                }
+            }
+            else
+            {
+                ConfiguracionCanalesHopper SQLiteClass = new SQLiteClassManager().GetConfiguracionCanalesHopper();
+
+                if (SQLiteClass != null)
+                {
+                    Ch1Min.Text = SQLiteClass.MinCh1.ToString();
+                    Ch2Min.Text = SQLiteClass.MinCh2.ToString();
+                    Ch3Min.Text = SQLiteClass.MinCh3.ToString();
+                    Ch4Min.Text = SQLiteClass.MinCh4.ToString();
+                    Ch5Min.Text = SQLiteClass.MinCh5.ToString();
+                    Ch6Min.Text = SQLiteClass.MinCh6.ToString();
+                    Ch7Min.Text = SQLiteClass.MinCh7.ToString();
+                    Ch8Min.Text = SQLiteClass.MinCh8.ToString();
+                    Ch1Max.Text = SQLiteClass.MaxCh1.ToString();
+                    Ch2Max.Text = SQLiteClass.MaxCh2.ToString();
+                    Ch3Max.Text = SQLiteClass.MaxCh3.ToString();
+                    Ch4Max.Text = SQLiteClass.MaxCh4.ToString();
+                    Ch5Max.Text = SQLiteClass.MaxCh5.ToString();
+                    Ch6Max.Text = SQLiteClass.MaxCh6.ToString();
+                    Ch7Max.Text = SQLiteClass.MaxCh7.ToString();
+                    Ch8Max.Text = SQLiteClass.MaxCh8.ToString();
+                    chkCh1.IsChecked = SQLiteClass.ActivoCh1;
+                    chkCh2.IsChecked = SQLiteClass.ActivoCh2;
+                    chkCh3.IsChecked = SQLiteClass.ActivoCh3;
+                    chkCh4.IsChecked = SQLiteClass.ActivoCh4;
+                    chkCh5.IsChecked = SQLiteClass.ActivoCh5;
+                    chkCh6.IsChecked = SQLiteClass.ActivoCh6;
+                    chkCh7.IsChecked = SQLiteClass.ActivoCh7;
+                    chkCh8.IsChecked = SQLiteClass.ActivoCh8;
+                    PagoMinimo.Text = SQLiteClass.PagoMin.ToString();
+                    PagoMaximo.Text = SQLiteClass.PagoMax.ToString();
+                    chkLog.IsChecked = SQLiteClass.MostrarLog;
+                }
+            }
+            CalcularNivelesTotales();
+        }
+
+        private bool GuardarDatos()
+        {
+            if (tipoSMART == TipoSMART.PAYOUT)
+            {
+                ConfiguracionCanalesPayout SQLiteClass = new ConfiguracionCanalesPayout();
+                SQLiteClass.MinCh1 = int.Parse(Ch1Min.Text);
+                SQLiteClass.MinCh2 = int.Parse(Ch2Min.Text);
+                SQLiteClass.MinCh3 = int.Parse(Ch3Min.Text);
+                SQLiteClass.MinCh4 = int.Parse(Ch4Min.Text);
+                SQLiteClass.MinCh5 = int.Parse(Ch5Min.Text);
+                SQLiteClass.MinCh6 = int.Parse(Ch6Min.Text);
+                SQLiteClass.MinCh7 = int.Parse(Ch7Min.Text);
+                SQLiteClass.MinCh8 = int.Parse(Ch8Min.Text);
+                SQLiteClass.MaxCh1 = int.Parse(Ch1Max.Text);
+                SQLiteClass.MaxCh2 = int.Parse(Ch2Max.Text);
+                SQLiteClass.MaxCh3 = int.Parse(Ch3Max.Text);
+                SQLiteClass.MaxCh4 = int.Parse(Ch4Max.Text);
+                SQLiteClass.MaxCh5 = int.Parse(Ch5Max.Text);
+                SQLiteClass.MaxCh6 = int.Parse(Ch6Max.Text);
+                SQLiteClass.MaxCh7 = int.Parse(Ch7Max.Text);
+                SQLiteClass.MaxCh8 = int.Parse(Ch8Max.Text);
+                SQLiteClass.ActivoCh1 = chkCh1.IsChecked;
+                SQLiteClass.ActivoCh2 = chkCh2.IsChecked;
+                SQLiteClass.ActivoCh3 = chkCh3.IsChecked;
+                SQLiteClass.ActivoCh4 = chkCh4.IsChecked;
+                SQLiteClass.ActivoCh5 = chkCh5.IsChecked;
+                SQLiteClass.ActivoCh6 = chkCh6.IsChecked;
+                SQLiteClass.ActivoCh7 = chkCh7.IsChecked;
+                SQLiteClass.ActivoCh8 = chkCh8.IsChecked;
+                SQLiteClass.PagoMin = int.Parse(PagoMinimo.Text);
+                SQLiteClass.PagoMax = int.Parse(PagoMaximo.Text);
+                SQLiteClass.MostrarLog = chkLog.IsChecked;
+
+                if (!new SQLiteClassManager().SetConfiguracionCanalesPayout(SQLiteClass))
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                    dialog.btnCancelar.Visibility = Visibility.Visible;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    return false;
+                }
+                return true;
+            }
+            else
+            {
+                ConfiguracionCanalesHopper SQLiteClass = new ConfiguracionCanalesHopper();
+                SQLiteClass.MinCh1 = int.Parse(Ch1Min.Text);
+                SQLiteClass.MinCh2 = int.Parse(Ch2Min.Text);
+                SQLiteClass.MinCh3 = int.Parse(Ch3Min.Text);
+                SQLiteClass.MinCh4 = int.Parse(Ch4Min.Text);
+                SQLiteClass.MinCh5 = int.Parse(Ch5Min.Text);
+                SQLiteClass.MinCh6 = int.Parse(Ch6Min.Text);
+                SQLiteClass.MinCh7 = int.Parse(Ch7Min.Text);
+                SQLiteClass.MinCh8 = int.Parse(Ch8Min.Text);
+                SQLiteClass.MaxCh1 = int.Parse(Ch1Max.Text);
+                SQLiteClass.MaxCh2 = int.Parse(Ch2Max.Text);
+                SQLiteClass.MaxCh3 = int.Parse(Ch3Max.Text);
+                SQLiteClass.MaxCh4 = int.Parse(Ch4Max.Text);
+                SQLiteClass.MaxCh5 = int.Parse(Ch5Max.Text);
+                SQLiteClass.MaxCh6 = int.Parse(Ch6Max.Text);
+                SQLiteClass.MaxCh7 = int.Parse(Ch7Max.Text);
+                SQLiteClass.MaxCh8 = int.Parse(Ch8Max.Text);
+                SQLiteClass.ActivoCh1 = chkCh1.IsChecked;
+                SQLiteClass.ActivoCh2 = chkCh2.IsChecked;
+                SQLiteClass.ActivoCh3 = chkCh3.IsChecked;
+                SQLiteClass.ActivoCh4 = chkCh4.IsChecked;
+                SQLiteClass.ActivoCh5 = chkCh5.IsChecked;
+                SQLiteClass.ActivoCh6 = chkCh6.IsChecked;
+                SQLiteClass.ActivoCh7 = chkCh7.IsChecked;
+                SQLiteClass.ActivoCh8 = chkCh8.IsChecked;
+                SQLiteClass.PagoMin = int.Parse(PagoMinimo.Text);
+                SQLiteClass.PagoMax = int.Parse(PagoMaximo.Text);
+                SQLiteClass.MostrarLog = chkLog.IsChecked;
+
+                if (!new SQLiteClassManager().SetConfiguracionCanalesHopper(SQLiteClass))
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
+                    dialog.btnCancelar.Visibility = Visibility.Visible;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    return false;
+                }
+                return true;
+            }
+
+        }
+
     }
 }

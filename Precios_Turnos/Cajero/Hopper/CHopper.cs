@@ -1,5 +1,6 @@
 ﻿using ITLlib;
 using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1345,6 +1346,26 @@ namespace Priceio.Cajero.Hopper
             {
                 try
                 {
+                    try
+                    {
+                        ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                        if (SQLiteClass != null)
+                        {
+                            if (SQLiteClass.Voz == true)
+                            {
+                                VozSplash? vozSplash = new SQLiteClassManager().GetVozSplash();
+                                if (vozSplash != null)
+                                {
+                                    if (vozSplash.VozIngresoEfectivo == true)
+                                    {
+                                        MostrarVentanaSplash.synthesizer.SpeakAsyncCancelAll();
+                                        MostrarVentanaSplash.synthesizer.SpeakAsync(String.Format("{0:C}", ingresado));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch{ }
                     pago.CantidadMonedasIngresadas += ingresado;
                     pago.CantidadIngresada += ingresado;
                     pago.CantidadFaltante -= ingresado;

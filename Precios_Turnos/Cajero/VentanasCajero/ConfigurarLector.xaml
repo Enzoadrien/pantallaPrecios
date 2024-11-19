@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio.Cajero.VentanasCajero"
         mc:Ignorable="d"
-        Title="ConfigurarLector" Height="340" Width="270" WindowStyle="None" Opacity="1" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Title="ConfigurarLector" Height="370" Width="270" WindowStyle="None" Opacity="1" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -16,6 +16,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -59,9 +60,17 @@
         <Label x:Name="lblNumeroTicket" Content="N - Número de ticket" Grid.ColumnSpan="5" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center"/>
         <Label x:Name="lblNumeroEquipo" Content="E - Numero de equipo" Grid.ColumnSpan="5" Grid.Row="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center"/>
         <Label x:Name="lblImporteTotal" Content="I - Importe total" Grid.ColumnSpan="5" Grid.Row="6" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center"/>
-        <TextBlock x:Name="lblNota" Text="Nota: Los primeros campos deberan ser númericos, para indicar que representa un pago en el cajero." Grid.ColumnSpan="5" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14" Grid.RowSpan="2" TextWrapping="Wrap" Margin="5,0,5,0"/>
-        <CheckBox x:Name="chkImprimirPago" Content="Imprimir comprobante de pago" Grid.Row="9" Grid.ColumnSpan="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Checked="chkImprimirPago_Checked" Unchecked="chkImprimirPago_Unchecked"/>
-        <StackPanel Grid.Row="10"
+        <Label x:Name="lblCantidadDecimales" Content="Cantidad de decimales:" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.ColumnSpan="4"/>
+        <ComboBox x:Name="cbxDecimales" Grid.Column="4" Grid.Row="7" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0">
+            <ComboBoxItem Content="0" Tag="1"/>
+            <ComboBoxItem Content="1" Tag="10"/>
+            <ComboBoxItem Content="2" Tag="100"/>
+            <ComboBoxItem Content="3" Tag="1000"/>
+            <ComboBoxItem Content="4" Tag="10000"/>
+        </ComboBox>
+        <TextBlock x:Name="lblNota" Text="Nota: Los primeros campos deberan ser númericos, para indicar que representa un pago en el cajero." Grid.ColumnSpan="5" Grid.Row="8" FontFamily="Arial Rounded MT" FontSize="14" Grid.RowSpan="2" TextWrapping="Wrap" Margin="5,0,5,0"/>
+        <CheckBox x:Name="chkImprimirPago" Content="Imprimir comprobante de pago" Grid.Row="10" Grid.ColumnSpan="5" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Checked="chkImprimirPago_Checked" Unchecked="chkImprimirPago_Unchecked"/>
+        <StackPanel Grid.Row="11"
   Orientation="Horizontal"
   Margin="5,5,5,5" Grid.ColumnSpan="2" HorizontalAlignment="Left" >
             <Button x:Name="btnFormato"
@@ -95,7 +104,7 @@ FontSize="14" Click="btnFormato_Click">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="12"
+        <StackPanel Grid.Row="11"
         HorizontalAlignment="Right"
         Orientation="Horizontal"
         Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="2" >

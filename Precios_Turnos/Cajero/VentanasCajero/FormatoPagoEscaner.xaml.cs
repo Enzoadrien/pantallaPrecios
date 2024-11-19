@@ -282,13 +282,13 @@ namespace Priceio.Cajero.VentanasCajero
             }
 
             if (chkNegrita.IsChecked == true && chkCursiva.IsChecked == true)
-                e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
+                e.Graphics.DrawString(inputString, new System.Drawing.Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
             else if (chkNegrita.IsChecked == true && chkCursiva.IsChecked == false)
-                e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold), System.Drawing.Brushes.Black, 0, 0);
+                e.Graphics.DrawString(inputString, new System.Drawing.Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Bold), System.Drawing.Brushes.Black, 0, 0);
             else if (chkNegrita.IsChecked == false && chkCursiva.IsChecked == true)
-                e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
+                e.Graphics.DrawString(inputString, new System.Drawing.Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()), System.Drawing.FontStyle.Italic), System.Drawing.Brushes.Black, 0, 0);
             else
-                e.Graphics.DrawString(inputString, new Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString())), System.Drawing.Brushes.Black, 0, 0);
+                e.Graphics.DrawString(inputString, new System.Drawing.Font(cbxFuente.SelectedItem.ToString(), int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString())), System.Drawing.Brushes.Black, 0, 0);
         }
 
         private void CargarDatos()
@@ -391,7 +391,7 @@ namespace Priceio.Cajero.VentanasCajero
                     FileInfo fileImg = new FileInfo(@".\data\impresora\" + fi.Name);
                     if (File.Exists(@".\data\impresora\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)

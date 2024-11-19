@@ -559,7 +559,7 @@ namespace Priceio
                     pago.TipoPago = Pago.Tipo.PAGO;
                     pago.NumPago = int.Parse(numPago);
                     pago.Equipo = numEquipo;
-                    pago.CantidadTotal = int.Parse(totalPago);
+                    pago.CantidadTotal = Math.Round((double)(int.Parse(totalPago) / configuracionLector.CantidadDecimales));
 
                     string dato = JsonSerializer.Serialize(pago);
                     string resultado = await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
@@ -576,6 +576,30 @@ namespace Priceio
                                 pagoImp.Impresion = cadenaImpresion;
                                 dato = JsonSerializer.Serialize(pagoImp);
                                 await Task.Run(() => PT.ProcesarComando(dato, state, smartPayout, smartHopper).Result);
+                                break;
+                            case "SIN_EFECTIVO":
+                                Application.Current.Dispatcher.Invoke(new Action(() =>
+                                {
+                                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true);
+                                    dialog.lblNombre.Content = "¡Advertencia!";
+                                    dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se devolverá el efectivo ingresado. Favor de consultar al administrador.";
+                                    new Recursos().ventanaMensajesGrande800x600(dialog);
+                                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                    dialog.ShowDialog();
+                                }));
+                                break;
+                            case "ERROR":
+                                Application.Current.Dispatcher.Invoke(new Action(() =>
+                                {
+                                    Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true);
+                                    dialog2.lblNombre.Content = "¡Advertencia!";
+                                    dialog2.lblTexto.Text = "Ocurrio un error durante el pago, favor de consultar al administrador.";
+                                    new Recursos().ventanaMensajesGrande800x600(dialog2);
+                                    dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                    dialog2.ShowDialog();
+                                }));
+                                break;
+                            case "CANCEL":
                                 break;
                         }
                     }
@@ -736,28 +760,28 @@ namespace Priceio
             List<TurnosAnteriores>? turnosAnteriores = new SQLiteClassManager().GetTurnosAnteriores();
             if (turnosAnteriores != null)
             {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
+                    var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
+                    if (numeroTurnoAnt != null)
+                        numeroTurnoAnt.SetValue(ContentProperty, "");
+                    if (numeroEquipoAnt != null)
+                        numeroEquipoAnt.SetValue(ContentProperty, "");
+
+                    foreach (TurnosAnteriores turnoAnterior in turnosAnteriores)
                     {
-                        var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
-                        var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
                         if (numeroTurnoAnt != null)
-                            numeroTurnoAnt.SetValue(ContentProperty, "");
+                            numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroTurno.ToString() + "\n");
                         if (numeroEquipoAnt != null)
-                            numeroEquipoAnt.SetValue(ContentProperty, "");
+                            numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroEquipo + "\n");
+                    }
+                    if (numeroTurnoAnt != null)
+                        numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                    if (numeroEquipoAnt != null)
+                        numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
 
-                        foreach (TurnosAnteriores turnoAnterior in turnosAnteriores)
-                        {
-                            if (numeroTurnoAnt != null)
-                                numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroTurno.ToString() + "\n");
-                            if (numeroEquipoAnt != null)
-                                numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroEquipo + "\n");
-                        }
-                        if (numeroTurnoAnt != null)
-                            numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
-                        if (numeroEquipoAnt != null)
-                            numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
-
-                    }));
+                }));
             }
         }
 
@@ -1470,7 +1494,7 @@ namespace Priceio
                     FileInfo fileImg = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -2313,7 +2337,7 @@ namespace Priceio
                     FileInfo fileVid = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileVid.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)

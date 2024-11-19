@@ -418,7 +418,6 @@ namespace Priceio
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
             {
                 dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
-                dialog.Texto3.Content = "";
 
             }
             else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
@@ -430,9 +429,12 @@ namespace Priceio
             }
             else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
             {
-                dialog.Texto1.Content = "";
-                dialog.Texto2.Content = "";
-                dialog.Texto3.Content = "";
+                dialog.lblVoz1.Content = "Voz de pago";
+                dialog.lblVoz2.Content = "Voz de retiro";
+                dialog.lblVoz3.Visibility = Visibility.Visible;
+                dialog.Voz3.Visibility = Visibility.Visible;
+                dialog.Texto1.Content = "*CantidadTotal           *Cambio";
+                dialog.chkVozEfectivo.Visibility = Visibility.Visible;
             }
             dialog.ShowDialog();
         }
@@ -447,7 +449,6 @@ namespace Priceio
                 if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
                 {
                     dialog.Texto1.Content = "*NumeroTurno          *NumeroEquipo           *NombreEquipo";
-                    dialog.Texto3.Content = "";
 
                 }
                 else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("V"))
@@ -459,9 +460,12 @@ namespace Priceio
                 }
                 else if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("C"))
                 {
-                    dialog.Texto1.Content = "";
-                    dialog.Texto2.Content = "";
-                    dialog.Texto3.Content = "";
+                    dialog.lblVoz1.Content = "Voz de pago";
+                    dialog.lblVoz2.Content = "Voz de retiro";
+                    dialog.lblVoz3.Visibility = Visibility.Visible;
+                    dialog.Voz3.Visibility = Visibility.Visible;
+                    dialog.Texto1.Content = "*CantidadTotal           *Cambio";
+                    dialog.chkVozEfectivo.Visibility = Visibility.Visible;
                 }
 
                 dialog.ShowDialog();
@@ -475,7 +479,7 @@ namespace Priceio
             if (SQLiteClass != null)
             {
                 synthesizer.SelectVoice(SQLiteClass.TipoVoz);
-                synthesizer.SpeakAsync(SQLiteClass.TextoVoz);
+                synthesizer.SpeakAsync(SQLiteClass.TextoVoz1);
             }
         }
 

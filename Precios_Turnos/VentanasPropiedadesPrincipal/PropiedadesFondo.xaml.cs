@@ -102,7 +102,7 @@ namespace Priceio
                     FileInfo fileImg = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)

@@ -11,7 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 
 namespace Priceio
 {
@@ -21,7 +24,7 @@ namespace Priceio
     public partial class Mensajes : Window
     {
 
-        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta=false, string textoBotonAceptar="Aceptar", string textoBotonCancelar= "Cancelar")
+        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta = false, bool cerrarVentanaAuto = false, string textoBotonAceptar = "Aceptar", string textoBotonCancelar = "Cancelar")
         {
             InitializeComponent();
             btnOK.Content = textoBotonAceptar;
@@ -44,8 +47,32 @@ namespace Priceio
             }
             if(esPregunta)
                 btnCancelar.Visibility = Visibility.Visible;
+            if (cerrarVentanaAuto)
+                StartCloseTimer();
 
         }
+        private void TimerTick(object sender, EventArgs e)
+        {
+            DispatcherTimer timer = (DispatcherTimer)sender;
+            timer.Stop();
+            timer.Tick -= TimerTick;
+            Close();
+        }
+
+        private void StartCloseTimer()
+        {
+            double ms = 5;
+            ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+            if (SQLiteClass != null)
+            {
+                ms = SQLiteClass.Duracion;
+            }
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(ms);
+            timer.Tick += TimerTick;
+            timer.Start();
+        }
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;

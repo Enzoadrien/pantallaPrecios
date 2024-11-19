@@ -70,23 +70,23 @@
             </ListBox.ItemContainerStyle>
         </ListBox>
         <Label x:Name="lblMinimos" Content="Mínimos"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
-        <TextBox x:Name="Ch1Min" Grid.Row="2" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch2Min" Grid.Row="3" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch3Min" Grid.Row="4" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch4Min" Grid.Row="5" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch5Min" Grid.Row="6" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch6Min" Grid.Row="7" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch7Min" Grid.Row="8" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch8Min" Grid.Row="9" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch1Min" Grid.Row="2" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch2Min" Grid.Row="3" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch3Min" Grid.Row="4" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch4Min" Grid.Row="5" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch5Min" Grid.Row="6" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch6Min" Grid.Row="7" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch7Min" Grid.Row="8" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch8Min" Grid.Row="9" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
         <Label x:Name="lblMaximos" Content="Máximos"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="4" HorizontalAlignment="Center"/>
-        <TextBox x:Name="Ch1Max" Grid.Row="2" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch2Max" Grid.Row="3" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch3Max" Grid.Row="4" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch4Max" Grid.Row="5" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch5Max" Grid.Row="6" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch6Max" Grid.Row="7" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch7Max" Grid.Row="8" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
-        <TextBox x:Name="Ch8Max" Grid.Row="9" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Ch1Max" Grid.Row="2" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch2Max" Grid.Row="3" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch3Max" Grid.Row="4" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch4Max" Grid.Row="5" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch5Max" Grid.Row="6" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch6Max" Grid.Row="7" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch7Max" Grid.Row="8" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
+        <TextBox x:Name="Ch8Max" Grid.Row="9" Grid.Column="4" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" HorizontalContentAlignment="Center" Text="0" LostFocus="Text_LostFocus" TextChanged="Text_TextChanged"/>
         <Label x:Name="lblActivo" Content="Activo"  Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="5" HorizontalAlignment="Center"/>
         <CheckBox x:Name="chkCh1" Tag="1" Content="Ch1" Grid.Row="2" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
         <CheckBox x:Name="chkCh2" Tag="2" Content="Ch2" Grid.Row="3" Grid.Column="5" HorizontalAlignment="Center" FontFamily="Arial Rounded MT" FontSize="14" VerticalAlignment="Center" Checked="chkCh_Checked" Unchecked="chkCh_Unchecked"/>
@@ -101,12 +101,12 @@
         <Label x:Name="lblTotalesNiveleMin" Content="Min" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="3" />
         <Label x:Name="lblTotalesNiveleMax" Content="Max" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="4" />
         <Label x:Name="lblPagoMinimo" Content="Pago mínimo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMinimo" Grid.Row="11" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="PagoMinimo" Grid.Row="11" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Text="0"/>
         <Label x:Name="lblPagoMaximo" Content="Pago máximo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="3" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="5" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="5" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Text="0"/>
         <ComboBox x:Name="cbxDenominacion" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="12" Margin="5,0,5,0" Grid.ColumnSpan="2" />
         <Label x:Name="lblX" Content="X" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2" Margin="20,0,0,0"/>
-        <TextBox x:Name="Cantidad" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Width="65" Margin="0,0,35,0" />
+        <TextBox x:Name="Cantidad" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Width="65" Margin="0,0,35,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
         <StackPanel Grid.Row="12"
   Orientation="Horizontal"
   Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="3" HorizontalAlignment="Center" >
@@ -206,7 +206,7 @@ FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <TextBox x:Name="Monto" Grid.Row="13" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14"/>
+        <TextBox x:Name="Monto" Grid.Row="13" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
         <StackPanel Grid.Row="13"
   Orientation="Horizontal"
   Margin="5,5,5,5" Grid.ColumnSpan="2" Grid.Column="1" >

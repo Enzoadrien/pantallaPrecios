@@ -23,6 +23,8 @@ namespace Priceio.SQLite
             tables.Add(new TableClass(new NombresClientesTurnero().GetType()));
             tables.Add(new TableClass(new ConfiguracionVerificador().GetType()));
             tables.Add(new TableClass(new ConfiguracionCajero().GetType()));
+            tables.Add(new TableClass(new ConfiguracionCanalesHopper().GetType()));
+            tables.Add(new TableClass(new ConfiguracionCanalesPayout().GetType()));
             tables.Add(new TableClass(new ConfiguracionImpresora().GetType()));
             tables.Add(new TableClass(new ConfiguracionLector().GetType()));
             tables.Add(new TableClass(new Pago().GetType()));
@@ -157,11 +159,16 @@ namespace Priceio.SQLite
                 if (dataMapper.ContainsKey(field.Value))
                 {
                     script.Append("\t " + field.Key + " " + dataMapper[field.Value]);
+
+                    if(dataMapper[field.Value].Equals("TEXT"))
+                        script.Append(" NOT NULL DEFAULT ''");
+                    else
+                        script.Append(" NOT NULL DEFAULT 0");
                 }
                 else
                 {
                     // Complex Type? 
-                    script.Append("\t " + field.Key + " BIGINT");
+                    script.Append("\t " + field.Key + " BIGINT NOT NULL DEFAULT 0 ");
                 }
 
                 if (i != Fields.Count - 1)

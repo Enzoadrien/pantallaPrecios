@@ -18,6 +18,11 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
+        public int CantidadDecimales
+        {
+            get;
+            set;
+        }
         public bool? Imprmir
         {
             get;

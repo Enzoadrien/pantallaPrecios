@@ -3,7 +3,7 @@ namespace Priceio.ClasesSQLite
 {
     internal class ConfiguracionCajero
     {
-       public int PuertoTCP
+        public int PuertoTCP
         {
             get;
             set;

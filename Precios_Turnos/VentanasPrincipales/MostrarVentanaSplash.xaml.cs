@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.Odbc;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Speech.Synthesis;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -21,12 +17,9 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
-using ITLlib;
-using Org.BouncyCastle.Asn1.X509;
 using Priceio.Cajero;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
-using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
 using Priceio.SQLite;
@@ -138,7 +131,7 @@ namespace Priceio
         {
             timerPago.Stop();
         }
-        
+
         internal Pago? recuperaPago()
         {
             return pago;
@@ -172,7 +165,7 @@ namespace Priceio
         private void StartCloseTimer()
         {
             double ms = 5;
-           ConfiguracionVentanaSplash ? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+            ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
             if (SQLiteClass != null)
             {
                 ms = SQLiteClass.Duracion;
@@ -187,36 +180,51 @@ namespace Priceio
         {
             try
             {
+                synthesizer.SpeakAsyncCancelAll();
                 synthesizer.SetOutputToDefaultAudioDevice();
                 VozSplash? vozSplash = new SQLiteClassManager().GetVozSplash();
                 string line = string.Empty;
                 if (vozSplash != null)
                 {
-                    line = vozSplash.TextoVoz;
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    //Datos para voz de turnero 
-                    Label NumeroTurno = (Label)FindName("NumeroTurno");
-                    if (NumeroTurno != null)
-                        line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
-                    Label NumeroEquipo = (Label)FindName("NumeroEquipo");
-                    if (NumeroEquipo != null)
-                        line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
-                    Label NombreEquipo = (Label)FindName("NombreEquipo");
-                    if (NombreEquipo != null)
-                        line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
-
-                    //Datos para Verificador de precios
-                    DataGrid control = (DataGrid)FindName("TablaDatos");
-                    if (control != null)
+                    if (!tipoVentana.Equals("C"))
+                        line = vozSplash.TextoVoz1;
+                    else
                     {
-                        int i = 1;
-                        foreach (DataRowView o in (control).Items)
-                            line = line.Replace(@"TextoVoz" + (i++), o[0].ToString());
+                        if (pago != null)
+                        {
+                            if (pago.TipoPago == Pago.Tipo.PAGO)
+                                line = vozSplash.TextoVoz1;
+                            else
+                                line = vozSplash.TextoVoz2;
+                        }
                     }
-                }));
-                synthesizer.SelectVoice(vozSplash.TipoVoz);
-                synthesizer.SpeakAsync(line);
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    {
+                        //Datos para voz de turnero 
+                        Label NumeroTurno = (Label)FindName("NumeroTurno");
+                        if (NumeroTurno != null)
+                            line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
+                        Label NumeroEquipo = (Label)FindName("NumeroEquipo");
+                        if (NumeroEquipo != null)
+                            line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
+                        Label NombreEquipo = (Label)FindName("NombreEquipo");
+                        if (NombreEquipo != null)
+                            line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
+
+                        //Datos para Verificador de precios
+                        DataGrid control = (DataGrid)FindName("TablaDatos");
+                        if (control != null)
+                        {
+                            int i = 1;
+                            foreach (DataRowView o in (control).Items)
+                                line = line.Replace(@"TextoVoz" + (i++), o[0].ToString());
+                        }
+                        Label CantidadTotal = (Label)FindName("CantidadTotal");
+                        if (CantidadTotal != null)
+                            line = line.Replace(@"CantidadTotal", CantidadTotal.Content.ToString());
+                    }));
+                    synthesizer.SelectVoice(vozSplash.TipoVoz);
+                    synthesizer.SpeakAsync(line);
                 }
             }
             catch { }
@@ -698,16 +706,13 @@ namespace Priceio
                     }
                     catch { }
 
-                    if (SQLiteClass.Voz == true)
-                    {
-                        Task.Run(() => ActivarVoz());
-                    }
 
                     if (tipoVentana.Equals("C"))
                         if (pago != null)
-                        {
                             actualizaPagoControles();
-                        }
+
+                    if (SQLiteClass.Voz == true)
+                        Task.Run(() => ActivarVoz());
                 }
             }
 
@@ -732,14 +737,14 @@ namespace Priceio
                         Application.Current.Dispatcher.Invoke(new Action(() =>
                         {
                             Button controlBtn = (Button)FindName("BtnCancelar");
-                        if (controlBtn != null)
-                            controlBtn.IsEnabled = false;
+                            if (controlBtn != null)
+                                controlBtn.IsEnabled = false;
 
                         }));
                     }
                     if (pago.Pagado && !cancelando)
                     {
-                        smartPayout.BoolDisablePayout=true;
+                        smartPayout.BoolDisablePayout = true;
                         smartHopper.BoolDisableCoinMech = true;
 
                         if (pago.Cambio > 0)
@@ -764,7 +769,7 @@ namespace Priceio
                         }
                         else
                         {
-                            if(pago.EstadoPago != Pago.Estado.CANCELADO)
+                            if (pago.EstadoPago != Pago.Estado.CANCELADO)
                                 pago.EstadoPago = Pago.Estado.OK;
                             break;
                         }
@@ -779,7 +784,10 @@ namespace Priceio
 
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                StartCloseTimer();
+                if (pago.EstadoPago != Pago.Estado.CANCELADO)
+                    StartCloseTimer();
+                else
+                    Close();
             }));
         }
 
@@ -791,19 +799,19 @@ namespace Priceio
                 {
                     Label control = (Label)FindName("CantidadTotal");
                     if (control != null)
-                        control.Content = "$ " + pago.CantidadTotal;
+                        control.Content = String.Format("{0:C}", pago.CantidadTotal);
                     control = (Label)FindName("CantidadFaltante");
                     if (control != null)
-                        control.Content = "$ " + pago.CantidadFaltante;
+                        control.Content = String.Format("{0:C}", pago.CantidadFaltante);
                     control = (Label)FindName("CantidadIngresada");
                     if (control != null)
-                        control.Content = "$ " + pago.CantidadIngresada;
+                        control.Content = String.Format("{0:C}", pago.CantidadIngresada);
                     control = (Label)FindName("Cambio");
                     if (control != null)
-                        control.Content = "$ " + pago.Cambio;
+                        control.Content = String.Format("{0:C}", pago.Cambio);
                 }
                 catch { }
-               
+
             }));
         }
 
@@ -1083,7 +1091,7 @@ namespace Priceio
                     FileInfo fileImg = new FileInfo(@".\data\objetosSplash\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -1537,6 +1545,71 @@ namespace Priceio
             {
                 GuardarControles();
             }
+            else
+                activarVozFinal();
+        }
+
+        private void activarVozFinal()
+        {
+            try
+            {
+                ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+                if (SQLiteClass != null)
+                {
+
+                    if (SQLiteClass.Voz == true)
+                    {
+                        synthesizer.SpeakAsyncCancelAll();
+                        synthesizer.SetOutputToDefaultAudioDevice();
+                        VozSplash? vozSplash = new SQLiteClassManager().GetVozSplash();
+                        string line = string.Empty;
+                        if (vozSplash != null)
+                        {
+                            if (!tipoVentana.Equals("C"))
+                                line = vozSplash.TextoVoz2;
+                            else
+                            {
+                                if (pago != null)
+                                {
+                                    if (pago.TipoPago == Pago.Tipo.PAGO)
+                                        line = vozSplash.TextoVoz3;
+                                }
+                            }
+                            Application.Current.Dispatcher.Invoke(new Action(() =>
+                            {
+                                //Datos para voz de turnero 
+                                Label NumeroTurno = (Label)FindName("NumeroTurno");
+                                if (NumeroTurno != null)
+                                    line = line.Replace(@"NumeroTurno", NumeroTurno.Content.ToString());
+                                Label NumeroEquipo = (Label)FindName("NumeroEquipo");
+                                if (NumeroEquipo != null)
+                                    line = line.Replace(@"NumeroEquipo", NumeroEquipo.Content.ToString());
+                                Label NombreEquipo = (Label)FindName("NombreEquipo");
+                                if (NombreEquipo != null)
+                                    line = line.Replace(@"NombreEquipo", NombreEquipo.Content.ToString());
+
+                                //Datos para Verificador de precios
+                                DataGrid control = (DataGrid)FindName("TablaDatos");
+                                if (control != null)
+                                {
+                                    int i = 1;
+                                    foreach (DataRowView o in (control).Items)
+                                        line = line.Replace(@"TextoVoz" + (i++), o[0].ToString());
+                                }
+                                Label CantidadTotal = (Label)FindName("CantidadTotal");
+                                if (CantidadTotal != null)
+                                    line = line.Replace(@"CantidadTotal", CantidadTotal.Content.ToString());
+                                Label Cambio = (Label)FindName("Cambio");
+                                if (Cambio != null)
+                                    line = line.Replace(@"Cambio", Cambio.Content.ToString());
+                            }));
+                            synthesizer.SelectVoice(vozSplash.TipoVoz);
+                            synthesizer.SpeakAsync(line);
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
         private void MenuMostrarOcultarTurno_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -1886,7 +1959,7 @@ namespace Priceio
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog.ShowDialog() == true)
                             {
-                                SetearNumeroTurno(0,"PC");
+                                SetearNumeroTurno(0, "PC");
                                 new SQLiteClassManager().EliminarDatosTabla("TurnosAnteriores");
 
                                 var numeroTurnoAnt = mainWindow.FindName("NumeroTurnoAnt") as UIElement;
@@ -1908,7 +1981,7 @@ namespace Priceio
                             if (dialog2.ShowDialog() == true)
                                 try
                                 {
-                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text),"PC");
+                                    SetearNumeroTurno(int.Parse(dialog2.Texto.Text), "PC");
                                 }
                                 catch (Exception)
                                 {
@@ -2673,7 +2746,7 @@ namespace Priceio
                     cancelando = false;
                 }
             }
-            catch{}
+            catch { }
         }
     }
 }

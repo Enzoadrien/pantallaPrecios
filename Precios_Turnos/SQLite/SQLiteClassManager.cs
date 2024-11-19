@@ -113,7 +113,10 @@ namespace Priceio.SQLite
                 managerSQLite.ConectarBD();
                 DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
                 SQLiteClass.TipoVoz = row.Field<string>("TipoVoz");
-                SQLiteClass.TextoVoz = row.Field<string>("TextoVoz");
+                SQLiteClass.TextoVoz1 = row.Field<string>("TextoVoz1");
+                SQLiteClass.TextoVoz2 = row.Field<string>("TextoVoz2");
+                SQLiteClass.TextoVoz3 = row.Field<string>("TextoVoz3");
+                SQLiteClass.VozIngresoEfectivo = Convert.ToBoolean(row.Field<long>("VozIngresoEfectivo"));
                 managerSQLite.DesconectarBD();
             }
             catch { return null; }
@@ -298,6 +301,7 @@ namespace Priceio.SQLite
 
                 SQLiteClass.Activo = Convert.ToBoolean(row.Field<long>("Activo"));
                 SQLiteClass.FormatoCodigo = row.Field<string>("FormatoCodigo");
+                SQLiteClass.CantidadDecimales = (int)row.Field<long>("CantidadDecimales");
                 SQLiteClass.Imprmir = Convert.ToBoolean(row.Field<long>("Imprmir"));
                 SQLiteClass.FormatoImpresora = row.Field<string>("FormatoImpresora");
                 managerSQLite.DesconectarBD();
@@ -434,7 +438,112 @@ namespace Priceio.SQLite
             return true;
         }
 
+        internal ConfiguracionCanalesHopper? GetConfiguracionCanalesHopper()
+        {
+            ConfiguracionCanalesHopper SQLiteClass = new ConfiguracionCanalesHopper();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.MinCh1 = (int)row.Field<long>("MinCh1");
+                SQLiteClass.MinCh2 = (int)row.Field<long>("MinCh2");
+                SQLiteClass.MinCh3 = (int)row.Field<long>("MinCh3");
+                SQLiteClass.MinCh4 = (int)row.Field<long>("MinCh4");
+                SQLiteClass.MinCh5 = (int)row.Field<long>("MinCh5");
+                SQLiteClass.MinCh6 = (int)row.Field<long>("MinCh6");
+                SQLiteClass.MinCh7 = (int)row.Field<long>("MinCh7");
+                SQLiteClass.MinCh8 = (int)row.Field<long>("MinCh8");
+                SQLiteClass.MaxCh1 = (int)row.Field<long>("MaxCh1");
+                SQLiteClass.MaxCh2 = (int)row.Field<long>("MaxCh2");
+                SQLiteClass.MaxCh3 = (int)row.Field<long>("MaxCh3");
+                SQLiteClass.MaxCh4 = (int)row.Field<long>("MaxCh4");
+                SQLiteClass.MaxCh5 = (int)row.Field<long>("MaxCh5");
+                SQLiteClass.MaxCh6 = (int)row.Field<long>("MaxCh6");
+                SQLiteClass.MaxCh7 = (int)row.Field<long>("MaxCh7");
+                SQLiteClass.MaxCh8 = (int)row.Field<long>("MaxCh8");
+                SQLiteClass.ActivoCh1 = Convert.ToBoolean(row.Field<long>("ActivoCh1"));
+                SQLiteClass.ActivoCh2 = Convert.ToBoolean(row.Field<long>("ActivoCh2"));
+                SQLiteClass.ActivoCh3 = Convert.ToBoolean(row.Field<long>("ActivoCh3"));
+                SQLiteClass.ActivoCh4 = Convert.ToBoolean(row.Field<long>("ActivoCh4"));
+                SQLiteClass.ActivoCh5 = Convert.ToBoolean(row.Field<long>("ActivoCh5"));
+                SQLiteClass.ActivoCh6 = Convert.ToBoolean(row.Field<long>("ActivoCh6"));
+                SQLiteClass.ActivoCh7 = Convert.ToBoolean(row.Field<long>("ActivoCh7"));
+                SQLiteClass.ActivoCh8 = Convert.ToBoolean(row.Field<long>("ActivoCh8"));
+                SQLiteClass.PagoMin = (int)row.Field<long>("PagoMin");
+                SQLiteClass.PagoMax = (int)row.Field<long>("PagoMax");
+                SQLiteClass.MostrarLog = Convert.ToBoolean(row.Field<long>("MostrarLog"));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
 
+        internal bool SetConfiguracionCanalesHopper(ConfiguracionCanalesHopper SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+
+        internal ConfiguracionCanalesPayout? GetConfiguracionCanalesPayout()
+        {
+            ConfiguracionCanalesPayout SQLiteClass = new ConfiguracionCanalesPayout();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.MinCh1 = (int)row.Field<long>("MinCh1");
+                SQLiteClass.MinCh2 = (int)row.Field<long>("MinCh2");
+                SQLiteClass.MinCh3 = (int)row.Field<long>("MinCh3");
+                SQLiteClass.MinCh4 = (int)row.Field<long>("MinCh4");
+                SQLiteClass.MinCh5 = (int)row.Field<long>("MinCh5");
+                SQLiteClass.MinCh6 = (int)row.Field<long>("MinCh6");
+                SQLiteClass.MinCh7 = (int)row.Field<long>("MinCh7");
+                SQLiteClass.MinCh8 = (int)row.Field<long>("MinCh8");
+                SQLiteClass.MaxCh1 = (int)row.Field<long>("MaxCh1");
+                SQLiteClass.MaxCh2 = (int)row.Field<long>("MaxCh2");
+                SQLiteClass.MaxCh3 = (int)row.Field<long>("MaxCh3");
+                SQLiteClass.MaxCh4 = (int)row.Field<long>("MaxCh4");
+                SQLiteClass.MaxCh5 = (int)row.Field<long>("MaxCh5");
+                SQLiteClass.MaxCh6 = (int)row.Field<long>("MaxCh6");
+                SQLiteClass.MaxCh7 = (int)row.Field<long>("MaxCh7");
+                SQLiteClass.MaxCh8 = (int)row.Field<long>("MaxCh8");
+                SQLiteClass.ActivoCh1 = Convert.ToBoolean(row.Field<long>("ActivoCh1"));
+                SQLiteClass.ActivoCh2 = Convert.ToBoolean(row.Field<long>("ActivoCh2"));
+                SQLiteClass.ActivoCh3 = Convert.ToBoolean(row.Field<long>("ActivoCh3"));
+                SQLiteClass.ActivoCh4 = Convert.ToBoolean(row.Field<long>("ActivoCh4"));
+                SQLiteClass.ActivoCh5 = Convert.ToBoolean(row.Field<long>("ActivoCh5"));
+                SQLiteClass.ActivoCh6 = Convert.ToBoolean(row.Field<long>("ActivoCh6"));
+                SQLiteClass.ActivoCh7 = Convert.ToBoolean(row.Field<long>("ActivoCh7"));
+                SQLiteClass.ActivoCh8 = Convert.ToBoolean(row.Field<long>("ActivoCh8"));
+                SQLiteClass.PagoMin = (int)row.Field<long>("PagoMin");
+                SQLiteClass.PagoMax = (int)row.Field<long>("PagoMax");
+                SQLiteClass.MostrarLog = Convert.ToBoolean(row.Field<long>("MostrarLog"));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetConfiguracionCanalesPayout(ConfiguracionCanalesPayout SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+        
         internal bool ResetConfigSplash()
         {
             try

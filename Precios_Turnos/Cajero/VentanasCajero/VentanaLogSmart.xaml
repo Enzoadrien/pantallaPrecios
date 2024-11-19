@@ -42,10 +42,10 @@ Background="#FF989090" Grid.ColumnSpan="4">
             </Button.Style>
         </Button>
         <ScrollViewer x:Name="MyScrollViewerHopper" Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <TextBlock x:Name="lblLogHopper"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,0,5,5"/>
+            <TextBlock x:Name="lblLogHopper"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="" TextWrapping="Wrap" Margin="5,0,5,5"/>
         </ScrollViewer>
         <ScrollViewer x:Name="MyScrollViewerPayout" Grid.Row="1" VerticalScrollBarVisibility="Auto" Grid.Column="1">
-            <TextBlock x:Name="lblLogPayout"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="Texto" TextWrapping="Wrap" Margin="5,0,5,5"/>
+            <TextBlock x:Name="lblLogPayout"  FontFamily="Arial Rounded MT" FontSize="14" Background="White" Text="" TextWrapping="Wrap" Margin="5,0,5,5"/>
         </ScrollViewer>
     </Grid>
 </Window>

@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
-using System.Management;
-using System.Security.Policy;
 using System.Net.NetworkInformation;
-using System.Windows;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Management;
 
 namespace Priceio.ClasesGenericas
 {

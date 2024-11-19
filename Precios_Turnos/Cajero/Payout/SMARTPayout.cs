@@ -134,6 +134,8 @@ namespace Priceio.Cajero.Payout
                     dialog.ShowDialog();
                 }));
             }
+
+            ConfigCargada = false;
             RunningPayout = false;
         }
 
@@ -329,14 +331,14 @@ namespace Priceio.Cajero.Payout
             // Get the data from the payout
             ChannelData d = new ChannelData();
             Payout.GetDataByChannel(chanelRoute, ref d);
-            Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref logPagoPayout);
+            Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref logPagoPayout);
         }
 
         private void DisableRouteNote()
         {
             ChannelData d = new ChannelData();
             Payout.GetDataByChannel(chanelRoute, ref d);
-            Payout.ChangeNoteRoute(d.Value, d.Currency, false, ref logPagoPayout);
+            Payout.ChangeNoteRoute(d.Value, d.Currency, true, ref logPagoPayout);
         }
     }
 }
