@@ -2083,7 +2083,7 @@ namespace Priceio
                     //Create the object
                     string odbc = configuracionODBC.ODBC;
                     string usuario = configuracionODBC.UsuarioODBC;
-                    string contrasena = vSeguridad.DecryptString(MainWindow.nombreApp, configuracionODBC.ContrasenaODBC);
+                    string contrasena = configuracionODBC.ContrasenaODBC;
                     string consulta = string.Empty;
                     string nombreIndex = string.Empty;
 
