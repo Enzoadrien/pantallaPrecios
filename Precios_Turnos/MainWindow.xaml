@@ -20,8 +20,12 @@
             <MenuItem x:Name="MenuVentanaSplash" Header="Editar ventana splash" PreviewMouseLeftButtonDown="MenuVentanaSplash_PreviewMouseLeftButtonDown"/>
             <MenuItem x:Name="MenuTurnos" Header="Agregar objetos turnero">
                     <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-                    <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                    <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar números equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                    <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Agregar nombres equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
+            <MenuItem x:Name="MenuCajero" Header="Agregar objetos cajero">
+                <MenuItem x:Name="MenuMostrarOcultarEstado" Header="Agregar estado cajero" PreviewMouseLeftButtonDown="MenuMostrarOcultarEstado_PreviewMouseLeftButtonDown" />
+               </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>

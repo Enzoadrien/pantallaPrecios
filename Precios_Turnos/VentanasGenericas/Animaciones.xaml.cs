@@ -1,5 +1,7 @@
 ﻿using Microsoft.Win32;
 using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,6 +12,7 @@ using System.Numerics;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,6 +24,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Priceio
@@ -33,6 +37,8 @@ namespace Priceio
         private Window mainWindow;
         private string NombreControl;
         private TranslateTransform? _currentTT;
+        private CancellationTokenSource cts = new();
+        double opacidadOriginal;
         public Animaciones(Window pMainWindow, string pNombreControl)
         {
             InitializeComponent();
@@ -40,6 +46,7 @@ namespace Priceio
             NombreControl = pNombreControl;
 
             var item = mainWindow.FindName(NombreControl) as UIElement;
+            opacidadOriginal = item.Opacity;
             _currentTT = item.RenderTransform as TranslateTransform;
         }
 
@@ -99,7 +106,7 @@ namespace Priceio
                 e.Handled = true;
         }
 
-        private void chkMover_Checked(object sender, RoutedEventArgs e)
+        private void chkDesplazar_Checked(object sender, RoutedEventArgs e)
         {
             chkHorizontal.IsEnabled = true;
             chkVertical.IsEnabled = true;
@@ -107,7 +114,7 @@ namespace Priceio
             Animar();
         }
 
-        private void chkMover_Unchecked(object sender, RoutedEventArgs e)
+        private void chkDesplazar_Unchecked(object sender, RoutedEventArgs e)
         {
             chkHorizontal.IsEnabled = false;
             cbxDireccionMH.IsEnabled = false;
@@ -135,7 +142,7 @@ namespace Priceio
             VelocidadMH.IsReadOnly = false;
             CantidadMH.IsReadOnly = false;
 
-            if (chkMover.IsChecked == true)
+            if (chkDesplazar.IsChecked == true)
                 Animar();
 
 
@@ -149,7 +156,7 @@ namespace Priceio
             chkReversaMH.IsEnabled = false;
             chkReversaMH.IsChecked = false;
 
-            if (chkMover.IsChecked == true)
+            if (chkDesplazar.IsChecked == true)
                 Animar();
         }
 
@@ -161,7 +168,7 @@ namespace Priceio
             chkReversaMV.IsEnabled = false;
             chkReversaMV.IsChecked = false;
 
-            if (chkMover.IsChecked == true)
+            if (chkDesplazar.IsChecked == true)
                 Animar();
         }
 
@@ -172,7 +179,7 @@ namespace Priceio
             CantidadMV.IsReadOnly = false;
             chkReversaMV.IsEnabled = true;
 
-            if (chkMover.IsChecked == true)
+            if (chkDesplazar.IsChecked == true)
                 Animar();
 
 
@@ -180,20 +187,20 @@ namespace Priceio
 
         private void cbxDireccionMH_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (chkMover.IsChecked == true && chkHorizontal.IsChecked == true)
+            if (chkDesplazar.IsChecked == true && chkHorizontal.IsChecked == true)
                 Animar();
         }
 
         private void cbxDireccionMV_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (chkMover.IsChecked == true && chkVertical.IsChecked == true)
+            if (chkDesplazar.IsChecked == true && chkVertical.IsChecked == true)
                 Animar();
         }
 
         private void VelocidadMH_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (VelocidadMH.Text.Length > 0)
-                if (chkMover.IsChecked == true)
+                if (chkDesplazar.IsChecked == true)
                     Animar();
         }
 
@@ -206,7 +213,7 @@ namespace Priceio
         private void VelocidadMV_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (VelocidadMV.Text.Length > 0)
-                if (chkMover.IsChecked == true)
+                if (chkDesplazar.IsChecked == true)
                     Animar();
         }
 
@@ -219,7 +226,7 @@ namespace Priceio
         private void CantidadMH_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (CantidadMH.Text.Length > 0)
-                if (chkMover.IsChecked == true)
+                if (chkDesplazar.IsChecked == true)
                     Animar();
         }
 
@@ -232,7 +239,7 @@ namespace Priceio
         private void CantidadMV_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (CantidadMV.Text.Length > 0)
-                if (chkMover.IsChecked == true)
+                if (chkDesplazar.IsChecked == true)
                     Animar();
         }
 
@@ -282,16 +289,16 @@ namespace Priceio
 
         private void chkGirar_Checked(object sender, RoutedEventArgs e)
         {
-            VelocidadG.IsReadOnly = false;
-            cbxDireccionG.IsEnabled = true;
-            Animar();
+            cbxAngulo.IsEnabled = true;
+            chkGirarAutomatico.IsEnabled = true;
         }
 
         private void chkGirar_Unchecked(object sender, RoutedEventArgs e)
         {
-            VelocidadG.IsReadOnly = true;
-            cbxDireccionG.IsEnabled = false;
-            Animar();
+            cbxAngulo.IsEnabled = false;
+            cbxAngulo.SelectedIndex = 40;
+            chkGirarAutomatico.IsEnabled = false;
+            chkGirarAutomatico.IsChecked = false;
         }
 
         private void cbxDireccionG_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -321,101 +328,153 @@ namespace Priceio
             {
                 if (@file.Name.Equals(NombreControl + ".anim"))
                 {
-                    StreamReader sR = new StreamReader(@file.FullName);
-                    lectura = sR.ReadToEnd();
-                    sR.Close();
-                    string[] animaciones = new Seguridad().DecryptString(MainWindow.nombreApp, lectura).Split('-');
-                    if (animaciones.Length > 1)
+                    try
                     {
-                        foreach (string animacion in animaciones)
-                        {
-                            string[] datos = animacion.Split('|');
-                            switch (datos[0])
-                            {
-                                case "M":
-                                    if (datos[1].Equals("S"))
-                                    {
-                                        if (datos[3].Equals("S"))
-                                        {
-                                            cbxDireccionMH.SelectedValue = datos[4];
-                                            VelocidadMH.Text = datos[5];
-                                            CantidadMH.Text = datos[6];
-                                            if (datos[7].Equals("S"))
-                                                chkReversaMH.IsChecked = true;
-                                            chkHorizontal.IsChecked = true;
-
-                                        }
-                                        if (datos[9].Equals("S"))
-                                        {
-                                            cbxDireccionMV.SelectedValue = datos[10];
-                                            VelocidadMV.Text = datos[11];
-                                            CantidadMV.Text = datos[12];
-                                            if (datos[13].Equals("S"))
-                                                chkReversaMV.IsChecked = true;
-                                            chkVertical.IsChecked = true;
-                                        }
-                                        chkMover.IsChecked = true;
-                                    }
-                                    break;
-                                case "E":
-                                    if (datos[1].Equals("S"))
-                                    {
-                                        cbxTamanoE.SelectedValue = datos[2];
-                                        VelocidadE.Text = datos[3];
-                                        chkEscalar.IsChecked = true;
-                                    }
-                                    break;
-                                case "G":
-                                    if (datos[1].Equals("S"))
-                                    {
-                                        cbxDireccionG.SelectedValue = datos[2];
-                                        VelocidadG.Text = datos[3];
-                                        chkGirar.IsChecked = true;
-                                    }
-                                    break;
-                            }
-                        }
+                        ConfiguracionAnimaciones configuracionAnimaciones = JsonSerializer.Deserialize<ConfiguracionAnimaciones>(new Seguridad().DecryptString(MainWindow.nombreApp, File.ReadAllText(file.FullName).ToString()));
+                        chkDesplazar.IsChecked = configuracionAnimaciones.Desplazar;
+                        chkHorizontal.IsChecked = configuracionAnimaciones.Horizontal;
+                        cbxDireccionMH.SelectedValue = configuracionAnimaciones.DirecionHorizontal;
+                        VelocidadMH.Text = configuracionAnimaciones.VelocidadHorizontal.ToString();
+                        CantidadMH.Text = configuracionAnimaciones.CantidadHorizontal.ToString();
+                        chkReversaMH.IsChecked = configuracionAnimaciones.ReversaHorizontal;
+                        chkVertical.IsChecked = configuracionAnimaciones.Vertical;
+                        cbxDireccionMV.SelectedValue = configuracionAnimaciones.DirecionVertical;
+                        VelocidadMV.Text = configuracionAnimaciones.VelocidadVertical.ToString();
+                        CantidadMH.Text = configuracionAnimaciones.CantidadVertical.ToString();
+                        chkReversaMV.IsChecked = configuracionAnimaciones.ReversaVertical;
+                        chkEscalar.IsChecked = configuracionAnimaciones.Escalar;
+                        cbxTamanoE.SelectedValue = configuracionAnimaciones.TamanoEscalar;
+                        VelocidadE.Text = configuracionAnimaciones.VelocidadEscalar.ToString();
+                        chkDesvanecer.IsChecked = configuracionAnimaciones.Desvanecer;
+                        VelocidadDesvanecer.Text = configuracionAnimaciones.VelocidadDesvanecer.ToString();
+                        chkReversaDesvanecer.IsChecked = configuracionAnimaciones.ReversaDesvanecer;
+                        chkGirar.IsChecked = configuracionAnimaciones.Girar;
+                        cbxAngulo.SelectedValue = configuracionAnimaciones.AnguloGirar;
+                        chkGirarAutomatico.IsChecked = configuracionAnimaciones.AutoGirar;
+                        cbxAnguloAuto.SelectedValue = configuracionAnimaciones.AnguloAutoGirar;
+                        VelocidadG.Text = configuracionAnimaciones.VelocidadGirar.ToString();
+                        chkReversaGiro.IsChecked = configuracionAnimaciones.ReversaGirar;
                     }
+                    catch { }
                 }
             }
         }
 
+        private void GuardarDatos()
+        {
+            GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, JsonSerializer.Serialize(ActualizaConfiguracionAnimaciones())), NombreControl);
+        }
+
+        private ConfiguracionAnimaciones ActualizaConfiguracionAnimaciones()
+        {
+            ConfiguracionAnimaciones configuracionAnimaciones = new ConfiguracionAnimaciones();
+            configuracionAnimaciones.Desplazar = chkDesplazar.IsChecked;
+            configuracionAnimaciones.Horizontal = chkHorizontal.IsChecked;
+            configuracionAnimaciones.DirecionHorizontal = char.Parse(((ComboBoxItem)cbxDireccionMH.SelectedItem).Tag.ToString());
+            configuracionAnimaciones.VelocidadHorizontal = int.Parse(VelocidadMH.Text);
+            configuracionAnimaciones.CantidadHorizontal = int.Parse(CantidadMH.Text);
+            configuracionAnimaciones.ReversaHorizontal = chkReversaMH.IsChecked;
+            configuracionAnimaciones.Vertical = chkVertical.IsChecked;
+            configuracionAnimaciones.DirecionVertical = char.Parse(((ComboBoxItem)cbxDireccionMV.SelectedItem).Tag.ToString());
+            configuracionAnimaciones.VelocidadVertical = int.Parse(VelocidadMV.Text);
+            configuracionAnimaciones.CantidadVertical = int.Parse(CantidadMH.Text);
+            configuracionAnimaciones.ReversaVertical = chkReversaMV.IsChecked;
+            configuracionAnimaciones.Escalar = chkEscalar.IsChecked;
+            configuracionAnimaciones.TamanoEscalar = double.Parse(((ComboBoxItem)cbxTamanoE.SelectedItem).Tag.ToString());
+            configuracionAnimaciones.VelocidadEscalar = int.Parse(VelocidadE.Text);
+            configuracionAnimaciones.Desvanecer = chkDesvanecer.IsChecked;
+            configuracionAnimaciones.VelocidadDesvanecer = int.Parse(VelocidadDesvanecer.Text);
+            configuracionAnimaciones.ReversaDesvanecer = chkReversaDesvanecer.IsChecked;
+            configuracionAnimaciones.Girar = chkGirar.IsChecked;
+            configuracionAnimaciones.AnguloGirar = double.Parse(((ComboBoxItem)cbxAngulo.SelectedItem).Tag.ToString());
+            configuracionAnimaciones.AutoGirar = chkGirarAutomatico.IsChecked;
+            configuracionAnimaciones.AnguloAutoGirar = double.Parse(((ComboBoxItem)cbxAnguloAuto.SelectedItem).Tag.ToString());
+            configuracionAnimaciones.VelocidadGirar = int.Parse(VelocidadG.Text);
+            configuracionAnimaciones.ReversaGirar = chkReversaGiro.IsChecked;
+
+
+            return configuracionAnimaciones;
+        }
+
+        private async Task Desvanecer(int velocidad, bool reversa, CancellationToken cancellationToken)
+        {
+            bool baja = true;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                var item = mainWindow.FindName(NombreControl) as UIElement;
+                if (VelocidadDesvanecer.Text.Length > 0)
+                {
+                    double disminucion = .001;
+                    if (item.Opacity > -.01 && baja)
+                    {
+                        item.Opacity -= disminucion;
+                    }
+                    else if (item.Opacity < opacidadOriginal && !baja && reversa)
+                    {
+                        item.Opacity += disminucion;
+                    }
+                    else if (item.Opacity < opacidadOriginal && !baja && !reversa)
+                    {
+                        item.Opacity = opacidadOriginal;
+                    }
+                    else
+                    {
+                        if (baja)
+                            baja = false;
+                        else
+                            baja = true;
+                    }
+                }
+
+            }));
+                if(reversa && velocidad > 1)
+                    await Task.Delay(velocidad/2, cancellationToken);
+                else
+                    await Task.Delay(velocidad, cancellationToken);
+            }
+        }
+
+
         private void Animar()
         {
+
             var item = mainWindow.FindName(NombreControl) as UIElement;
 
+            cts.Cancel();
+            if (chkDesvanecer.IsChecked == true)
+            {
+                item.Opacity = opacidadOriginal;
+                int velocidad = int.Parse(VelocidadDesvanecer.Text);
+                bool reversa = chkReversaDesvanecer.IsChecked == true;
+                cts = new();
+                Task.Run(() => Desvanecer(velocidad, reversa, cts.Token));
+            }
+            else
+                item.Opacity = opacidadOriginal;
+
+
             TransformGroup myTransformGroup = new TransformGroup();
-            double tamanoE = double.Parse(((ComboBoxItem)cbxTamanoE.SelectedItem).Tag.ToString());
-            string direccionMH = ((ComboBoxItem)cbxDireccionMH.SelectedItem).Tag.ToString();
-            string direccionMV = ((ComboBoxItem)cbxDireccionMV.SelectedItem).Tag.ToString();
-            string direccionG = ((ComboBoxItem)cbxDireccionG.SelectedItem).Tag.ToString();
-            string Animaciones = "";
 
-            if (chkGirar.IsChecked == true)
-                Animaciones += "G|S|" + direccionG + "|" + VelocidadG.Text;
-            else
-                Animaciones += "G|N";
+            if (chkGirar.IsChecked == true && chkGirarAutomatico.IsChecked == false)
+            {
 
-            if (chkEscalar.IsChecked == true)
-                Animaciones += "-E|S|" + tamanoE + "|" + VelocidadE.Text;
-            else
-                Animaciones += "-E|N";
+                RotateTransform rotate = new RotateTransform(double.Parse(((ComboBoxItem)cbxAngulo.SelectedItem).Tag.ToString()));
 
-            if (chkMover.IsChecked == true)
-                Animaciones += "-M|S|H|" + (chkHorizontal.IsChecked == true ? "S" : "N") + "|" + direccionMH + "|" + VelocidadMH.Text + "|" + CantidadMH.Text + "|" + (chkReversaMH.IsChecked == true ? "S" : "N")
-                                      + "|V|" + (chkVertical.IsChecked == true ? "S" : "N") + "|" + direccionMV + "|" + VelocidadMV.Text + "|" + CantidadMV.Text + "|" + (chkReversaMV.IsChecked == true ? "S" : "N");
-            else
-                Animaciones += "-M|N";
+                item.RenderTransform = rotate;
 
-            GuardarInfo(new Seguridad().EncryptString(MainWindow.nombreApp, Animaciones), NombreControl);
+                myTransformGroup.Children.Add(rotate);
+            }
 
-            if (chkGirar.IsChecked == true)
+            if (chkGirar.IsChecked == true &&  chkGirarAutomatico.IsChecked == true)
             {
 
                 RotateTransform rotate = new RotateTransform();
 
-                DoubleAnimation anim = new DoubleAnimation(0, direccionG.Equals("D") ? 360 : -360, TimeSpan.FromMilliseconds(int.Parse(VelocidadG.Text)));
+                DoubleAnimation anim = new DoubleAnimation(double.Parse(((ComboBoxItem)cbxAngulo.SelectedItem).Tag.ToString()), double.Parse(((ComboBoxItem)cbxAnguloAuto.SelectedItem).Tag.ToString()), TimeSpan.FromMilliseconds(int.Parse(VelocidadG.Text)));
                 anim.RepeatBehavior = RepeatBehavior.Forever;
+                anim.AutoReverse = chkReversaGiro.IsChecked == true;
                 rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
 
                 item.RenderTransform = rotate;
@@ -430,7 +489,7 @@ namespace Priceio
                 DoubleAnimation growAnimation = new DoubleAnimation();
                 growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadE.Text));
                 growAnimation.From = 1;
-                growAnimation.To = 1 + tamanoE;
+                growAnimation.To = 1 + double.Parse(((ComboBoxItem)cbxTamanoE.SelectedItem).Tag.ToString());
                 growAnimation.AutoReverse = true;
                 growAnimation.RepeatBehavior = RepeatBehavior.Forever;
                 storyboard.Children.Add(growAnimation);
@@ -441,7 +500,7 @@ namespace Priceio
                 DoubleAnimation growAnimation2 = new DoubleAnimation();
                 growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadE.Text));
                 growAnimation2.From = 1;
-                growAnimation2.To = 1 + tamanoE;
+                growAnimation2.To = 1 + double.Parse(((ComboBoxItem)cbxTamanoE.SelectedItem).Tag.ToString());
                 growAnimation2.AutoReverse = true;
                 growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
                 storyboard.Children.Add(growAnimation2);
@@ -455,7 +514,7 @@ namespace Priceio
 
                 myTransformGroup.Children.Add(scale);
             }
-            if (chkMover.IsChecked == true)
+            if (chkDesplazar.IsChecked == true)
             {
                 if (chkHorizontal.IsChecked == true || chkVertical.IsChecked == true)
                 {
@@ -466,7 +525,7 @@ namespace Priceio
                         DoubleAnimation growAnimation = new DoubleAnimation();
                         growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadMH.Text));
                         growAnimation.From = 0;
-                        growAnimation.To = direccionMH.Equals("D") ? double.Parse(CantidadMH.Text) : -double.Parse(CantidadMH.Text);
+                        growAnimation.To = ((ComboBoxItem)cbxDireccionMH.SelectedItem).Tag.ToString().Equals("D") ? double.Parse(CantidadMH.Text) : -double.Parse(CantidadMH.Text);
                         growAnimation.AutoReverse = chkReversaMH.IsChecked == true;
                         growAnimation.RepeatBehavior = RepeatBehavior.Forever;
                         storyboard.Children.Add(growAnimation);
@@ -480,7 +539,7 @@ namespace Priceio
                         DoubleAnimation growAnimation2 = new DoubleAnimation();
                         growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(VelocidadMV.Text));
                         growAnimation2.From = 0;
-                        growAnimation2.To = direccionMV.Equals("B") ? double.Parse(CantidadMV.Text) : -double.Parse(CantidadMV.Text);
+                        growAnimation2.To = ((ComboBoxItem)cbxDireccionMV.SelectedItem).Tag.ToString().Equals("B") ? double.Parse(CantidadMV.Text) : -double.Parse(CantidadMV.Text);
                         growAnimation2.AutoReverse = chkReversaMV.IsChecked == true;
                         growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
                         storyboard.Children.Add(growAnimation2);
@@ -507,12 +566,42 @@ namespace Priceio
 
         private void Window_Closed(object sender, EventArgs e)
         {
+
+            cts.Cancel();
+            GuardarDatos();
             var item = mainWindow.FindName(NombreControl) as UIElement;
+            item.Opacity = opacidadOriginal;
             if (_currentTT != null)
-                item.RenderTransform = new TranslateTransform(_currentTT.X, _currentTT.Y);
+            {
+
+                if (chkGirar.IsChecked == true && chkGirarAutomatico.IsChecked == false)
+                {
+
+                    TransformGroup myTransformGroup = new TransformGroup();
+                    RotateTransform rotate = new RotateTransform(double.Parse(((ComboBoxItem)cbxAngulo.SelectedItem).Tag.ToString()));
+
+                    item.RenderTransform = rotate;
+
+                    myTransformGroup.Children.Add(rotate);
+
+                    myTransformGroup.Children.Add(new TranslateTransform(_currentTT.X, _currentTT.Y));
+                    item.RenderTransformOrigin = new Point(.5, .5);
+                    item.RenderTransform = myTransformGroup;
+                }
+                else
+                    item.RenderTransform = new TranslateTransform(_currentTT.X, _currentTT.Y);
+            }
+
             else
             {
-                item.RenderTransform = null;
+                if (chkGirar.IsChecked == true && chkGirarAutomatico.IsChecked == false)
+                {
+                    RotateTransform rotate = new RotateTransform(double.Parse(((ComboBoxItem)cbxAngulo.SelectedItem).Tag.ToString()));
+
+                    item.RenderTransform = rotate;
+                }
+                else
+                    item.RenderTransform = null;
             }
         }
 
@@ -530,7 +619,7 @@ namespace Priceio
             {
                 chkEscalar.IsChecked = false;
                 chkGirar.IsChecked = false;
-                chkMover.IsChecked = false;
+                chkDesplazar.IsChecked = false;
             }
         }
 
@@ -547,7 +636,82 @@ namespace Priceio
                     return true;
                 }
             }
-           catch { return false; }
+            catch { return false; }
+        }
+
+        private void chkGirarAutomatico_Checked(object sender, RoutedEventArgs e)
+        {
+            VelocidadG.IsReadOnly = false;
+            chkReversaGiro.IsEnabled = true;
+            cbxAnguloAuto.IsEnabled = true;
+            Animar();
+        }
+
+        private void chkGirarAutomatico_Unchecked(object sender, RoutedEventArgs e)
+        {
+            VelocidadG.IsReadOnly = true;
+            chkReversaGiro.IsEnabled = false;
+            chkReversaGiro.IsChecked = false;
+            cbxAnguloAuto.IsEnabled = false;
+            cbxAnguloAuto.SelectedIndex = 40;
+            Animar();
+        }
+
+        private void cbxAngulo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (chkGirar.IsChecked == true)
+                Animar();
+        }
+
+        private void chkReversaGiro_Checked(object sender, RoutedEventArgs e)
+        {
+            if (chkGirar.IsChecked == true)
+                Animar();
+        }
+
+        private void chkReversaGiro_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (chkGirar.IsChecked == true)
+                Animar();
+        }
+
+        private void chkDesvanecer_Checked(object sender, RoutedEventArgs e)
+        {
+            VelocidadDesvanecer.IsReadOnly = false;
+            chkReversaDesvanecer.IsEnabled = true;
+            Animar();
+        }
+
+        private void chkDesvanecer_Unchecked(object sender, RoutedEventArgs e)
+        {
+            VelocidadDesvanecer.IsReadOnly = true;
+            chkReversaDesvanecer.IsEnabled = false;
+            chkReversaDesvanecer.IsChecked = false;
+            Animar();
+        }
+
+        private void VelocidadDesvanecer_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (VelocidadDesvanecer.Text.Length > 0)
+                if (chkDesvanecer.IsChecked == true)
+                    Animar();
+        }
+
+        private void VelocidadDesvanecer_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (VelocidadE.Text.Length == 0)
+                VelocidadE.Text = "0";
+            Animar();
+        }
+
+        private void chkReversaDesvanecer_Checked(object sender, RoutedEventArgs e)
+        {
+            Animar();
+        }
+
+        private void chkReversaDesvanecer_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Animar();
         }
     }
 }

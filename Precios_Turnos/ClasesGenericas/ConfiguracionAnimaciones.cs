@@ -4,136 +4,124 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Priceio.ClasesSQLite
+namespace Priceio.ClasesGenericas
 {
-    internal class ConfiguracionCanalesHopper
+    internal class ConfiguracionAnimaciones
     {
-        public int MinCh1
+        public bool? Desplazar
         {
             get;
             set;
         }
-        public int MinCh2
+        public bool? Horizontal
         {
             get;
             set;
         }
-        public int MinCh3
+        public char? DirecionHorizontal
         {
             get;
             set;
         }
-        public int MinCh4
+        public int VelocidadHorizontal
         {
             get;
             set;
         }
-        public int MinCh5
+        public int CantidadHorizontal
         {
             get;
             set;
         }
-        public int MinCh6
+        public bool? ReversaHorizontal
         {
             get;
             set;
         }
-        public int MinCh7
+        public bool? Vertical
         {
             get;
             set;
         }
-        public int MinCh8
+        public char? DirecionVertical
         {
             get;
             set;
         }
-        public int MaxCh1
+        public int VelocidadVertical
         {
             get;
             set;
         }
-        public int MaxCh2
+        public int CantidadVertical
         {
             get;
             set;
         }
-        public int MaxCh3
+        public bool? ReversaVertical
         {
             get;
             set;
         }
-        public int MaxCh4
+   
+        public bool? Escalar
         {
             get;
             set;
         }
-        public int MaxCh5
+        public double TamanoEscalar
         {
             get;
             set;
         }
-        public int MaxCh6
+        public int VelocidadEscalar
         {
             get;
             set;
         }
-        public int MaxCh7
+        
+        public bool? Girar
         {
             get;
             set;
         }
-        public int MaxCh8
+        public double AnguloGirar
         {
             get;
             set;
         }
-        public bool? ActivoCh1
+        public bool? AutoGirar
         {
             get;
             set;
         }
-        public bool? ActivoCh2
+        public double AnguloAutoGirar
         {
             get;
             set;
         }
-        public bool? ActivoCh3
+        public int VelocidadGirar
         {
             get;
             set;
         }
-        public bool? ActivoCh4
+        public bool? ReversaGirar
         {
             get;
             set;
         }
-        public bool? ActivoCh5
+
+        public bool? Desvanecer
         {
             get;
             set;
         }
-        public bool? ActivoCh6
+        public int VelocidadDesvanecer
         {
             get;
             set;
         }
-        public bool? ActivoCh7
-        {
-            get;
-            set;
-        }
-        public bool? ActivoCh8
-        {
-            get;
-            set;
-        }
-        public int PagoMax
-        {
-            get;
-            set;
-        }
-        public bool? MostrarLog
+        public bool? ReversaDesvanecer
         {
             get;
             set;

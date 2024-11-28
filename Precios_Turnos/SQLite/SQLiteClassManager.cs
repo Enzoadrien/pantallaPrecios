@@ -469,7 +469,6 @@ namespace Priceio.SQLite
                 SQLiteClass.ActivoCh6 = Convert.ToBoolean(row.Field<long>("ActivoCh6"));
                 SQLiteClass.ActivoCh7 = Convert.ToBoolean(row.Field<long>("ActivoCh7"));
                 SQLiteClass.ActivoCh8 = Convert.ToBoolean(row.Field<long>("ActivoCh8"));
-                SQLiteClass.PagoMin = (int)row.Field<long>("PagoMin");
                 SQLiteClass.PagoMax = (int)row.Field<long>("PagoMax");
                 SQLiteClass.MostrarLog = Convert.ToBoolean(row.Field<long>("MostrarLog"));
                 managerSQLite.DesconectarBD();
@@ -522,7 +521,6 @@ namespace Priceio.SQLite
                 SQLiteClass.ActivoCh6 = Convert.ToBoolean(row.Field<long>("ActivoCh6"));
                 SQLiteClass.ActivoCh7 = Convert.ToBoolean(row.Field<long>("ActivoCh7"));
                 SQLiteClass.ActivoCh8 = Convert.ToBoolean(row.Field<long>("ActivoCh8"));
-                SQLiteClass.PagoMin = (int)row.Field<long>("PagoMin");
                 SQLiteClass.PagoMax = (int)row.Field<long>("PagoMax");
                 SQLiteClass.MostrarLog = Convert.ToBoolean(row.Field<long>("MostrarLog"));
                 managerSQLite.DesconectarBD();

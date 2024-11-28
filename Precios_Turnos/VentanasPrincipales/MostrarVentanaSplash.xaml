@@ -16,7 +16,8 @@
                 <MenuItem x:Name="MenuMostrarOcultarNombreEquipo" Header="Agregar nombre equipo" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipo_PreviewMouseLeftButtonDown" />
                 <Separator />
                 <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar numero equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar números equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Agregar nombres equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
             <MenuItem x:Name="Verificador" Header="Verificador">
                 <MenuItem x:Name="MenuMostrarOcultarTablaDatos" Header="Agregar tabla de datos" PreviewMouseLeftButtonDown="AgregarTablaDatos_PreviewMouseLeftButtonDown"/>

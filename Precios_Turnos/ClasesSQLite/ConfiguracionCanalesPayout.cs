@@ -128,11 +128,6 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
-        public int PagoMin
-        {
-            get;
-            set;
-        }
         public int PagoMax
         {
             get;

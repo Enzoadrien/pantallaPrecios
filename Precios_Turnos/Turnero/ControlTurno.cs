@@ -90,6 +90,10 @@ namespace Priceio.Turnero
                     Label NumeroEquipoAnt = (Label)mostrarTurno.FindName("NumeroEquipoAnt");
                     if (NumeroEquipoAnt != null)
                         NumeroEquipoAnt.Content = "";
+                    Label NombreEquipoAnt = (Label)mostrarTurno.FindName("NombreEquipoAnt");
+                    if (NombreEquipoAnt != null)
+                        NombreEquipoAnt.Content = "";
+
                     if (turnosAnteriores != null)
                     {
 
@@ -99,6 +103,15 @@ namespace Priceio.Turnero
                                 NumeroTurnoAnt.Content = NumeroTurnoAnt.Content + turnoAnterior.NumeroTurno.ToString() + "\n";
                             if (NumeroEquipoAnt != null)
                                 NumeroEquipoAnt.Content = NumeroEquipoAnt.Content + turnoAnterior.NumeroEquipo + "\n";
+                            if (NombreEquipoAnt != null)
+                            {
+                                List<NombresClientesTurnero>? nombresClientesTurnero = new SQLiteClassManager().GetNombresClientesTurnero();
+                                if (nombresClientesTurnero != null)
+                                {
+                                    if (NombreEquipoAnt != null)
+                                        NombreEquipoAnt.Content = NombreEquipoAnt.Content +  nombresClientesTurnero.Where(nc => nc.Identificador == turnoAnterior.NumeroEquipo).Select(i => i.Nombre).First() + "\n";
+                                }
+                            }
                         }
                     }
                     ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();

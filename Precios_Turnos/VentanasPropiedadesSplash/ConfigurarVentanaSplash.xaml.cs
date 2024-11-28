@@ -33,8 +33,6 @@ namespace Priceio
         private int count = 0;
         private int countEncontrados = 0;
         private bool bucando = false;
-        public static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
-
 
         private SMARTPayout? smartPayout;
         private SMARTHopper? smartHopper;
@@ -413,7 +411,6 @@ namespace Priceio
 
         private void btnVoz_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() => vozDemo());
             ConfigurarVoz dialog = new ConfigurarVoz();
             if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
             {
@@ -444,7 +441,6 @@ namespace Priceio
             btnVoz.Visibility = Visibility.Visible;
             if (!esInicio)
             {
-                Task.Run(() => vozDemo());
                 ConfigurarVoz dialog = new ConfigurarVoz();
                 if (((ComboBoxItem)cbxTipoSplash.SelectedItem).Tag.ToString().Equals("T"))
                 {
@@ -473,19 +469,8 @@ namespace Priceio
 
         }
 
-        private void vozDemo()
-        {
-            VozSplash? SQLiteClass = new SQLiteClassManager().GetVozSplash();
-            if (SQLiteClass != null)
-            {
-                synthesizer.SelectVoice(SQLiteClass.TipoVoz);
-                synthesizer.SpeakAsync(SQLiteClass.TextoVoz1);
-            }
-        }
-
         private void chkVoz_Unchecked(object sender, RoutedEventArgs e)
         {
-            synthesizer.SpeakAsyncCancelAll();
             btnVoz.Visibility = Visibility.Hidden;
         }
 

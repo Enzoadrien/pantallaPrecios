@@ -100,22 +100,17 @@
         <Label x:Name="lblTotalesNivele" Content="Nivel" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="1" Grid.ColumnSpan="2" />
         <Label x:Name="lblTotalesNiveleMin" Content="Min" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="3" />
         <Label x:Name="lblTotalesNiveleMax" Content="Max" Grid.Row="10" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="4" />
-        <Label x:Name="lblPagoMinimo" Content="Pago mínimo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMinimo" Grid.Row="11" Grid.Column="2" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Text="0"/>
-        <Label x:Name="lblPagoMaximo" Content="Pago máximo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="3" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="5" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Text="0"/>
-        <ComboBox x:Name="cbxDenominacion" FontFamily="Arial Rounded MT" FontSize="14" Grid.Row="12" Margin="5,0,5,0" Grid.ColumnSpan="2" />
-        <Label x:Name="lblX" Content="X" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="2" Margin="20,0,0,0"/>
-        <TextBox x:Name="Cantidad" Grid.Row="12" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Width="65" Margin="0,0,35,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <Label x:Name="lblPagoMaximo" Content="Cambio máximo:" Grid.Row="11" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="PagoMaximo" Grid.Row="11" Grid.Column="3" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" Text="0"/>
         <StackPanel Grid.Row="12"
   Orientation="Horizontal"
-  Margin="0,5,5,5" Grid.Column="3" Grid.ColumnSpan="3" HorizontalAlignment="Center" >
+  Margin="0,0,5,0" Grid.Column="3" Grid.ColumnSpan="3" HorizontalAlignment="Right" >
             <Button x:Name="btnRetirarDenominacion"
-Content="Retirar denominación"
+Content="Retirar por denominación"
 Height="20"
-Margin="0,0,20,0"
+Margin="0,0,0,0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Width="150" Click="btnRetirarDenominacion_Click">
+FontSize="14" Click="btnRetirarDenominacion_Click" Width="180">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>
@@ -139,16 +134,13 @@ FontSize="14" Width="150" Click="btnRetirarDenominacion_Click">
             </Button>
         </StackPanel>
         <StackPanel Grid.Row="13"
-           Orientation="Horizontal"
-           Margin="5,5,20,5" HorizontalAlignment="Right" Grid.ColumnSpan="2" Grid.Column="3">
+           Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Column="2">
             <Button x:Name="btnRecargar"
          Content="Recargar"
          IsDefault="True"
-         Width="80"
-         Height="20"
          Margin="0,0,0,0"
          FontFamily="Arial Rounded MT" 
-         FontSize="14" Click="btnRecargar_Click">
+         FontSize="14" Click="btnRecargar_Click" Height="20" Width="150">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>
@@ -171,19 +163,17 @@ FontSize="14" Width="150" Click="btnRetirarDenominacion_Click">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <StackPanel Grid.Row="13"
-  HorizontalAlignment="Right"
-  Orientation="Horizontal"
-  Margin="0,5,5,5" Grid.Column="4" Grid.ColumnSpan="2" >
+        <StackPanel Grid.Row="14"
+  Orientation="Horizontal" Grid.Column="1" Grid.ColumnSpan="2" >
             <Button x:Name="btnVaciar"
 Content="Vaciar"
 IsDefault="True"
-Width="80"
+                    
 Height="20"
 Margin="0,0,0,0"
 TabIndex="0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center">
+FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center" Width="145">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>
@@ -206,10 +196,10 @@ FontSize="14" Click="btnVaciar_Click" HorizontalAlignment="Center">
                 </Button.Style>
             </Button>
         </StackPanel>
-        <TextBox x:Name="Monto" Grid.Row="13" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
-        <StackPanel Grid.Row="13"
+        <TextBox x:Name="Monto" Grid.Row="12" Margin="5,0,5,0" FontFamily="Arial Rounded MT" FontSize="14" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+        <StackPanel Grid.Row="12"
   Orientation="Horizontal"
-  Margin="5,5,5,5" Grid.ColumnSpan="2" Grid.Column="1" >
+  Margin="5,0,5,0" Grid.ColumnSpan="2" Grid.Column="1" HorizontalAlignment="Left" >
             <Button x:Name="btnRetirar"
 Content="Retirar monto"
 Height="20"
@@ -239,18 +229,16 @@ FontSize="14" Click="btnRetirar_Click" Width="100">
             </Button>
         </StackPanel>
         <StackPanel Grid.Row="14"
-  HorizontalAlignment="Center"
-  Orientation="Horizontal"
-  Margin="0,5,30,5" Grid.ColumnSpan="2" Grid.Column="4" >
+  Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Column="3" >
             <Button x:Name="btRestablecer"
 Content="Restablecer"
 IsDefault="True"
-Width="90"
+Width="145"
 Height="20"
 Margin="0,0,0,0"
 TabIndex="0"
 FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnRestablecer_Click" HorizontalAlignment="Center">
+FontSize="14" Click="btnRestablecer_Click">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="#FF989090"/>

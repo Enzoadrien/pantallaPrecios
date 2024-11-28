@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Priceio"
         mc:Ignorable="d"
-        Title="Animaciones" Height="330" Width="400" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed" Loaded="Window_Loaded"  MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Title="Animaciones" Height="450" Width="400" WindowStyle="None" Opacity="0.9" Background="#FFD2CBCB" AllowsTransparency="True" KeyDown="Window_KeyDown" ResizeMode="NoResize" Closed="Window_Closed" Loaded="Window_Loaded"  MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40*"/>
@@ -19,6 +19,10 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="35*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
             <RowDefinition Height="30*"/>
@@ -57,8 +61,8 @@
                 </Style>
             </Button.Style>
         </Button>
-        <CheckBox x:Name="chkMover" Content="Desplazar" Grid.Row="1" Grid.ColumnSpan="8" FontFamily="Arial Rounded MT" FontSize="14" 
-                 VerticalAlignment="Center" Margin="5,0,0,0" HorizontalAlignment="Left" Checked="chkMover_Checked" Unchecked="chkMover_Unchecked"/>
+        <CheckBox x:Name="chkDesplazar" Content="Desplazar" Grid.Row="1" Grid.ColumnSpan="8" FontFamily="Arial Rounded MT" FontSize="14" 
+                 VerticalAlignment="Center" Margin="5,0,0,0" HorizontalAlignment="Left" Checked="chkDesplazar_Checked" Unchecked="chkDesplazar_Unchecked"/>
         <CheckBox x:Name="chkHorizontal" Content="Horizontal" Grid.Row="2" Grid.ColumnSpan="4" FontFamily="Arial Rounded MT" FontSize="14" 
                  VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Right" Checked="chkHorizontal_Checked" Unchecked="chkHorizontal_Unchecked" IsEnabled="False"/>
         <Label x:Name="lblDirrecionMH" Content="Dirección:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
@@ -92,27 +96,216 @@
         <CheckBox x:Name="chkEscalar" Content="Escalar" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
                  VerticalAlignment="Center" Margin="5,0,0,0" Checked="chkEscalar_Checked" Unchecked="chkEscalar_Unchecked" HorizontalAlignment="Left" />
         <Label x:Name="lblTamanoE" Content="Tamaño:" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxTamanoE" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamanoE_SelectionChanged" SelectedIndex="0" IsEnabled="False">
+        <ComboBox x:Name="cbxTamanoE" Grid.Column="2"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTamanoE_SelectionChanged" SelectedIndex="10" IsEnabled="False">
+            <ComboBoxItem Content="-5X" Tag="-0.5"/>
+            <ComboBoxItem Content="-4.5X" Tag="-0.45"/>
+            <ComboBoxItem Content="-4X" Tag="-0.4"/>
+            <ComboBoxItem Content="-3.5X" Tag="-0.35"/>
+            <ComboBoxItem Content="-3X" Tag="-0.3"/>
+            <ComboBoxItem Content="-2.5X" Tag="-0.25"/>
+            <ComboBoxItem Content="-2X" Tag="-0.2"/>
+            <ComboBoxItem Content="-1.5X" Tag="-0.15"/>
+            <ComboBoxItem Content="-1X" Tag="-0.1"/>
+            <ComboBoxItem Content="-0.5X" Tag="-0.05"/>
+            <ComboBoxItem Content="0.5X" Tag="0.05"/>
             <ComboBoxItem Content="1X" Tag="0.1"/>
+            <ComboBoxItem Content="1.5X" Tag="0.15"/>
             <ComboBoxItem Content="2X" Tag="0.2"/>
+            <ComboBoxItem Content="2.5X" Tag="0.25"/>
             <ComboBoxItem Content="3X" Tag="0.3"/>
+            <ComboBoxItem Content="3.5X" Tag="0.35"/>
             <ComboBoxItem Content="4X" Tag="0.4"/>
+            <ComboBoxItem Content="4.5X" Tag="0.45"/>
             <ComboBoxItem Content="5X" Tag="0.5"/>
          </ComboBox>
         <Label x:Name="lblVelocidadE" Content="Velocidad:" Grid.Row="10" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
         <TextBox x:Name="VelocidadE" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="500" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadE_TextChanged" LostFocus="VelocidadE_LostFocus" IsReadOnly="True"/>
         <Label x:Name="lblSE" Content="ms" Grid.Row="10" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkDesvanecer" Content="Desvanecer" Grid.Row="12" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" 
+         VerticalAlignment="Center" Margin="5,0,0,0" HorizontalAlignment="Left" Checked="chkDesvanecer_Checked" Unchecked="chkDesvanecer_Unchecked" />
+        <Label x:Name="lblVelocidadDesvanecer" Content="Velocidad:" Grid.Row="13" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadDesvanecer" VerticalContentAlignment="Center" Grid.Row="13" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="14" Text="10" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadDesvanecer_TextChanged" LostFocus="VelocidadDesvanecer_LostFocus" IsReadOnly="True"/>
+        <Label x:Name="lblSDesvanecer" Content="s" Grid.Row="13" Grid.Column="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkReversaDesvanecer" Content="Reversa" Grid.Row="14" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+        VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Left" IsEnabled="False" Checked="chkReversaDesvanecer_Checked" Unchecked="chkReversaDesvanecer_Unchecked"/>
         <CheckBox x:Name="chkGirar" Content="Girar" Grid.Row="8" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
                  VerticalAlignment="Center" Checked="chkGirar_Checked" Unchecked="chkGirar_Unchecked" Margin="5,0,0,0" HorizontalAlignment="Left"/>
-        <Label x:Name="lblDirrecionG" Content="Dirección:" Grid.Row="9" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <ComboBox x:Name="cbxDireccionG" Grid.Column="6" Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxDireccionG_SelectionChanged" SelectedIndex="0" IsEnabled="False">
-            <ComboBoxItem Content="Derecha" Tag="D"/>
-            <ComboBoxItem Content="Izquierda" Tag="I"/>
+        <Label x:Name="lblAngulo" Content="Ángulo:" Grid.Row="9" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxAngulo" Grid.Column="6"  Grid.Row="9" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="40" IsEnabled="False" SelectionChanged="cbxAngulo_SelectionChanged">
+            <ComboBoxItem Content="-360º" Tag="-360"/>
+            <ComboBoxItem Content="-350º" Tag="-350"/>
+            <ComboBoxItem Content="-340º" Tag="-340"/>
+            <ComboBoxItem Content="-330º" Tag="-330"/>
+            <ComboBoxItem Content="-320º" Tag="-320"/>
+            <ComboBoxItem Content="-315º" Tag="-315"/>
+            <ComboBoxItem Content="-310º" Tag="-310"/>
+            <ComboBoxItem Content="-300º" Tag="-300"/>
+            <ComboBoxItem Content="-290º" Tag="-290"/>
+            <ComboBoxItem Content="-280º" Tag="-280"/>
+            <ComboBoxItem Content="-270º" Tag="-270"/>
+            <ComboBoxItem Content="-260º" Tag="-260"/>
+            <ComboBoxItem Content="-250º" Tag="-250"/>
+            <ComboBoxItem Content="-240º" Tag="-240"/>
+            <ComboBoxItem Content="-230º" Tag="-230"/>
+            <ComboBoxItem Content="-225º" Tag="-225"/>
+            <ComboBoxItem Content="-220º" Tag="-220"/>
+            <ComboBoxItem Content="-210º" Tag="-210"/>
+            <ComboBoxItem Content="-200º" Tag="-200"/>
+            <ComboBoxItem Content="-190º" Tag="-190"/>
+            <ComboBoxItem Content="-180º" Tag="-180"/>
+            <ComboBoxItem Content="-170º" Tag="-170"/>
+            <ComboBoxItem Content="-160º" Tag="-160"/>
+            <ComboBoxItem Content="-150º" Tag="-150"/>
+            <ComboBoxItem Content="-140º" Tag="-140"/>
+            <ComboBoxItem Content="-135º" Tag="-135"/>
+            <ComboBoxItem Content="-130º" Tag="-130"/>
+            <ComboBoxItem Content="-120º" Tag="-120"/>
+            <ComboBoxItem Content="-110º" Tag="-110"/>
+            <ComboBoxItem Content="-100º" Tag="-100"/>
+            <ComboBoxItem Content="-90º" Tag="-90"/>
+            <ComboBoxItem Content="-80º" Tag="-80"/>
+            <ComboBoxItem Content="-70º" Tag="-70"/>
+            <ComboBoxItem Content="-60º" Tag="-60"/>
+            <ComboBoxItem Content="-50º" Tag="-50"/>
+            <ComboBoxItem Content="-45º" Tag="-45"/>
+            <ComboBoxItem Content="-40º" Tag="-40"/>
+            <ComboBoxItem Content="-30º" Tag="-30"/>
+            <ComboBoxItem Content="-20º" Tag="-20"/>
+            <ComboBoxItem Content="-10º" Tag="-10"/>
+            <ComboBoxItem Content="0º" Tag="0"/>
+            <ComboBoxItem Content="10º" Tag="10"/>
+            <ComboBoxItem Content="20º" Tag="20"/>
+            <ComboBoxItem Content="30º" Tag="30"/>
+            <ComboBoxItem Content="40º" Tag="40"/>
+            <ComboBoxItem Content="45º" Tag="45"/>
+            <ComboBoxItem Content="50º" Tag="50"/>
+            <ComboBoxItem Content="60º" Tag="60"/>
+            <ComboBoxItem Content="70º" Tag="70"/>
+            <ComboBoxItem Content="80º" Tag="80"/>
+            <ComboBoxItem Content="90º" Tag="90"/>
+            <ComboBoxItem Content="100º" Tag="100"/>
+            <ComboBoxItem Content="110º" Tag="110"/>
+            <ComboBoxItem Content="120º" Tag="120"/>
+            <ComboBoxItem Content="130º" Tag="130"/>
+            <ComboBoxItem Content="135º" Tag="135"/>
+            <ComboBoxItem Content="140º" Tag="140"/>
+            <ComboBoxItem Content="150º" Tag="150"/>
+            <ComboBoxItem Content="160º" Tag="160"/>
+            <ComboBoxItem Content="170º" Tag="170"/>
+            <ComboBoxItem Content="180º" Tag="180"/>
+            <ComboBoxItem Content="190º" Tag="190"/>
+            <ComboBoxItem Content="200º" Tag="200"/>
+            <ComboBoxItem Content="210º" Tag="210"/>
+            <ComboBoxItem Content="220º" Tag="220"/>
+            <ComboBoxItem Content="225º" Tag="225"/>
+            <ComboBoxItem Content="230º" Tag="230"/>
+            <ComboBoxItem Content="240º" Tag="240"/>
+            <ComboBoxItem Content="250º" Tag="250"/>
+            <ComboBoxItem Content="260º" Tag="260"/>
+            <ComboBoxItem Content="270º" Tag="270"/>
+            <ComboBoxItem Content="280º" Tag="280"/>
+            <ComboBoxItem Content="290º" Tag="290"/>
+            <ComboBoxItem Content="300º" Tag="300"/>
+            <ComboBoxItem Content="310º" Tag="310"/>
+            <ComboBoxItem Content="315º" Tag="315"/>
+            <ComboBoxItem Content="320º" Tag="320"/>
+            <ComboBoxItem Content="330º" Tag="330"/>
+            <ComboBoxItem Content="340º" Tag="340"/>
+            <ComboBoxItem Content="350º" Tag="350"/>
+            <ComboBoxItem Content="360º" Tag="360"/>
         </ComboBox>
-        <Label x:Name="lblVelocidadG" Content="Velocidad:" Grid.Row="10" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-        <TextBox x:Name="VelocidadG" VerticalContentAlignment="Center" Grid.Row="10" Grid.Column="6" FontFamily="Arial Rounded MT" FontSize="14" Text="500" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadG_TextChanged" LostFocus="VelocidadG_LostFocus" IsReadOnly="True"/>
-        <Label x:Name="lblSG" Content="ms" Grid.Row="10" Grid.Column="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
-        <StackPanel Grid.Row="11"
+        <CheckBox x:Name="chkGirarAutomatico" Content="Automático" Grid.Row="10" Grid.Column="5" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" 
+         VerticalAlignment="Center"  Margin="5,0,0,0" HorizontalAlignment="Left" Checked="chkGirarAutomatico_Checked" Unchecked="chkGirarAutomatico_Unchecked" IsEnabled="False"/>
+        <Label x:Name="lblAnguloAuto" Content="Ángulo de giro:" Grid.Row="11" Grid.Column="4" Grid.ColumnSpan="3" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <ComboBox x:Name="cbxAnguloAuto" Grid.Column="6"  Grid.Row="11"  FontFamily="Arial Rounded MT" FontSize="14" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="40" IsEnabled="False" SelectionChanged="cbxAngulo_SelectionChanged" Grid.ColumnSpan="2" HorizontalAlignment="Right">
+            <ComboBoxItem Content="-360º" Tag="-360"/>
+            <ComboBoxItem Content="-350º" Tag="-350"/>
+            <ComboBoxItem Content="-340º" Tag="-340"/>
+            <ComboBoxItem Content="-330º" Tag="-330"/>
+            <ComboBoxItem Content="-320º" Tag="-320"/>
+            <ComboBoxItem Content="-315º" Tag="-315"/>
+            <ComboBoxItem Content="-310º" Tag="-310"/>
+            <ComboBoxItem Content="-300º" Tag="-300"/>
+            <ComboBoxItem Content="-290º" Tag="-290"/>
+            <ComboBoxItem Content="-280º" Tag="-280"/>
+            <ComboBoxItem Content="-270º" Tag="-270"/>
+            <ComboBoxItem Content="-260º" Tag="-260"/>
+            <ComboBoxItem Content="-250º" Tag="-250"/>
+            <ComboBoxItem Content="-240º" Tag="-240"/>
+            <ComboBoxItem Content="-230º" Tag="-230"/>
+            <ComboBoxItem Content="-225º" Tag="-225"/>
+            <ComboBoxItem Content="-220º" Tag="-220"/>
+            <ComboBoxItem Content="-210º" Tag="-210"/>
+            <ComboBoxItem Content="-200º" Tag="-200"/>
+            <ComboBoxItem Content="-190º" Tag="-190"/>
+            <ComboBoxItem Content="-180º" Tag="-180"/>
+            <ComboBoxItem Content="-170º" Tag="-170"/>
+            <ComboBoxItem Content="-160º" Tag="-160"/>
+            <ComboBoxItem Content="-150º" Tag="-150"/>
+            <ComboBoxItem Content="-140º" Tag="-140"/>
+            <ComboBoxItem Content="-135º" Tag="-135"/>
+            <ComboBoxItem Content="-130º" Tag="-130"/>
+            <ComboBoxItem Content="-120º" Tag="-120"/>
+            <ComboBoxItem Content="-110º" Tag="-110"/>
+            <ComboBoxItem Content="-100º" Tag="-100"/>
+            <ComboBoxItem Content="-90º" Tag="-90"/>
+            <ComboBoxItem Content="-80º" Tag="-80"/>
+            <ComboBoxItem Content="-70º" Tag="-70"/>
+            <ComboBoxItem Content="-60º" Tag="-60"/>
+            <ComboBoxItem Content="-50º" Tag="-50"/>
+            <ComboBoxItem Content="-45º" Tag="-45"/>
+            <ComboBoxItem Content="-40º" Tag="-40"/>
+            <ComboBoxItem Content="-30º" Tag="-30"/>
+            <ComboBoxItem Content="-20º" Tag="-20"/>
+            <ComboBoxItem Content="-10º" Tag="-10"/>
+            <ComboBoxItem Content="0º" Tag="0"/>
+            <ComboBoxItem Content="10º" Tag="10"/>
+            <ComboBoxItem Content="20º" Tag="20"/>
+            <ComboBoxItem Content="30º" Tag="30"/>
+            <ComboBoxItem Content="40º" Tag="40"/>
+            <ComboBoxItem Content="45º" Tag="45"/>
+            <ComboBoxItem Content="50º" Tag="50"/>
+            <ComboBoxItem Content="60º" Tag="60"/>
+            <ComboBoxItem Content="70º" Tag="70"/>
+            <ComboBoxItem Content="80º" Tag="80"/>
+            <ComboBoxItem Content="90º" Tag="90"/>
+            <ComboBoxItem Content="100º" Tag="100"/>
+            <ComboBoxItem Content="110º" Tag="110"/>
+            <ComboBoxItem Content="120º" Tag="120"/>
+            <ComboBoxItem Content="130º" Tag="130"/>
+            <ComboBoxItem Content="135º" Tag="135"/>
+            <ComboBoxItem Content="140º" Tag="140"/>
+            <ComboBoxItem Content="150º" Tag="150"/>
+            <ComboBoxItem Content="160º" Tag="160"/>
+            <ComboBoxItem Content="170º" Tag="170"/>
+            <ComboBoxItem Content="180º" Tag="180"/>
+            <ComboBoxItem Content="190º" Tag="190"/>
+            <ComboBoxItem Content="200º" Tag="200"/>
+            <ComboBoxItem Content="210º" Tag="210"/>
+            <ComboBoxItem Content="220º" Tag="220"/>
+            <ComboBoxItem Content="225º" Tag="225"/>
+            <ComboBoxItem Content="230º" Tag="230"/>
+            <ComboBoxItem Content="240º" Tag="240"/>
+            <ComboBoxItem Content="250º" Tag="250"/>
+            <ComboBoxItem Content="260º" Tag="260"/>
+            <ComboBoxItem Content="270º" Tag="270"/>
+            <ComboBoxItem Content="280º" Tag="280"/>
+            <ComboBoxItem Content="290º" Tag="290"/>
+            <ComboBoxItem Content="300º" Tag="300"/>
+            <ComboBoxItem Content="310º" Tag="310"/>
+            <ComboBoxItem Content="315º" Tag="315"/>
+            <ComboBoxItem Content="320º" Tag="320"/>
+            <ComboBoxItem Content="330º" Tag="330"/>
+            <ComboBoxItem Content="340º" Tag="340"/>
+            <ComboBoxItem Content="350º" Tag="350"/>
+            <ComboBoxItem Content="360º" Tag="360"/>
+        </ComboBox>
+        <Label x:Name="lblVelocidadG" Content="Velocidad:" Grid.Row="12" Grid.Column="4" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+        <TextBox x:Name="VelocidadG" VerticalContentAlignment="Center" Grid.Row="12" Grid.Column="6" FontFamily="Arial Rounded MT" FontSize="14" Text="500" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown" TextChanged="VelocidadG_TextChanged" LostFocus="VelocidadG_LostFocus" IsReadOnly="True"/>
+        <Label x:Name="lblSG" Content="ms" Grid.Row="12" Grid.Column="7" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Left"/>
+        <CheckBox x:Name="chkReversaGiro" Content="Reversa" Grid.Row="13" Grid.Column="6" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" 
+         VerticalAlignment="Center" Margin="0,0,5,0" HorizontalAlignment="Left" IsEnabled="False" Checked="chkReversaGiro_Checked" Unchecked="chkReversaGiro_Unchecked"/>
+        <StackPanel Grid.Row="15"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Margin="0,5,5,5" Grid.Column="6" Grid.ColumnSpan="2">

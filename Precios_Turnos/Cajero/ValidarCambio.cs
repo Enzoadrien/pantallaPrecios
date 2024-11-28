@@ -1,6 +1,8 @@
 ﻿using DataGate;
 using Org.BouncyCastle.Asn1.X509;
 using Precios_Turnos;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
@@ -27,29 +29,49 @@ namespace Priceio.Cajero
     {
         internal int billetesCambio = 0;
         internal int monedasCambio = 0;
-        internal int cambioMaximoMonedas = 100;
+        internal int cambioMaximoMonedas = 0;
+        internal int cambioMaximoBilletes = 0;
+
+        internal ValidarCambio()
+        {
+            ConfiguracionCanalesHopper SQLiteClass = new SQLiteClassManager().GetConfiguracionCanalesHopper();
+            if (SQLiteClass != null)
+            {
+                cambioMaximoMonedas = SQLiteClass.PagoMax;
+            }
+            ConfiguracionCanalesPayout SQLiteClass2 = new SQLiteClassManager().GetConfiguracionCanalesPayout();
+            if(SQLiteClass2 != null)
+            {
+                cambioMaximoBilletes = SQLiteClass2.PagoMax;
+            }
+        }
 
         internal bool calculaCambio(int cambio, List<ChannelData>? chanelsDataHopper, List<ChannelData>? chanelsDataPayout)
         {
             List<ChannelData> chanelsData = chanelsDataPayout.ConvertAll(x => new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
             CambioSeparado cambioSeparado = SepararCambio(cambio);
 
-            int totalCambioFaltante = 0;
-            if (cambioSeparado.billetes > 0)
-                totalCambioFaltante = cambioPayout(cambioSeparado.billetes, chanelsData);
+            if(cambioSeparado.billetes <= cambioMaximoBilletes || cambioMaximoBilletes == 0)
+            {
+                int totalCambioFaltante = 0;
+                if (cambioSeparado.billetes > 0)
+                    totalCambioFaltante = cambioPayout(cambioSeparado.billetes, chanelsData);
 
-            bool cambioMonedas = true;
-            if (totalCambioFaltante == 0 && cambioSeparado.monedas == 0)
-                return true;
+                bool cambioMonedas = true;
+                if (totalCambioFaltante == 0 && cambioSeparado.monedas == 0)
+                    return true;
+                if (cambioSeparado.monedas + totalCambioFaltante <= cambioMaximoMonedas || cambioMaximoMonedas == 0)
+                {
+                    chanelsData = chanelsDataHopper.ConvertAll(x => new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
+                    if (totalCambioFaltante + cambioSeparado.monedas > 0)
+                        cambioMonedas = cambioHopper(totalCambioFaltante + cambioSeparado.monedas, chanelsData);
+                    else
+                        cambioMonedas = false;
 
-            chanelsData = chanelsDataHopper.ConvertAll(x => new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
-            if (totalCambioFaltante + cambioSeparado.monedas > 0 && totalCambioFaltante + cambioSeparado.monedas < cambioMaximoMonedas)
-                cambioMonedas = cambioHopper(totalCambioFaltante + cambioSeparado.monedas, chanelsData);
-            else
-                cambioMonedas = false;
-
-            if (cambioMonedas)
-                return true;
+                    if (cambioMonedas)
+                        return true;
+                }
+            }
 
             return false;
         }

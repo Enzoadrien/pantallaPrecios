@@ -79,6 +79,7 @@ namespace Priceio
         internal double ultimaOpacidad;
         private string? datosVerificador;
         private string? datosCajero;
+        private Dictionary<string, double> opacidadesObjetos; 
 
         private SMARTPayout smartPayout = new SMARTPayout();
         private SMARTHopper smartHopper = new SMARTHopper();
@@ -87,6 +88,7 @@ namespace Priceio
         private bool runLog = false;
         private VentanaLogSmart? ventanaLogSmart;
         private bool seMuestraLogSmart = false;
+        private CancellationTokenSource cts = new();
 
         public MainWindow()
         {
@@ -582,7 +584,7 @@ namespace Priceio
                                 {
                                     Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true);
                                     dialog.lblNombre.Content = "¡Advertencia!";
-                                    dialog.lblTexto.Text = "El cajero no cuenta con cambio suficiente, se devolverá el efectivo ingresado. Favor de consultar al administrador.";
+                                    dialog.lblTexto.Text = "El cajero no cuenta con efectivo para su cambio, se reembolsará la cantidad ingresada.";
                                     new Recursos().ventanaMensajesGrande800x600(dialog);
                                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                                     dialog.ShowDialog();
@@ -648,6 +650,9 @@ namespace Priceio
                                 var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
                                 if (numeroEquipoAnt != null)
                                     numeroEquipoAnt.SetValue(ContentProperty, "");
+                                var nombreEquipoAnt = FindName("NombreEquipoAnt") as UIElement;
+                                if (nombreEquipoAnt != null)
+                                    nombreEquipoAnt.SetValue(ContentProperty, "");
                             }
                             break;
                         case Key.Up:
@@ -764,10 +769,13 @@ namespace Priceio
                 {
                     var numeroTurnoAnt = FindName("NumeroTurnoAnt") as UIElement;
                     var numeroEquipoAnt = FindName("NumeroEquipoAnt") as UIElement;
+                    var nombreEquipoAnt = FindName("NombreEquipoAnt") as UIElement;
                     if (numeroTurnoAnt != null)
                         numeroTurnoAnt.SetValue(ContentProperty, "");
                     if (numeroEquipoAnt != null)
                         numeroEquipoAnt.SetValue(ContentProperty, "");
+                    if (nombreEquipoAnt != null)
+                        nombreEquipoAnt.SetValue(ContentProperty, "");
 
                     foreach (TurnosAnteriores turnoAnterior in turnosAnteriores)
                     {
@@ -775,12 +783,20 @@ namespace Priceio
                             numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroTurno.ToString() + "\n");
                         if (numeroEquipoAnt != null)
                             numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty) + turnoAnterior.NumeroEquipo + "\n");
+                        if (nombreEquipoAnt != null)
+                        {
+                            List<NombresClientesTurnero>? nombresClientesTurnero = new SQLiteClassManager().GetNombresClientesTurnero();
+                            if (nombresClientesTurnero != null)
+                                nombreEquipoAnt.SetValue(ContentProperty, nombreEquipoAnt.GetValue(ContentProperty) + nombresClientesTurnero.Where(nc => nc.Identificador == turnoAnterior.NumeroEquipo).Select(i => i.Nombre).First() + "\n");
+                        }
+                            
                     }
                     if (numeroTurnoAnt != null)
                         numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
                     if (numeroEquipoAnt != null)
                         numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
-
+                    if (nombreEquipoAnt != null)
+                        nombreEquipoAnt.SetValue(ContentProperty, nombreEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, nombreEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
                 }));
             }
         }
@@ -1113,7 +1129,6 @@ namespace Priceio
 
                             Coordenadas.Content = item.GetValue(NameProperty).ToString() + " - Coordenadas: " + Convert.ToInt32(point.X) + "X, " + Convert.ToInt32(point.Y) + "Y";
                             // move the usercontrol.
-
                             item.RenderTransform = new TranslateTransform(offsetX, offsetY);
                         }
                     }
@@ -1247,9 +1262,20 @@ namespace Priceio
 
                         control = (Label)FindName("NumeroEquipoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Eliminar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Eliminar números equipos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar números equipos anteriores";
+                        control = (Label)FindName("NombreEquipoAnt");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[2]).Header = "Eliminar nombres equipos anteriores";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[10]).Items[2]).Header = "Agregar nombres equipos anteriores";
+                        
+                        control = (Label)FindName("EstadoCajero");
+                        if (control != null)
+                            ((MenuItem)((MenuItem)cm.Items[11]).Items[0]).Header = "Eliminar estado cajero";
+                        else
+                            ((MenuItem)((MenuItem)cm.Items[11]).Items[0]).Header = "Agregar estado cajero";
 
                         ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
                         if (SQLiteClass != null)
@@ -1268,14 +1294,17 @@ namespace Priceio
                             if (tipoSplash.Equals("T"))
                             {
                                 ((MenuItem)cm.Items[10]).IsEnabled = true;
+                                ((MenuItem)cm.Items[11]).IsEnabled = false;
                             }
                             else if (tipoSplash.Equals("V"))
                             {
                                 ((MenuItem)cm.Items[10]).IsEnabled = false;
+                                ((MenuItem)cm.Items[11]).IsEnabled = false;
                             }
                             else if (tipoSplash.Equals("C"))
                             {
                                 ((MenuItem)cm.Items[10]).IsEnabled = false;
+                                ((MenuItem)cm.Items[11]).IsEnabled = true;
                             }
                         }
                         else
@@ -1285,8 +1314,7 @@ namespace Priceio
                         }
 
 
-
-                        MenuItem itemCm = (MenuItem)cm.Items[12];
+                        MenuItem itemCm = (MenuItem)cm.Items[13];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
@@ -1816,7 +1844,7 @@ namespace Priceio
             {
                 Principal.Children.Remove(control);
                 NameScope.GetNameScope(this).UnregisterName(control.Name);
-                itemCm.Header = "Agregar turno anterior";
+                itemCm.Header = "Agregar turnos anteriores";
             }
             else
             {
@@ -1844,7 +1872,7 @@ namespace Priceio
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
 
-                    itemCm.Header = "Eliminar turno anterior";
+                    itemCm.Header = "Eliminar turnos anterior";
                 }
             }
         }
@@ -1857,7 +1885,7 @@ namespace Priceio
             {
                 Principal.Children.Remove(control);
                 NameScope.GetNameScope(this).UnregisterName(control.Name);
-                itemCm.Header = "Agregar equipo anterior";
+                itemCm.Header = "Agregar números equipos anteriores";
             }
             else
             {
@@ -1888,7 +1916,51 @@ namespace Priceio
                     obj.MouseEnter += objeto_MouseEnter;
                     NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
                     Principal.Children.Add(obj);
-                    itemCm.Header = "Eliminar equipo anterior";
+                    itemCm.Header = "Eliminar números equipos anteriores";
+                }
+            }
+        }
+
+        private void MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("NombreEquipoAnt");
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Agregar nombres equipos anteriores";
+            }
+            else
+            {
+                ConfiguracionTurnero? configuracionTurnero = new SQLiteClassManager().GetConfiguracionTurnero();
+                if (configuracionTurnero != null)
+                {
+                    int TurnosAnt = configuracionTurnero.TurnosAnteriores;
+
+                    Label obj = new Label();
+                    obj.Name = "NombreEquipoAnt";
+                    obj.ToolTip = "NombreEquipoAnt";
+
+                    string turnosAntLista = string.Empty;
+                    for (int x = 1; x <= TurnosAnt; x++)
+                        if (x == 10)
+                            turnosAntLista += "Nombre" + x + "\n";
+                        else
+                            turnosAntLista += "Nombre 0" + x + "\n";
+
+                    obj.Content = turnosAntLista.Substring(0, turnosAntLista.Length - 1);
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    obj.VerticalContentAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+                    itemCm.Header = "Eliminar nombres equipos anteriores";
                 }
             }
         }
@@ -3267,7 +3339,7 @@ namespace Priceio
         {
             try
             {
-
+                Task.Run(() => StatusCajero(cts.Token));
                 Task.Run(() => smartHopper.RunHopper());
                 Task.Run(() => smartPayout.RunPayout());
                 Task.Run(() => AsynchronousSocketListenerCajero.StartListening(smartPayout, smartHopper));
@@ -3604,6 +3676,7 @@ namespace Priceio
         {
             try
             {
+                cts.Cancel();
                 foreach (UIElement item in Principal.Children)
                 {
 
@@ -3625,6 +3698,11 @@ namespace Priceio
                         }
                         if (!seModifico)
                             item.RenderTransform = null;
+
+                        double opacidadOriginal = 0;
+                        bool desvanecido = opacidadesObjetos.TryGetValue(item.GetValue(NameProperty).ToString(), out opacidadOriginal);
+                        if (desvanecido)
+                            item.Opacity = opacidadOriginal;
                     }
                 }
             }
@@ -3635,6 +3713,7 @@ namespace Priceio
         {
             try
             {
+                opacidadesObjetos = new Dictionary<string, double>();
                 foreach (UIElement item in Principal.Children)
                 {
                     if (SeModificaControl(item.GetValue(NameProperty).ToString()))
@@ -3742,107 +3821,115 @@ namespace Priceio
                 {
                     if (@file.Name.Equals(pNombreControl + ".anim"))
                     {
-                        StreamReader sR = new StreamReader(@file.FullName);
-                        string lectura = sR.ReadToEnd();
-                        sR.Close();
-                        string[] animaciones = new Seguridad().DecryptString(nombreApp, lectura).Split('-');
-                        if (animaciones.Length > 1)
+
+                        ConfiguracionAnimaciones configuracionAnimaciones = JsonSerializer.Deserialize<ConfiguracionAnimaciones>(new Seguridad().DecryptString(MainWindow.nombreApp, File.ReadAllText(file.FullName).ToString()));
+
+
+                        if (configuracionAnimaciones.Desplazar == true)
                         {
-                            foreach (string animacion in animaciones)
+                            Storyboard storyboard = new Storyboard();
+
+                            if (configuracionAnimaciones.Horizontal == true)
                             {
-                                string[] datos = animacion.Split('|');
-                                switch (datos[0])
-                                {
-                                    case "M":
-                                        if (datos[1].Equals("S"))
-                                        {
-                                            Storyboard storyboard = new Storyboard();
+                                DoubleAnimation growAnimation = new DoubleAnimation();
+                                growAnimation.Duration = TimeSpan.FromMilliseconds(configuracionAnimaciones.VelocidadHorizontal);
+                                growAnimation.From = 0;
+                                growAnimation.To = configuracionAnimaciones.DirecionHorizontal.Equals('D') ? configuracionAnimaciones.CantidadHorizontal : -configuracionAnimaciones.CantidadHorizontal;
+                                growAnimation.AutoReverse = configuracionAnimaciones.ReversaHorizontal == true;
+                                growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                                storyboard.Children.Add(growAnimation);
 
-                                            if (datos[3].Equals("S"))
-                                            {
-                                                DoubleAnimation growAnimation = new DoubleAnimation();
-                                                growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[5]));
-                                                growAnimation.From = 0;
-                                                growAnimation.To = datos[4].Equals("D") ? double.Parse(datos[6]) : -double.Parse(datos[6]);
-                                                growAnimation.AutoReverse = datos[7].Equals("S");
-                                                growAnimation.RepeatBehavior = RepeatBehavior.Forever;
-                                                storyboard.Children.Add(growAnimation);
+                                Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.X"));
+                                Storyboard.SetTarget(growAnimation, item);
 
-                                                Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.X"));
-                                                Storyboard.SetTarget(growAnimation, item);
-
-                                            }
-                                            if (datos[9].Equals("S"))
-                                            {
-                                                DoubleAnimation growAnimation2 = new DoubleAnimation();
-                                                growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[11]));
-                                                growAnimation2.From = 0;
-                                                growAnimation2.To = datos[10].Equals("B") ? double.Parse(datos[12]) : -double.Parse(datos[12]);
-                                                growAnimation2.AutoReverse = datos[13].Equals("S");
-                                                growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
-                                                storyboard.Children.Add(growAnimation2);
-
-                                                Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.Y"));
-                                                Storyboard.SetTarget(growAnimation2, item);
-                                            }
-
-                                            TranslateTransform traslate = new TranslateTransform();
-                                            item.RenderTransform = traslate;
-                                            storyboard.Begin();
-
-                                            myTransformGroup.Children.Add(traslate);
-                                        }
-                                        break;
-                                    case "E":
-                                        if (datos[1].Equals("S"))
-                                        {
-                                            Storyboard storyboard = new Storyboard();
-
-                                            DoubleAnimation growAnimation = new DoubleAnimation();
-                                            growAnimation.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
-                                            growAnimation.From = 1;
-                                            growAnimation.To = 1 + double.Parse(datos[2]);
-                                            growAnimation.AutoReverse = true;
-                                            growAnimation.RepeatBehavior = RepeatBehavior.Forever;
-                                            storyboard.Children.Add(growAnimation);
-
-                                            Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
-                                            Storyboard.SetTarget(growAnimation, item);
-
-                                            DoubleAnimation growAnimation2 = new DoubleAnimation();
-                                            growAnimation2.Duration = TimeSpan.FromMilliseconds(int.Parse(datos[3]));
-                                            growAnimation2.From = 1;
-                                            growAnimation2.To = 1 + double.Parse(datos[2]);
-                                            growAnimation2.AutoReverse = true;
-                                            growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
-                                            storyboard.Children.Add(growAnimation2);
-
-                                            Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
-                                            Storyboard.SetTarget(growAnimation2, item);
-
-                                            ScaleTransform scale = new ScaleTransform();
-                                            item.RenderTransform = scale;
-                                            storyboard.Begin();
-
-                                            myTransformGroup.Children.Add(scale);
-                                        }
-                                        break;
-                                    case "G":
-                                        if (datos[1].Equals("S"))
-                                        {
-                                            RotateTransform rotate = new RotateTransform();
-
-                                            DoubleAnimation anim = new DoubleAnimation(0, datos[2].Equals("D") ? 360 : -360, TimeSpan.FromMilliseconds(int.Parse(datos[3])));
-                                            anim.RepeatBehavior = RepeatBehavior.Forever;
-                                            rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
-
-                                            item.RenderTransform = rotate;
-
-                                            myTransformGroup.Children.Add(rotate);
-                                        }
-                                        break;
-                                }
                             }
+                            if (configuracionAnimaciones.Vertical == true)
+                            {
+                                DoubleAnimation growAnimation2 = new DoubleAnimation();
+                                growAnimation2.Duration = TimeSpan.FromMilliseconds(configuracionAnimaciones.VelocidadVertical);
+                                growAnimation2.From = 0;
+                                growAnimation2.To = configuracionAnimaciones.DirecionVertical.Equals('B') ? configuracionAnimaciones.CantidadVertical : -configuracionAnimaciones.CantidadVertical;
+                                growAnimation2.AutoReverse = configuracionAnimaciones.ReversaVertical == true;
+                                growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                                storyboard.Children.Add(growAnimation2);
+
+                                Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.Y"));
+                                Storyboard.SetTarget(growAnimation2, item);
+                            }
+
+                            TranslateTransform traslate = new TranslateTransform();
+                            item.RenderTransform = traslate;
+                            storyboard.Begin();
+
+                            myTransformGroup.Children.Add(traslate);
+                        }
+
+                        if (configuracionAnimaciones.Escalar == true)
+                        {
+                            Storyboard storyboard = new Storyboard();
+
+                            DoubleAnimation growAnimation = new DoubleAnimation();
+                            growAnimation.Duration = TimeSpan.FromMilliseconds(configuracionAnimaciones.VelocidadEscalar);
+                            growAnimation.From = 1;
+                            growAnimation.To = 1 + configuracionAnimaciones.TamanoEscalar;
+                            growAnimation.AutoReverse = true;
+                            growAnimation.RepeatBehavior = RepeatBehavior.Forever;
+                            storyboard.Children.Add(growAnimation);
+
+                            Storyboard.SetTargetProperty(growAnimation, new PropertyPath("RenderTransform.ScaleX"));
+                            Storyboard.SetTarget(growAnimation, item);
+
+                            DoubleAnimation growAnimation2 = new DoubleAnimation();
+                            growAnimation2.Duration = TimeSpan.FromMilliseconds(configuracionAnimaciones.VelocidadEscalar);
+                            growAnimation2.From = 1;
+                            growAnimation2.To = 1 + configuracionAnimaciones.TamanoEscalar;
+                            growAnimation2.AutoReverse = true;
+                            growAnimation2.RepeatBehavior = RepeatBehavior.Forever;
+                            storyboard.Children.Add(growAnimation2);
+
+                            Storyboard.SetTargetProperty(growAnimation2, new PropertyPath("RenderTransform.ScaleY"));
+                            Storyboard.SetTarget(growAnimation2, item);
+
+                            ScaleTransform scale = new ScaleTransform();
+                            item.RenderTransform = scale;
+                            storyboard.Begin();
+
+                            myTransformGroup.Children.Add(scale);
+                        }
+
+                        if (configuracionAnimaciones.Girar == true && configuracionAnimaciones.AutoGirar == false)
+                        {
+                            RotateTransform rotate = new RotateTransform(configuracionAnimaciones.AnguloGirar);
+
+                            item.RenderTransform = rotate;
+
+                            myTransformGroup.Children.Add(rotate);
+                        }
+                        if (configuracionAnimaciones.Girar == true && configuracionAnimaciones.AutoGirar == true)
+                        {
+                            RotateTransform rotate = new RotateTransform();
+
+                            DoubleAnimation anim = new DoubleAnimation(configuracionAnimaciones.AnguloGirar, configuracionAnimaciones.AnguloAutoGirar, TimeSpan.FromMilliseconds(configuracionAnimaciones.VelocidadGirar));
+                            anim.RepeatBehavior = RepeatBehavior.Forever;
+                            anim.AutoReverse = configuracionAnimaciones.ReversaGirar == true;
+                            rotate.BeginAnimation(RotateTransform.AngleProperty, anim);
+
+                            item.RenderTransform = rotate;
+
+                            myTransformGroup.Children.Add(rotate);
+                        }
+
+                        if (configuracionAnimaciones.Desvanecer == true)
+                        {
+
+                            cts.Cancel();
+                            double opacidadOriginal = item.Opacity;
+                            opacidadesObjetos.Add(pNombreControl, opacidadOriginal);
+                            int velocidad = configuracionAnimaciones.VelocidadDesvanecer;
+                            bool reversa = configuracionAnimaciones.ReversaDesvanecer == true;
+                            cts = new();
+                            Task.Run(() => Desvanecer(pNombreControl, opacidadOriginal, velocidad, reversa, cts.Token));
+
                         }
                         break;
                     }
@@ -3852,6 +3939,46 @@ namespace Priceio
                     myTransformGroup.Children.Add(new TranslateTransform(_currentTTEscalar.X, _currentTTEscalar.Y));
                 item.RenderTransformOrigin = new Point(.5, .5);
                 item.RenderTransform = myTransformGroup;
+            }
+        }
+
+        private async Task Desvanecer(string NombreControl, double opacidadOriginal, int velocidad, bool reversa, CancellationToken cancellationToken)
+        {
+            bool baja = true;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    var item = FindName(NombreControl) as UIElement;
+                    if (velocidad > 0)
+                    {
+                        double disminucion = .001;
+                        if (item.Opacity > -.01 && baja)
+                        {
+                            item.Opacity -= disminucion;
+                        }
+                        else if (item.Opacity < opacidadOriginal && !baja && reversa)
+                        {
+                            item.Opacity += disminucion;
+                        }
+                        else if (item.Opacity < opacidadOriginal && !baja && !reversa)
+                        {
+                            item.Opacity = opacidadOriginal;
+                        }
+                        else
+                        {
+                            if (baja)
+                                baja = false;
+                            else
+                                baja = true;
+                        }
+                    }
+
+                }));
+                if (reversa && velocidad > 1)
+                    await Task.Delay(velocidad / 2, cancellationToken);
+                else
+                    await Task.Delay(velocidad, cancellationToken);
             }
         }
 
@@ -3967,6 +4094,59 @@ namespace Priceio
             dialog.Left = centerParent.X - hCenterChild;
             dialog.Top = centerParent.Y - vCenterChild;
             dialog.ShowDialog();
+        }
+
+        private void MenuMostrarOcultarEstado_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MenuItem itemCm = (MenuItem)sender;
+            Label control = (Label)FindName("EstadoCajero");
+            if (control != null)
+            {
+                Principal.Children.Remove(control);
+                NameScope.GetNameScope(this).UnregisterName(control.Name);
+                itemCm.Header = "Agregar estado cajero";
+            }
+            else
+            {
+                    Label obj = new Label();
+                    obj.Name = "EstadoCajero";
+                    obj.ToolTip = "EstadoCajero";
+
+
+                    obj.Content = "Estado del cajero";
+                    obj.HorizontalAlignment = HorizontalAlignment.Center;
+                    obj.VerticalAlignment = VerticalAlignment.Center;
+                    obj.HorizontalContentAlignment = HorizontalAlignment.Center;
+                    obj.VerticalContentAlignment = VerticalAlignment.Center;
+                    obj.FontSize = 24;
+                    obj.FontFamily = new FontFamily("Arial");
+                    obj.MouseLeave += objeto_MouseLeave;
+                    obj.MouseEnter += objeto_MouseEnter;
+                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                    Principal.Children.Add(obj);
+
+                    itemCm.Header = "Eliminar estado cajero";
+            }
+        }
+
+        internal async Task StatusCajero(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    Label control = (Label)FindName("EstadoCajero");
+                    if (control != null)
+                    {
+                        if (smartPayout.ConfigCargada && smartPayout.RunningPayout && smartHopper.ConfigCargada && smartHopper.RunningHopper)
+                            control.Content = "Servicios corriendo";
+                        else
+                            control.Content = "Servicios detenidos";
+                    }
+                }));
+                await Task.Delay(250, cancellationToken);
+            }
+         
         }
     }
 }
