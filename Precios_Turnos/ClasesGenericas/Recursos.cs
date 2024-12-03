@@ -33,42 +33,5 @@ namespace Priceio.ClasesGenericas
         { Key.NumPad8, 8 },
         { Key.NumPad9, 9 }};
 
-        internal void ventanaMensajesGrande800x600(Mensajes pVentana)
-        {
-            pVentana.Width = 800;
-            pVentana.Height = 600;
-            pVentana.Salir.Width = 100;
-            pVentana.Salir.Height = 100;
-            pVentana.Salir.FontSize = 80;
-            pVentana.lblNombre.FontSize = 100;
-            pVentana.lblTexto.FontSize = 60;
-            pVentana.btnOK.FontSize = 60;
-            pVentana.btnOK.Width = 300;
-            pVentana.btnOK.Height = 100;
-            pVentana.btnCancelar.FontSize = 60;
-            pVentana.btnCancelar.Width = 300;
-            pVentana.btnCancelar.Height = 100;
-            pVentana.btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
-            pVentana.btnCancelar.Margin = new Thickness(5, 5, 5, 5);
-        }
-
-        internal void ventanaCapturaTextoGrande800x600(CapturaTexto pVentana)
-        {
-            pVentana.Width = 800;
-            pVentana.Height = 600;
-            pVentana.Salir.Width = 100;
-            pVentana.Salir.Height = 100;
-            pVentana.Salir.FontSize = 80;
-            pVentana.lblNombre.FontSize = 100;
-            pVentana.Texto.FontSize = 60;
-            pVentana.btnOK.FontSize = 60;
-            pVentana.btnOK.Width = 300;
-            pVentana.btnOK.Height = 100;
-            pVentana.btnCancelar.FontSize = 60;
-            pVentana.btnCancelar.Width = 300;
-            pVentana.btnCancelar.Height = 100;
-            pVentana.btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
-            pVentana.btnCancelar.Margin = new Thickness(5, 5, 5, 5);
-        }
     }
 }

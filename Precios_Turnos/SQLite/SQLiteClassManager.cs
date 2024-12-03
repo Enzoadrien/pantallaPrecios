@@ -12,6 +12,35 @@ namespace Priceio.SQLite
         private ManagerSQLite managerSQLite = new ManagerSQLite();
         private Seguridad vSeguridad = new Seguridad();
 
+        internal ConfiguracionGeneral? GetConfiguracionGeneral()
+        {
+            ConfiguracionGeneral SQLiteClass = new ConfiguracionGeneral();
+            try
+            {
+                managerSQLite.ConectarBD();
+                DataRow row = managerSQLite.GetAllTableData(SQLiteClass.GetType().Name).Rows[0];
+                SQLiteClass.TamanoMensaje = row.Field<string>("TamanoMensaje");
+                SQLiteClass.CerradoAutomatico = Convert.ToBoolean(row.Field<long>("CerradoAutomatico"));
+                SQLiteClass.TiempoMensaje = (int)row.Field<long>("TiempoMensaje");
+                managerSQLite.DesconectarBD();
+            }
+            catch { return null; }
+            return SQLiteClass;
+        }
+
+        internal bool SetConfiguracionGeneral(ConfiguracionGeneral SQLiteClass)
+        {
+            try
+            {
+                managerSQLite.ConectarBD();
+                managerSQLite.TruncateTableData(SQLiteClass.GetType().Name);
+                managerSQLite.SaveTableData(new TableClass(SQLiteClass.GetType(), SQLiteClass));
+                managerSQLite.DesconectarBD();
+            }
+            catch { return false; }
+            return true;
+        }
+        
         internal ConfiguracionODBC? GetConfiguracionODBC()
         {
             ConfiguracionODBC SQLiteClass = new ConfiguracionODBC();

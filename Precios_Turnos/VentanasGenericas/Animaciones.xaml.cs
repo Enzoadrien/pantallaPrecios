@@ -1,31 +1,15 @@
-﻿using Microsoft.Win32;
-using Priceio.ClasesGenericas;
-using Priceio.ClasesSQLite;
-using Priceio.SQLite;
+﻿using Priceio.ClasesGenericas;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Priceio
 {
@@ -435,7 +419,6 @@ namespace Priceio
                     await Task.Delay(velocidad, cancellationToken);
             }
         }
-
 
         private void Animar()
         {

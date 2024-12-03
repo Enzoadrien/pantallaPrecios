@@ -13,6 +13,7 @@ namespace Priceio.ClasesGenericas
             get;
             set;
         }
+        
         public bool? Horizontal
         {
             get;
@@ -38,6 +39,7 @@ namespace Priceio.ClasesGenericas
             get;
             set;
         }
+        
         public bool? Vertical
         {
             get;

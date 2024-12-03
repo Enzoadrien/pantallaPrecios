@@ -16,6 +16,7 @@ namespace Priceio
     public partial class ConfigurarConexion : Window
     {
         private Seguridad vSeguridad = new Seguridad();
+        
         public ConfigurarConexion()
         {
             InitializeComponent();

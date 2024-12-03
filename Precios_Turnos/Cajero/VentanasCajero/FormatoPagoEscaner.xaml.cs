@@ -391,7 +391,7 @@ namespace Priceio.Cajero.VentanasCajero
                     FileInfo fileImg = new FileInfo(@".\data\impresora\" + fi.Name);
                     if (File.Exists(@".\data\impresora\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -449,7 +449,6 @@ namespace Priceio.Cajero.VentanasCajero
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
                 dialog.lblNombre.Content = "¡Error!";
                 dialog.lblTexto.Text = "Ocurrio un error durante la impresión, consulte al administrador. Error: " + ex.Message;
-                new Recursos().ventanaMensajesGrande800x600(dialog);
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 dialog.ShowDialog();
             }

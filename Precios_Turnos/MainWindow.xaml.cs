@@ -1,7 +1,5 @@
-﻿using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
+﻿using Microsoft.Web.WebView2.Wpf;
 using Microsoft.Win32;
-using Priceio;
 using Priceio.Cajero;
 using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
@@ -10,26 +8,15 @@ using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
 using Priceio.SQLite;
 using Priceio.Turnero;
+using Priceio.VentanasGenericas;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Configuration;
 using System.Data;
 using System.Data.Odbc;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -41,13 +28,8 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Resources;
 using System.Windows.Threading;
 using System.Xml;
-using System.Xml.Linq;
-using static Org.BouncyCastle.Math.EC.ECCurve;
-using static Priceio.Cajero.ChannelData;
 using static Priceio.Cajero.StateObjectCajero;
 
 namespace Priceio
@@ -79,7 +61,7 @@ namespace Priceio
         internal double ultimaOpacidad;
         private string? datosVerificador;
         private string? datosCajero;
-        private Dictionary<string, double> opacidadesObjetos; 
+        private Dictionary<string, double>? opacidadesObjetos; 
 
         private SMARTPayout smartPayout = new SMARTPayout();
         private SMARTHopper smartHopper = new SMARTHopper();
@@ -87,7 +69,6 @@ namespace Priceio
         private DispatcherTimer timer = new DispatcherTimer();
         private bool runLog = false;
         private VentanaLogSmart? ventanaLogSmart;
-        private bool seMuestraLogSmart = false;
         private CancellationTokenSource cts = new();
 
         public MainWindow()
@@ -132,8 +113,9 @@ namespace Priceio
             Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
-        private bool ValidarActivar()
+        private void CargarArchivoLicencia()
         {
+
             try
             {
                 using (Stream stream = new FileStream(@".\Llave.key", FileMode.Open))
@@ -154,7 +136,12 @@ namespace Priceio
                 }
             }
             catch { }
+        }
 
+        private bool ValidarActivar()
+        {
+
+            CargarArchivoLicencia();
 
             if (licencia.Correo != null && licencia.Codigo != null && licencia.Llave != null && licencia.Key != null)
             {
@@ -226,26 +213,7 @@ namespace Priceio
         private void actualizaLlave()
         {
 
-            try
-            {
-                using (Stream stream = new FileStream(@".\Llave.key", FileMode.Open))
-                {
-                    var sr = new StreamReader(stream);
-
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        try
-                        {
-                            licencia = JsonSerializer.Deserialize<Licencia>(line)!;
-                        }
-                        catch { }
-
-                    }
-                    stream.Close();
-                }
-            }
-            catch { }
+            CargarArchivoLicencia();
 
             if (licencia.Correo != null && licencia.Codigo != null && licencia.Llave != null && licencia.Key != null)
             {
@@ -582,10 +550,9 @@ namespace Priceio
                             case "SIN_EFECTIVO":
                                 Application.Current.Dispatcher.Invoke(new Action(() =>
                                 {
-                                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true);
+                                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true, true);
                                     dialog.lblNombre.Content = "¡Advertencia!";
                                     dialog.lblTexto.Text = "El cajero no cuenta con efectivo para su cambio, se reembolsará la cantidad ingresada.";
-                                    new Recursos().ventanaMensajesGrande800x600(dialog);
                                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                                     dialog.ShowDialog();
                                 }));
@@ -593,10 +560,9 @@ namespace Priceio
                             case "ERROR":
                                 Application.Current.Dispatcher.Invoke(new Action(() =>
                                 {
-                                    Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true);
+                                    Mensajes dialog2 = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, false, true, true);
                                     dialog2.lblNombre.Content = "¡Advertencia!";
                                     dialog2.lblTexto.Text = "Ocurrio un error durante el pago, favor de consultar al administrador.";
-                                    new Recursos().ventanaMensajesGrande800x600(dialog2);
                                     dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                                     dialog2.ShowDialog();
                                 }));
@@ -634,11 +600,10 @@ namespace Priceio
                             listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
                             break;
                         case Key.Down:
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, true);
                             dialog.lblNombre.Content = "¡Advertencia!";
                             dialog.lblTexto.Text = "Se reinicia el turno al numero 1, ¿Está seguro que desea continuar?.";
                             dialog.btnCancelar.Visibility = Visibility.Visible;
-                            new Recursos().ventanaMensajesGrande800x600(dialog);
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog.ShowDialog() == true)
                             {
@@ -656,11 +621,8 @@ namespace Priceio
                             }
                             break;
                         case Key.Up:
-                            CapturaTexto dialog2 = new CapturaTexto(this);
+                            CapturaTexto dialog2 = new CapturaTexto(true);
                             dialog2.lblNombre.Content = "¡Seteo de turno!";
-                            new Recursos().ventanaCapturaTextoGrande800x600(dialog2);
-                            dialog2.lblNombre.FontSize = 80;
-                            dialog2.Texto.FontSize = 200;
                             dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog2.ShowDialog() == true)
                                 try
@@ -669,10 +631,9 @@ namespace Priceio
                                 }
                                 catch (Exception)
                                 {
-                                    Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                                    Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true, true);
                                     dialog3.lblNombre.Content = "¡Error!";
                                     dialog3.lblTexto.Text = "No se pudo setear el turno, el valor introducido no es correcto. ¡Intente nuevamente!";
-                                    new Recursos().ventanaMensajesGrande800x600(dialog3);
                                     dialog3.ShowDialog();
                                 }
                             break;
@@ -733,7 +694,8 @@ namespace Priceio
                         await ProcesarTurno(first.Value.First().Key, first.Value.First().Value);
                         listaTurnosTeclas.Remove(first.Key);
                     }
-                    await Task.Delay(250);
+                    else
+                        await Task.Delay(250);
                 }
                 catch (Exception) { }
             }
@@ -753,7 +715,8 @@ namespace Priceio
                         CargarTurnosPrincipal();
                         listaTurnosKretz.Remove(first);
                     }
-                    await Task.Delay(250);
+                    else
+                        await Task.Delay(250);
 
                 }
                 catch (Exception) { }
@@ -1522,7 +1485,7 @@ namespace Priceio
                     FileInfo fileImg = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -2409,7 +2372,7 @@ namespace Priceio
                     FileInfo fileVid = new FileInfo(@".\data\objetos\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetos\multimedia\" + fi.Name) && !fi.FullName.Equals(fileVid.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -4025,14 +3988,13 @@ namespace Priceio
 
         private void LogoPrincipal_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, true);
             dialog.lblNombre.Content = "¡Advertencia!";
             if (!editar)
                 dialog.lblTexto.Text = "Esta a punto salir del modo presentación, ¿Está seguro que desea continuar?.";
             else
                 dialog.lblTexto.Text = "Esta a punto salir del modo edición, ¿Está seguro que desea continuar?.";
             dialog.btnCancelar.Visibility = Visibility.Visible;
-            new Recursos().ventanaMensajesGrande800x600(dialog);
             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (dialog.ShowDialog() == true)
             {
@@ -4147,6 +4109,21 @@ namespace Priceio
                 await Task.Delay(250, cancellationToken);
             }
          
+        }
+
+        private void ConfiguracionGeneral_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigurarGeneral dialog = new ConfigurarGeneral();
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            //This calculates the relative center of the child form.
+            var hCenterChild = dialog.Width / 2;
+            var vCenterChild = dialog.Height / 2;
+            dialog.Left = centerParent.X - hCenterChild;
+            dialog.Top = centerParent.Y - vCenterChild;
+            dialog.ShowDialog();
         }
     }
 }

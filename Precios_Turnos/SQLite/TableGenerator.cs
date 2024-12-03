@@ -15,6 +15,7 @@ namespace Priceio.SQLite
             List<TableClass> tables = new List<TableClass>();
 
             // Get Types in the assembly.
+            tables.Add(new TableClass(new ConfiguracionGeneral().GetType()));
             tables.Add(new TableClass(new ConfiguracionODBC().GetType()));
             tables.Add(new TableClass(new ConfiguracionVentanaSplash().GetType()));
             tables.Add(new TableClass(new VozSplash().GetType()));

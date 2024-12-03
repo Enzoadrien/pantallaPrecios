@@ -23,12 +23,29 @@ namespace Priceio
     /// </summary>
     public partial class Mensajes : Window
     {
+        ConfiguracionGeneral? SQLiteClass = new SQLiteClassManager().GetConfiguracionGeneral();
 
-        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta = false, bool cerrarVentanaAuto = false, string textoBotonAceptar = "Aceptar", string textoBotonCancelar = "Cancelar")
+        public Mensajes(Recursos.TipoMensaje tipoMensaje, bool esPregunta = false, bool tamanoEspecial = false, bool cerrarVentanaAuto = false, string textoBotonAceptar = "Aceptar", string textoBotonCancelar = "Cancelar")
         {
             InitializeComponent();
+            if (tamanoEspecial)
+            {
+                if (SQLiteClass != null)
+                {
+                    switch (SQLiteClass.TamanoMensaje)
+                    {
+                        case "E":
+                            ventanaMensajesExtraGrande();
+                            break;
+                        case "G":
+                            ventanaMensajesGrande();
+                            break;
+
+                    }
+                }
+            }
             btnOK.Content = textoBotonAceptar;
-            btnCancelar.Content= textoBotonCancelar;
+            btnCancelar.Content = textoBotonCancelar;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (tipoMensaje == Recursos.TipoMensaje.ACEPTAR)
             {
@@ -45,10 +62,12 @@ namespace Priceio
                 lblTexto.Foreground = new SolidColorBrush(Colors.White);
                 lblTexto.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
             }
-            if(esPregunta)
+            if (esPregunta)
                 btnCancelar.Visibility = Visibility.Visible;
             if (cerrarVentanaAuto)
-                StartCloseTimer();
+                if (SQLiteClass != null)
+                    if(SQLiteClass.CerradoAutomatico == true)
+                        StartCloseTimer();
 
         }
         private void TimerTick(object sender, EventArgs e)
@@ -61,12 +80,11 @@ namespace Priceio
 
         private void StartCloseTimer()
         {
-            double ms = 5;
-            ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
+            double ms;
             if (SQLiteClass != null)
-            {
-                ms = SQLiteClass.Duracion;
-            }
+                ms = SQLiteClass.TiempoMensaje * 1000;
+            else
+                ms = 5;
             DispatcherTimer timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(ms);
             timer.Tick += TimerTick;
@@ -85,7 +103,7 @@ namespace Priceio
                 DialogResult = false;
                 Close();
             }
-            else if(e.Key == Key.Enter)
+            else if (e.Key == Key.Enter)
             {
                 DialogResult = true;
                 Close();
@@ -105,6 +123,43 @@ namespace Priceio
         {
             DialogResult = false;
             Close();
+        }
+
+        internal void ventanaMensajesExtraGrande()
+        {
+            Width = 800;
+            Height = 600;
+            Salir.Width = 100;
+            Salir.Height = 100;
+            Salir.FontSize = 80;
+            lblNombre.FontSize = 100;
+            lblTexto.FontSize = 60;
+            btnOK.FontSize = 60;
+            btnOK.Width = 300;
+            btnOK.Height = 100;
+            btnCancelar.FontSize = 60;
+            btnCancelar.Width = 300;
+            btnCancelar.Height = 100;
+            btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
+            btnCancelar.Margin = new Thickness(5, 5, 5, 5);
+        }
+        internal void ventanaMensajesGrande()
+        {
+            Width = 600;
+            Height = 400;
+            Salir.Width = 80;
+            Salir.Height = 80;
+            Salir.FontSize = 60;
+            lblNombre.FontSize = 64;
+            lblTexto.FontSize = 44;
+            btnOK.FontSize = 40;
+            btnOK.Width = 200;
+            btnOK.Height = 70;
+            btnCancelar.FontSize = 40;
+            btnCancelar.Width = 200;
+            btnCancelar.Height = 70;
+            btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
+            btnCancelar.Margin = new Thickness(5, 5, 5, 5);
         }
     }
 }

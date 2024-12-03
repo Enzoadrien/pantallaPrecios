@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -20,12 +22,29 @@ namespace Priceio
     /// </summary>
     public partial class CapturaTexto : Window
     {
-        private MainWindow mainWindow;
-        public CapturaTexto(MainWindow pmainWindow)
+        ConfiguracionGeneral? SQLiteClass = new SQLiteClassManager().GetConfiguracionGeneral();
+        public CapturaTexto(bool tamanoEspecial = false)
         {
             InitializeComponent();
-            mainWindow = pmainWindow;
+            {
+                if (SQLiteClass != null)
+                {
+                    switch (SQLiteClass.TamanoMensaje)
+                    {
+                        case "E":
+                            ventanaCapturaTextoExtraGrande();
+                            break;
+                        case "G":
+                            ventanaCapturaTextoGrande();
+                            break;
+                        default:
+                            break;
+
+                    }
+                }
+            }
             FocusManager.SetFocusedElement(this, Texto);
+            
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)
@@ -54,6 +73,42 @@ namespace Priceio
         {
             DialogResult = false;
             Close();
+        }
+        internal void ventanaCapturaTextoExtraGrande()
+        {
+            Width = 800;
+            Height = 600;
+            Salir.Width = 100;
+            Salir.Height = 100;
+            Salir.FontSize = 80;
+            lblNombre.FontSize = 100;
+            Texto.FontSize = 60;
+            btnOK.FontSize = 60;
+            btnOK.Width = 300;
+            btnOK.Height = 100;
+            btnCancelar.FontSize = 60;
+            btnCancelar.Width = 300;
+            btnCancelar.Height = 100;
+            btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
+            btnCancelar.Margin = new Thickness(5, 5, 5, 5);
+        }
+        internal void ventanaCapturaTextoGrande()
+        {
+            Width = 600;
+            Height = 400;
+            Salir.Width = 80;
+            Salir.Height = 80;
+            Salir.FontSize = 60;
+            lblNombre.FontSize = 64;
+            Texto.FontSize = 44;
+            btnOK.FontSize = 40;
+            btnOK.Width = 200;
+            btnOK.Height = 70;
+            btnCancelar.FontSize = 40;
+            btnCancelar.Width = 200;
+            btnCancelar.Height = 70;
+            btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
+            btnCancelar.Margin = new Thickness(5, 5, 5, 5);
         }
     }
 }

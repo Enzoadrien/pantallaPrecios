@@ -1128,7 +1128,7 @@ namespace Priceio
                     FileInfo fileImg = new FileInfo(@".\data\objetosSplash\multimedia\" + fi.Name);
                     if (File.Exists(@".\data\objetosSplash\multimedia\" + fi.Name) && !fi.FullName.Equals(fileImg.FullName))
                     {
-                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, "Remplazar", "Mantener");
+                        Mensajes dialogMsg = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, false, false, "Remplazar", "Mantener");
                         dialogMsg.lblNombre.Content = "¡Advertencia!";
                         dialogMsg.lblTexto.Text = "Ya existe un archivo con el mismo nombre y extension en la aplicación, ¿Desea remplazarlo o mantener la actual?. ¡Esta accion no se puede revertir!";
                         if (dialogMsg.ShowDialog() == true)
@@ -2083,11 +2083,10 @@ namespace Priceio
                             mainWindow.listaTurnosTeclas.Add(new Random().NextInt64(), new Dictionary<bool, string>() { { true, "00" } });
                             break;
                         case Key.Down:
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, true);
                             dialog.lblNombre.Content = "¡Advertencia!";
                             dialog.lblTexto.Text = "Se reinicia el turno al numero 1, ¿Está seguro que desea continuar?.";
                             dialog.btnCancelar.Visibility = Visibility.Visible;
-                            new Recursos().ventanaMensajesGrande800x600(dialog);
                             dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog.ShowDialog() == true)
                             {
@@ -2107,11 +2106,8 @@ namespace Priceio
                             }
                             break;
                         case Key.Up:
-                            CapturaTexto dialog2 = new CapturaTexto(mainWindow);
+                            CapturaTexto dialog2 = new CapturaTexto(true);
                             dialog2.lblNombre.Content = "¡Seteo de turno!";
-                            new Recursos().ventanaCapturaTextoGrande800x600(dialog2);
-                            dialog2.lblNombre.FontSize = 80;
-                            dialog2.Texto.FontSize = 200;
                             dialog2.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                             if (dialog2.ShowDialog() == true)
                                 try
@@ -2120,10 +2116,9 @@ namespace Priceio
                                 }
                                 catch (Exception)
                                 {
-                                    Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, true);
+                                    Mensajes dialog3 = new Mensajes(Recursos.TipoMensaje.ERROR, false, true);
                                     dialog3.lblNombre.Content = "¡Error!";
                                     dialog3.lblTexto.Text = "No se pudo setear el turno, el valor introducido no es correcto. ¡Intente nuevamente!";
-                                    new Recursos().ventanaMensajesGrande800x600(dialog3);
                                     dialog3.ShowDialog();
                                 }
                             break;
@@ -2865,10 +2860,9 @@ namespace Priceio
                     controlBtn.IsEnabled = false;
 
                 cancelando = true;
-                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true);
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA, true, true);
                 dialog.lblNombre.Content = "¡Advertencia!";
                 dialog.lblTexto.Text = "¿Está seguro que desea cancelar el pago?";
-                new Recursos().ventanaMensajesGrande800x600(dialog);
                 if (dialog.ShowDialog() == true)
                 {
                     pago.Cambio = pago.CantidadIngresada;

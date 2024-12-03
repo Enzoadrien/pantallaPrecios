@@ -134,10 +134,9 @@ namespace Priceio.Cajero.Hopper
             {
                 Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR);
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false, true);
                     dialog.lblNombre.Content = "¡Error!";
                     dialog.lblTexto.Text = "Ocurrio un error en la conexion del SMART Hopper y se ha desabilitado, consulte al administrador.";
-                    new Recursos().ventanaMensajesGrande800x600(dialog);
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                     dialog.ShowDialog();
                 }));
