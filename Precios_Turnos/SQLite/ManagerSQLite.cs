@@ -14,7 +14,7 @@ namespace Priceio.SQLite
     {
         internal SqliteConnection? Connection;
 
-        internal bool ConectarBD()
+        private bool ConectarBD()
         {
             try
             {
@@ -30,7 +30,7 @@ namespace Priceio.SQLite
             return false;
         }
 
-        internal bool DesconectarBD()
+        private bool DesconectarBD()
         {
             try
             {
@@ -44,6 +44,10 @@ namespace Priceio.SQLite
             }
             catch (SqliteException ex)
             {
+                if (Connection != null)
+                {
+                    SqliteConnection.ClearPool(Connection);
+                }
                 Console.WriteLine(ex.Message);
             }
             return false;
@@ -55,11 +59,13 @@ namespace Priceio.SQLite
             SqliteCommand command;
             try
             {
+                ConectarBD();
                 command = new SqliteCommand(query, Connection);
                 dt.Load(command.ExecuteReader());
                 command.Dispose();
+                DesconectarBD();
             }
-            catch { }
+            catch{DesconectarBD();}
             return dt;
         }
 
@@ -68,12 +74,13 @@ namespace Priceio.SQLite
             SqliteCommand command;
             try
             {
+                ConectarBD();
                 command = new SqliteCommand(query, Connection);
                 int response = command.ExecuteNonQuery();
                 command.Dispose();
                 return response;
             }
-            catch { }
+            catch { DesconectarBD(); }
             return 0;
         }
 

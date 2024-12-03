@@ -33,8 +33,6 @@ namespace Priceio.SQLite
             tables.Add(new TableClass(new TurnosAnteriores().GetType()));
 
 
-
-            sqliteManager.ConectarBD();
             // Create SQL for each table
             foreach (TableClass table in tables)
             {
@@ -63,7 +61,6 @@ namespace Priceio.SQLite
                     }
                 }
             }
-            sqliteManager.DesconectarBD();
             return true;
         }
 
