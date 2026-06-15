@@ -118,32 +118,36 @@ namespace Priceio.Cajero
             try
             {
                 bool datoCorrecto = false;
-                while (start)
+                if (state.EstadoActual != StateObjectCajero.EstadoCajero.OK)
                 {
-                    string data = string.Empty;
-                    // An incoming connection needs to be processed.  
                     while (start)
                     {
-                        int bytesRec = handler.EndReceive(ar);
-                        data += Encoding.ASCII.GetString(state.buffer, 0, bytesRec);
-                        if (data.IndexOf('{') == 0)
+                        string data = string.Empty;
+                        // An incoming connection needs to be processed.  
+                        while (start)
                         {
-                            datoCorrecto = true;
-                            break;
+                            int bytesRec = handler.EndReceive(ar);
+                            data += Encoding.ASCII.GetString(state.buffer, 0, bytesRec);
+                            if (data.IndexOf('{') == 0)
+                            {
+                                datoCorrecto = true;
+                                break;
+                            }
+                            else
+                                break;
                         }
-                        else
-                            break;
-                    }
-                    if (datoCorrecto)
-                    {
-                        ProcesarPagoCajero PT = new ProcesarPagoCajero();
-                        data = PT.ProcesarComando(data, state, smartPayout, smartHopper).Result;
+                        if (datoCorrecto)
+                        {
+                            ProcesarPagoCajero PT = new ProcesarPagoCajero();
+                            data = PT.ProcesarComando(data, state, smartPayout, smartHopper).Result;
 
-                        // Echo the data back to the client.
-                        byte[] msg = Encoding.ASCII.GetBytes(data);
-                        handler.Send(msg);
+                            // Echo the data back to the client.
+                            byte[] msg = Encoding.ASCII.GetBytes(data);
+                            handler.Send(msg);
+                        }
+                        break;
                     }
-                    break;
+                    return;
                 }
                 handler.Shutdown(SocketShutdown.Both);
                 handler.Close();

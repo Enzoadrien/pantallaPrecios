@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Priceio.Cajero;
+using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
@@ -16,11 +20,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using Priceio.Cajero;
-using Priceio.ClasesGenericas;
-using Priceio.ClasesSQLite;
-using Priceio.SQLite;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using static Priceio.ClasesSQLite.Pago;
+using static Priceio.PropiedadesImpresora;
 
 namespace Priceio
 {
@@ -31,12 +33,17 @@ namespace Priceio
     {
         
         internal string? nombreControl;
-        public PropiedadesImpresora()
+        public enum TipoImpresion { Cajero, Turnero }
+        private TipoImpresion _tipoImpresion = TipoImpresion.Cajero;
+
+
+        public PropiedadesImpresora(TipoImpresion tipo = TipoImpresion.Cajero)
         {
+            _tipoImpresion = tipo;
             InitializeComponent();
             CargarDatos();
         }
-        
+
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -129,7 +136,9 @@ namespace Priceio
                 dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
                 dialog.btnCancelar.Visibility = Visibility.Visible;
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowDialog();
             }
+
         }
 
         private void btnAbrir_Click(object sender, RoutedEventArgs e)
@@ -235,24 +244,133 @@ namespace Priceio
 
         private void btnPrueba_Click(object sender, RoutedEventArgs e)
         {
+            if (cbxImpresora.SelectedItem == null) return;
+
             try
             {
                 PrintDocument pdoc = new PrintDocument();
-                pdoc.DocumentName = "PBA" + new Random();
+                pdoc.DocumentName = "Prueba_" + _tipoImpresion;
                 pdoc.PrinterSettings.PrinterName = cbxImpresora.SelectedItem.ToString();
-                pdoc.PrintPage += (sender, e) => Document_PrintText(e, "          3K MANTENIMIENTO<br>          PROFESIONAL<br>          JUAN MANUEL<br>          #276<br>          COLONIA CENTRO<br>          33-3390-5151<br><br>ESTACION: ESTACION01<br>USUARIO: GRUPO<br>FECHA: 13-11-2022<br>HORA: 00:17:55<br>FOLIO: 1<br>CLIENTE: (SYS)<br> Cliente de mostrador<br><br>CANT.     PRECIO     TOTAL<br>--------------------------<br>   CARE DOG CACHORRO<br>5.00       22.00    110.00<br>   CARE DOG CACHORRO<br>10.00      22.00    220.00<br>   CROQUETA PERRON<br>10.00      25.00    250.00<br>   DOG CHOU  ADULTO<br>20.00      47.00    940.00<br>   DOG CHOU CACHORRO<br>10.00      50.00    500.00<br><br><br> Importe:       $ 2,020.00<br> Impuesto:          $ 0.00<br> Total:         $ 2,020.00<br><br>DOS MIL  VEINTE PESOS<br>00/100 PESOS MEXICANOS<br><br><br>-----------Pago-----------<br> Pago en EFE:   $ 5,000.00<br> Cambio:        $ 2,980.00<br><br><br>* GRACIAS POR SU COMPRA *<br>".Replace("<br>", "\n"));
+
+                if (_tipoImpresion == TipoImpresion.Turnero)
+                {
+                    // ── Imprime ticket de turno de prueba ──────────────
+                    var cfg = new ConfiguracionImpresora
+                    {
+                        Nombre = cbxImpresora.SelectedItem.ToString(),
+                        TipoLetra = cbxFuente.SelectedItem?.ToString() ?? "Courier New",
+                        TamanoLetra = int.Parse(((ComboBoxItem)cbxTamano.SelectedItem).Tag.ToString()),
+                        Negrita = chkNegrita.IsChecked,
+                        Cursiva = chkCursiva.IsChecked,
+                        Logo = chkLogo.IsChecked,
+                        RutaLogo = imgLogo.Tag?.ToString() ?? "",
+                        TamanoLogo = int.Parse(((ComboBoxItem)cbxTamanoLogo.SelectedItem).Tag.ToString()),
+                        CordenadaXLogo = int.Parse(CoordenadaX.Text.Length > 0 ? CoordenadaX.Text : "0"),
+                        CordenadaYLogo = int.Parse(CoordenadaY.Text.Length > 0 ? CoordenadaY.Text : "0")
+                    };
+                    pdoc.PrintPage += (s, ev) => ImprimirTicketTurno(ev, 42, cfg);
+                }
+                else
+                {
+                    // ── Imprime ticket de cajero de prueba ─────────────
+                    pdoc.PrintPage += (s, ev) => Document_PrintText(ev,
+                        "          3K MANTENIMIENTO\n          PROFESIONAL\n\n" +
+                        "ESTACION: ESTACION01\nUSUARIO: GRUPO\n" +
+                        "FECHA: 13-11-2022  HORA: 00:17:55\nFOLIO: 1\n\n" +
+                        "CANT.     PRECIO     TOTAL\n--------------------------\n" +
+                        "   CARE DOG CACHORRO\n5.00       22.00    110.00\n\n" +
+                        " Importe:       $ 2,020.00\n Total:         $ 2,020.00\n\n" +
+                        "* GRACIAS POR SU COMPRA *\n");
+                }
+
                 pdoc.Print();
             }
-            catch(Exception ex) {
-
+            catch (Exception ex)
+            {
                 Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false, true);
                 dialog.lblNombre.Content = "¡Error!";
-                dialog.lblTexto.Text = "Ocurrio un error durante la impresión, consulte al administrador. Error: " + ex.Message;
+                dialog.lblTexto.Text = "Error durante la impresión: " + ex.Message;
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 dialog.ShowDialog();
             }
         }
-        
+
+        private void ImprimirTicketTurno(PrintPageEventArgs e, int numeroTurno, ConfiguracionImpresora cfg)
+        {
+            var g = e.Graphics;
+            float yActual = 0f;
+            int anchoPage = e.PageBounds.Width;
+
+            string familia = cfg?.TipoLetra ?? "Courier New";
+            float tamBase = cfg?.TamanoLetra ?? 8f;
+
+            System.Drawing.FontStyle estilo = System.Drawing.FontStyle.Regular;
+            if (cfg?.Negrita == true) estilo |= System.Drawing.FontStyle.Bold;
+            if (cfg?.Cursiva == true) estilo |= System.Drawing.FontStyle.Italic;
+
+            var fuenteNormal = new System.Drawing.Font(familia, tamBase, estilo);
+            int tamanoLogo = cfg?.TamanoLogo > 0 ? cfg.TamanoLogo : 70;
+            float tamanoNumero = tamanoLogo * 0.45f;
+            var fuenteNumero = new System.Drawing.Font(familia, tamanoNumero, System.Drawing.FontStyle.Bold);
+            var fuenteTitulo = new System.Drawing.Font(familia, tamBase, System.Drawing.FontStyle.Bold);
+
+            // Logo
+            if (cfg?.Logo == true)
+            {
+                try
+                {
+                    string ruta = !string.IsNullOrEmpty(cfg.RutaLogo)
+                        ? @".\data\impresora\" + cfg.RutaLogo
+                        : @".\Recursos\logo.png";
+                    System.Drawing.Image img = System.Drawing.Image.FromFile(ruta);
+                    float xLogo = (anchoPage - tamanoLogo) / 2f;
+                    g.DrawImage(img, xLogo, yActual, tamanoLogo, tamanoLogo);
+                    yActual += tamanoLogo + 8f;
+                }
+                catch { }
+            }
+
+            string sep = "================================";
+            g.DrawString(sep, fuenteNormal, System.Drawing.Brushes.Black, 0, yActual);
+            yActual += g.MeasureString(sep, fuenteNormal).Height;
+
+            string titulo = "SISTEMA DE TURNOS";
+            float xTitulo = (anchoPage - g.MeasureString(titulo, fuenteTitulo).Width) / 2f;
+            g.DrawString(titulo, fuenteTitulo, System.Drawing.Brushes.Black, xTitulo, yActual);
+            yActual += g.MeasureString(titulo, fuenteTitulo).Height;
+
+            g.DrawString(sep, fuenteNormal, System.Drawing.Brushes.Black, 0, yActual);
+            yActual += g.MeasureString(sep, fuenteNormal).Height + 4f;
+
+            string fecha = $"Fecha: {DateTime.Now:dd/MM/yyyy  HH:mm}";
+            g.DrawString(fecha, fuenteNormal, System.Drawing.Brushes.Black, 0, yActual);
+            yActual += g.MeasureString(fecha, fuenteNormal).Height + 4f;
+
+            string etiqueta = "Tu número de turno es:";
+            float xEtiq = (anchoPage - g.MeasureString(etiqueta, fuenteNormal).Width) / 2f;
+            g.DrawString(etiqueta, fuenteNormal, System.Drawing.Brushes.Black, xEtiq, yActual);
+            yActual += g.MeasureString(etiqueta, fuenteNormal).Height + 6f;
+
+            string numStr = numeroTurno.ToString();
+            float xNum = (anchoPage - g.MeasureString(numStr, fuenteNumero).Width) / 2f;
+            g.DrawString(numStr, fuenteNumero, System.Drawing.Brushes.Black, xNum, yActual);
+            yActual += g.MeasureString(numStr, fuenteNumero).Height + 8f;
+
+            g.DrawString(sep, fuenteNormal, System.Drawing.Brushes.Black, 0, yActual);
+            yActual += g.MeasureString(sep, fuenteNormal).Height + 2f;
+
+            string pie = "Por favor espere su turno.";
+            float xPie = (anchoPage - g.MeasureString(pie, fuenteNormal).Width) / 2f;
+            g.DrawString(pie, fuenteNormal, System.Drawing.Brushes.Black, xPie, yActual);
+            yActual += g.MeasureString(pie, fuenteNormal).Height;
+
+            g.DrawString(sep, fuenteNormal, System.Drawing.Brushes.Black, 0, yActual);
+
+            fuenteNormal.Dispose();
+            fuenteNumero.Dispose();
+            fuenteTitulo.Dispose();
+        }
+
         private void Document_PrintText(PrintPageEventArgs e, string inputString)
         {
             if (CoordenadaX.Text.Length == 0)

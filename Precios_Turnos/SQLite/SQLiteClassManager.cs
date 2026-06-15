@@ -21,6 +21,9 @@ namespace Priceio.SQLite
                 SQLiteClass.TamanoMensaje = row.Field<string>("TamanoMensaje");
                 SQLiteClass.CerradoAutomatico = Convert.ToBoolean(row.Field<long>("CerradoAutomatico"));
                 SQLiteClass.TiempoMensaje = (int)row.Field<long>("TiempoMensaje");
+                SQLiteClass.ForzarResolucion = Convert.ToBoolean(row.Field<long>("ForzarResolucion"));
+                SQLiteClass.AnchoResolucion = (int)row.Field<long>("AnchoResolucion");
+                SQLiteClass.AltoResolucion = (int)row.Field<long>("AltoResolucion");
             }
             catch { return null; }
             return SQLiteClass;
@@ -492,6 +495,7 @@ namespace Priceio.SQLite
             catch { return null; }
             return SQLiteClass;
         }
+
 
         internal bool SetConfiguracionCanalesPayout(ConfiguracionCanalesPayout SQLiteClass)
         {

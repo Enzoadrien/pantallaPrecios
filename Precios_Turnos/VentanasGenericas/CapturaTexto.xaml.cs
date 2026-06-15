@@ -74,6 +74,7 @@ namespace Priceio
             DialogResult = false;
             Close();
         }
+        
         internal void ventanaCapturaTextoExtraGrande()
         {
             Width = 800;
@@ -92,6 +93,7 @@ namespace Priceio
             btnCancelar.HorizontalAlignment = HorizontalAlignment.Left;
             btnCancelar.Margin = new Thickness(5, 5, 5, 5);
         }
+        
         internal void ventanaCapturaTextoGrande()
         {
             Width = 600;

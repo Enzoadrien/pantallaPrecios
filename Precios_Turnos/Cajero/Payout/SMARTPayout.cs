@@ -79,7 +79,12 @@ namespace Priceio.Cajero.Payout
                 }
                 if (BoolCalculatePayout)
                 {
-                    CalculatePayout(pago.BilletesCambio.ToString(), moneda.ToCharArray());
+                    // Si ya calculaste cambio mixto, usa solo los billetes para el payout.
+                    string monto = pago.BilletesCambio > 0
+                        ? pago.BilletesCambio.ToString()
+                        : pago.Cambio.ToString();
+
+                    CalculatePayout(monto, moneda.ToCharArray());
                     BoolCalculatePayout = false;
                 }
                 if (BoolCalculatePayoutDenomination)

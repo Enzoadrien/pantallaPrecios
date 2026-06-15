@@ -1,0 +1,228 @@
+﻿<Window x:Class="Priceio.Turnero.VentanaConfigRed"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Configuración de red — Servidor de turnos"
+        Width="470" Height="520"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E1E2E">
+
+    <Window.Resources>
+        <Style x:Key="CampoRed" TargetType="TextBox">
+            <Setter Property="Background"                Value="#2A2A3E"/>
+            <Setter Property="Foreground"                Value="#E0E0F0"/>
+            <Setter Property="BorderBrush"               Value="#4A4A7A"/>
+            <Setter Property="BorderThickness"           Value="1"/>
+            <Setter Property="Padding"                   Value="8,6"/>
+            <Setter Property="FontSize"                  Value="14"/>
+            <Setter Property="FontFamily"                Value="Consolas"/>
+            <Setter Property="CaretBrush"                Value="#7B7BFF"/>
+            <Setter Property="SelectionBrush"            Value="#7B7BFF"/>
+            <Setter Property="VerticalContentAlignment"  Value="Center"/>
+            <Setter Property="Height"                    Value="36"/>
+        </Style>
+
+        <Style x:Key="CampoPassword" TargetType="PasswordBox">
+            <Setter Property="Background"                Value="#2A2A3E"/>
+            <Setter Property="Foreground"                Value="#E0E0F0"/>
+            <Setter Property="BorderBrush"               Value="#4A4A7A"/>
+            <Setter Property="BorderThickness"           Value="1"/>
+            <Setter Property="Padding"                   Value="8,6"/>
+            <Setter Property="FontSize"                  Value="14"/>
+            <Setter Property="FontFamily"                Value="Consolas"/>
+            <Setter Property="Height"                    Value="36"/>
+        </Style>
+
+        <Style x:Key="Etiqueta" TargetType="TextBlock">
+            <Setter Property="Foreground"   Value="#9090C0"/>
+            <Setter Property="FontSize"     Value="11"/>
+            <Setter Property="FontFamily"   Value="Segoe UI"/>
+            <Setter Property="Margin"       Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="BtnGuardar" TargetType="Button">
+            <Setter Property="Background"       Value="#5555CC"/>
+            <Setter Property="Foreground"       Value="White"/>
+            <Setter Property="BorderThickness"  Value="0"/>
+            <Setter Property="FontSize"         Value="13"/>
+            <Setter Property="FontFamily"       Value="Segoe UI Semibold"/>
+            <Setter Property="Height"           Value="38"/>
+            <Setter Property="Cursor"           Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#7777EE"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BtnCancelar" TargetType="Button">
+            <Setter Property="Background"       Value="#2A2A3E"/>
+            <Setter Property="Foreground"       Value="#9090C0"/>
+            <Setter Property="BorderBrush"      Value="#4A4A7A"/>
+            <Setter Property="BorderThickness"  Value="1"/>
+            <Setter Property="FontSize"         Value="13"/>
+            <Setter Property="FontFamily"       Value="Segoe UI"/>
+            <Setter Property="Height"           Value="38"/>
+            <Setter Property="Cursor"           Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#35354F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="28,24,28,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- 0: Título -->
+            <RowDefinition Height="16"/>
+            <!-- 1: espaciado -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2: IP -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3: Puerto -->
+            <RowDefinition Height="Auto"/>
+            <!-- 4: Contraseña -->
+            <RowDefinition Height="Auto"/>
+            <!-- 5: TxtError -->
+            <RowDefinition Height="20"/>
+            <!-- 6: espaciado -->
+            <RowDefinition Height="Auto"/>
+            <!-- 7: Botones -->
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Grid.Row="0"
+                   Text="Configuración — Servidor de turnos"
+                   Foreground="#E0E0FF"
+                   FontSize="15"
+                   FontFamily="Segoe UI Semibold"/>
+
+        <!-- IP -->
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Dirección IP del servidor (PC principal)"
+                       Style="{StaticResource Etiqueta}"/>
+            <TextBox x:Name="TxtIp"
+                     Style="{StaticResource CampoRed}"
+                     MaxLength="15"
+                     ToolTip="Ejemplo: 192.168.1.100"/>
+        </StackPanel>
+
+        <!-- Puerto -->
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <TextBlock Text="Puerto"
+                       Style="{StaticResource Etiqueta}"/>
+            <TextBox x:Name="TxtPuerto"
+                     Style="{StaticResource CampoRed}"
+                     MaxLength="5"
+                     ToolTip="Por defecto: 8080"/>
+        </StackPanel>
+
+        <!-- Contraseña -->
+        <StackPanel Grid.Row="4" Margin="0,10,0,0">
+            <TextBlock Text="Nueva contraseña de acceso (dejar vacío para no cambiar)"
+                       Style="{StaticResource Etiqueta}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <PasswordBox x:Name="TxtNuevaContrasena"
+                             Grid.Column="0"
+                             Style="{StaticResource CampoPassword}"
+                             ToolTip="Mínimo 4 caracteres"/>
+                <Button Grid.Column="2"
+                        x:Name="BtnCambiarContrasena"
+                        Content="Cambiar"
+                        Height="36"
+                        Style="{StaticResource BtnGuardar}"
+                        Click="BtnCambiarContrasena_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Mensaje de error -->
+        <TextBlock x:Name="TxtError"
+                   Grid.Row="5"
+                   Foreground="#FF6B6B"
+                   FontSize="11"
+                   Margin="0,8,0,0"
+                   Visibility="Collapsed"/>
+
+        <!-- Botones -->
+        <Grid Grid.Row="7">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- 0: Cancelar / Aceptar -->
+                <RowDefinition Height="10"/>
+                <!-- 1: espaciado -->
+                <RowDefinition Height="Auto"/>
+                <!-- 2: Logo / Fondo -->
+                <RowDefinition Height="10"/>
+                <!-- 3: espaciado -->
+                <RowDefinition Height="Auto"/>
+                <!-- 4: Colores botón -->
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Fila 0: Cancelar / Aceptar -->
+            <Button Grid.Row="0" Grid.Column="0"
+                    x:Name="BtnCancelar"
+                    Content="Cancelar"
+                    Style="{StaticResource BtnCancelar}"
+                    Click="BtnCancelar_Click"/>
+
+            <Button Grid.Row="0" Grid.Column="2"
+                    x:Name="BtnGuardar"
+                    Content="Aceptar"
+                    Style="{StaticResource BtnGuardar}"
+                    Click="BtnGuardar_Click"/>
+
+            <!-- Fila 2: Logo / Fondo -->
+            <Button Grid.Row="2" Grid.Column="0"
+                    x:Name="BtnSeleccionarLogo"
+                    Content="🖼 Logo"
+                    Height="34"
+                    Style="{StaticResource BtnCancelar}"
+                    Click="BtnSeleccionarLogo_Click"/>
+
+            <Button Grid.Row="2" Grid.Column="2"
+                    x:Name="BtnSeleccionarFondo"
+                    Content="🎨 Fondo"
+                    Height="34"
+                    Style="{StaticResource BtnCancelar}"
+                    Click="BtnSeleccionarFondo_Click"/>
+
+            <!-- Fila 4: Fondo btn / Texto / Sombra -->
+            <UniformGrid Grid.Row="4" Grid.ColumnSpan="3"
+                         Columns="3"
+                         HorizontalAlignment="Stretch">
+
+                <Button x:Name="BtnColorFondo"
+                        Content="🎨 Btn Fondo"
+                        Height="34"
+                        Margin="0,0,5,0"
+                        Style="{StaticResource BtnCancelar}"
+                        Click="BtnColorFondo_Click"/>
+
+                <Button x:Name="BtnColorTexto"
+                        Content="🔤 Btn Texto"
+                        Height="34"
+                        Margin="0,0,5,0"
+                        Style="{StaticResource BtnCancelar}"
+                        Click="BtnColorTexto_Click"/>
+
+                <Button x:Name="BtnColorSombra"
+                        Content="💡 Btn Sombra"
+                        Height="34"
+                        Style="{StaticResource BtnCancelar}"
+                        Click="BtnColorSombra_Click"/>
+            </UniformGrid>
+        </Grid>
+    </Grid>
+</Window>

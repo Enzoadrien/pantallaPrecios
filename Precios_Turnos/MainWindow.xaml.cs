@@ -6,6 +6,7 @@ using Priceio.Cajero.Payout;
 using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
+using Priceio.Resolucion;
 using Priceio.SQLite;
 using Priceio.Turnero;
 using Priceio.VentanasGenericas;
@@ -31,6 +32,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
 using static Priceio.Cajero.StateObjectCajero;
+using System.Windows;
 
 namespace Priceio
 {
@@ -61,7 +63,7 @@ namespace Priceio
         internal double ultimaOpacidad;
         private string? datosVerificador;
         private string? datosCajero;
-        private Dictionary<string, double>? opacidadesObjetos; 
+        private Dictionary<string, double>? opacidadesObjetos;
 
         private SMARTPayout smartPayout = new SMARTPayout();
         private SMARTHopper smartHopper = new SMARTHopper();
@@ -71,8 +73,11 @@ namespace Priceio
         private VentanaLogSmart? ventanaLogSmart;
         private CancellationTokenSource cts = new();
 
+        private ServidorTurnos _servidorTurnos = new ServidorTurnos();
+
         public MainWindow()
         {
+
             InitializeComponent();
             crearDirectorios();
 
@@ -80,28 +85,57 @@ namespace Priceio
             Coordenadas.Visibility = Visibility.Hidden;
             CargarVistaPrevia();
 
+            ConfiguracionGeneral? SQLiteClass = new SQLiteClassManager().GetConfiguracionGeneral();
+            if (SQLiteClass != null)
+            {
+                if (SQLiteClass.ForzarResolucion == true)
+                    Set_ScreenResolutionEx.ChangeResolution(SQLiteClass.AnchoResolucion, SQLiteClass.AltoResolucion, 0);
+            }
+
             MaxHeight = SystemParameters.VirtualScreenHeight;
             MinHeight = Height = MaxHeight / 1.5;
 
             MaxWidth = SystemParameters.VirtualScreenWidth;
             MinWidth = Width = MaxWidth / 1.5;
 
-            try
-            {
-                if (seguridad.CheckInternetConnecition())
-                    actualizaLlave();
-            }
-            catch { }
-            try
-            {
-                if (ValidarActivar())
-                {
-                    CargarControles();
-                    WindowState = WindowState.Maximized;
-                }
-            }
-            catch (Exception) { }
+
+            var cfg = ConfiguracionRed.Cargar();
+            _servidorTurnos.Iniciar(cfg.Puerto);
+            ActualizarEstadoServidor();
+
+            /* try
+             {
+                 if (seguridad.CheckInternetConnecition())
+                     actualizaLlave();
+             }
+             catch { }
+             try
+             {
+                 if (ValidarActivar())
+                 {
+                     CargarControles();
+                     WindowState = WindowState.Maximized;
+                 }
+             }
+             catch (Exception) { }*/
+            CargarControles();
+            WindowState = WindowState.Maximized;
         }
+
+        private void ActualizarEstadoServidor()
+        {
+            if (_servidorTurnos.Corriendo)
+                Title = $"Priceio  ●  Servidor activo en puerto {ConfiguracionRed.Cargar().Puerto}";
+            else
+                Title = "Priceio  ●  Servidor DETENIDO";
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _servidorTurnos.Detener();
+            base.OnClosed(e);
+        }
+
 
         private void CenterWindowOnScreen()
         {
@@ -113,7 +147,7 @@ namespace Priceio
             Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
-        private void CargarArchivoLicencia()
+        internal void CargarArchivoLicencia()
         {
 
             try
@@ -164,32 +198,23 @@ namespace Priceio
                     {
                         try
                         {
-                            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
-                            string Llave = key.GetValue("Key").ToString();
-                            Licencia licencia2 = new Licencia();
-                            licencia2 = JsonSerializer.Deserialize<Licencia>(Llave)!;
-
-                            if (licencia.Correo.Equals(licencia2.Correo) || licencia.Codigo.Equals(licencia2.Codigo)
-                                || licencia.Llave.Equals(licencia2.Llave) || licencia.Key.Equals(licencia2.Key))
+                            if (!subs[1].Equals("0"))
                             {
-                                if (!subs[1].Equals("0"))
-                                {
-                                    if (seguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
-                                    {
-                                        ActivarControlesMenu();
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        dialog.lblTexto.Text = "La licencia ha caducado.";
-                                        dialog.ShowDialog();
-                                    }
-                                }
-                                else
+                                if (seguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                 {
                                     ActivarControlesMenu();
                                     return true;
                                 }
+                                else
+                                {
+                                    dialog.lblTexto.Text = "La licencia ha caducado.";
+                                    dialog.ShowDialog();
+                                }
+                            }
+                            else
+                            {
+                                ActivarControlesMenu();
+                                return true;
                             }
                         }
                         catch
@@ -223,29 +248,32 @@ namespace Priceio
                                                                    seguridad.numeroSeriePlacaBase() + "|" +
                                                                    MainWindow.nombreApp);
 
+                string? llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
 
-                string llave = new ValidarLicencia().recuperaLicenciaApp(correo, codigo);
-
-                if (!licencia.Llave.Equals(llave))
+                if (llave != null)
                 {
-                    new ValidarLicencia().actualizaUltimaConexion(correo, codigo, false);
-
-                    string cadena = seguridad.DecryptString(codigo, llave);
-
-                    string[] subs = cadena.Split('|');
-                    if (subs.Length > 1)
+                    if (!licencia.Llave.Equals(llave))
                     {
-                        string strKey = seguridad.EncryptString(codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
-                        GuardarLicencia(correo, codigo, llave, strKey);
+                        new ValidarLicencia().actualizaUltimaConexion(correo, codigo, false);
 
+                        string cadena = seguridad.DecryptString(codigo, llave);
+
+                        string[] subs = cadena.Split('|');
+                        if (subs.Length > 1)
+                        {
+                            string strKey = seguridad.EncryptString(codigo, cadena + '|' + DateTime.Now.Date.AddDays(int.Parse(subs[1])).ToShortDateString());
+                            GuardarLicencia(correo, codigo, llave, strKey);
+
+                        }
+                        else
+                        {
+                            GuardarLicencia(correo, codigo, llave, string.Empty);
+                        }
                     }
                     else
-                    {
-                        GuardarLicencia(correo, codigo, llave, string.Empty);
-                    }
+                        new ValidarLicencia().actualizaUltimaConexion(correo, codigo, true);
                 }
-                else
-                    new ValidarLicencia().actualizaUltimaConexion(correo, codigo, true);
+
 
             }
         }
@@ -262,9 +290,6 @@ namespace Priceio
 
             string jsonString = JsonSerializer.Serialize(Licencia);
 
-            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
-            key.SetValue("Key", jsonString);
-
             using (Stream stream = new FileStream(@".\Llave.key", FileMode.Create))
             {
                 stream.SetLength(0);
@@ -275,8 +300,9 @@ namespace Priceio
 
         }
 
-        private void BloquearControlesMenu()
+        internal void BloquearControlesMenu()
         {
+            ConfiguracionGeneral.IsEnabled = false;
             Conexion.IsEnabled = false;
             ImportarDiseno.IsEnabled = false;
             ExportarDiseno.IsEnabled = false;
@@ -285,13 +311,15 @@ namespace Priceio
             ResizeMode = ResizeMode.NoResize;
         }
 
-        private void ActivarControlesMenu()
+        internal void ActivarControlesMenu()
         {
+            ConfiguracionGeneral.IsEnabled = true;
             Conexion.IsEnabled = true;
             ImportarDiseno.IsEnabled = true;
             ExportarDiseno.IsEnabled = true;
             ConfigurarSplash.IsEnabled = true;
             EditarDiseno.IsEnabled = true;
+            ResizeMode = ResizeMode.CanResize;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -752,14 +780,19 @@ namespace Priceio
                             if (nombresClientesTurnero != null)
                                 nombreEquipoAnt.SetValue(ContentProperty, nombreEquipoAnt.GetValue(ContentProperty) + nombresClientesTurnero.Where(nc => nc.Identificador == turnoAnterior.NumeroEquipo).Select(i => i.Nombre).First() + "\n");
                         }
-                            
+
                     }
-                    if (numeroTurnoAnt != null)
-                        numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
-                    if (numeroEquipoAnt != null)
-                        numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
-                    if (nombreEquipoAnt != null)
-                        nombreEquipoAnt.SetValue(ContentProperty, nombreEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, nombreEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                    try
+                    {
+                        if (numeroTurnoAnt != null)
+                            numeroTurnoAnt.SetValue(ContentProperty, numeroTurnoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroTurnoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                        if (numeroEquipoAnt != null)
+                            numeroEquipoAnt.SetValue(ContentProperty, numeroEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, numeroEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
+                        if (nombreEquipoAnt != null)
+                            nombreEquipoAnt.SetValue(ContentProperty, nombreEquipoAnt.GetValue(ContentProperty).ToString().Substring(0, nombreEquipoAnt.GetValue(ContentProperty).ToString().Length - 1));
+
+                    }
+                    catch { }
                 }));
             }
         }
@@ -771,7 +804,12 @@ namespace Priceio
 
         private void EditarDiseno_Click(object sender, RoutedEventArgs e)
         {
-            if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
+            editar = true;
+            WindowState = WindowState.Maximized;
+            Coordenadas.Visibility = Visibility.Visible;
+            ModoEdicion.Content = "Modo edición";
+            ModoEdicion.FontSize = 24;
+            /*if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
                 actualizaLlave();
                 if (ValidarActivar())
@@ -796,13 +834,16 @@ namespace Priceio
                 dialog3.lblNombre.Content = "¡Advertencia!";
                 dialog3.lblTexto.Text = "Se requiere de una conexión con el servidor para entrar a modo edición, consulte al administrador.";
                 dialog3.ShowDialog();
-            }
+            }*/
         }
 
         private void ImportarDiseno_Click(object sender, RoutedEventArgs e)
         {
+
             if (new ValidarLicencia().validarLicenciaApp(seguridad.DecryptString(licencia.Codigo, licencia.Correo), licencia.Codigo))
             {
+                actualizaLlave();
+
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Filter = "Archivos de diseño  (.3kzip)|*.3kzip";
                 bool? checarOK = openFileDialog.ShowDialog();
@@ -874,6 +915,8 @@ namespace Priceio
                         Mouse.OverrideCursor = Cursors.Arrow;
                     }
                 }
+
+
             }
             else
             {
@@ -1217,72 +1260,62 @@ namespace Priceio
                     {
                         ContextMenu cm = this.FindResource("cmdPrincipalContexMenu") as ContextMenu;
 
+                        // MenuTurnos ahora está en índice 13 (antes 12)
                         Label control = (Label)FindName("NumeroTurnoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[0]).Header = "Eliminar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[0]).Header = "Eliminar turnos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[0]).Header = "Agregar turnos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[0]).Header = "Agregar turnos anteriores";
 
                         control = (Label)FindName("NumeroEquipoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Eliminar números equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[1]).Header = "Eliminar números equipos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[1]).Header = "Agregar números equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[1]).Header = "Agregar números equipos anteriores";
+
                         control = (Label)FindName("NombreEquipoAnt");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[2]).Header = "Eliminar nombres equipos anteriores";
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[2]).Header = "Eliminar nombres equipos anteriores";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[10]).Items[2]).Header = "Agregar nombres equipos anteriores";
-                        
+                            ((MenuItem)((MenuItem)cm.Items[13]).Items[2]).Header = "Agregar nombres equipos anteriores";
+
+                        // MenuCajero ahora está en índice 14 (antes 13)
                         control = (Label)FindName("EstadoCajero");
                         if (control != null)
-                            ((MenuItem)((MenuItem)cm.Items[11]).Items[0]).Header = "Eliminar estado cajero";
+                            ((MenuItem)((MenuItem)cm.Items[14]).Items[0]).Header = "Eliminar estado cajero";
                         else
-                            ((MenuItem)((MenuItem)cm.Items[11]).Items[0]).Header = "Agregar estado cajero";
+                            ((MenuItem)((MenuItem)cm.Items[14]).Items[0]).Header = "Agregar estado cajero";
 
-                        ConfiguracionVentanaSplash? SQLiteClass = new SQLiteClassManager().GetConfiguracionVentanaSplash();
-                        if (SQLiteClass != null)
-                        {
-                            tipoSplash = SQLiteClass.TipoSplash;
-                            activarSplash = SQLiteClass.ActivarSplash;
-                        }
-                        else
-                        {
-                            tipoSplash = "T";
-                            activarSplash = false;
-                        }
                         if (activarSplash == true)
                         {
-                            ((MenuItem)cm.Items[9]).IsEnabled = true;
+                            ((MenuItem)cm.Items[9]).IsEnabled = true;   // VentanaSplash — sin cambio
                             if (tipoSplash.Equals("T"))
                             {
-                                ((MenuItem)cm.Items[10]).IsEnabled = true;
-                                ((MenuItem)cm.Items[11]).IsEnabled = false;
+                                ((MenuItem)cm.Items[13]).IsEnabled = true;  // MenuTurnos
+                                ((MenuItem)cm.Items[14]).IsEnabled = false; // MenuCajero
                             }
                             else if (tipoSplash.Equals("V"))
                             {
-                                ((MenuItem)cm.Items[10]).IsEnabled = false;
-                                ((MenuItem)cm.Items[11]).IsEnabled = false;
+                                ((MenuItem)cm.Items[13]).IsEnabled = false;
+                                ((MenuItem)cm.Items[14]).IsEnabled = false;
                             }
                             else if (tipoSplash.Equals("C"))
                             {
-                                ((MenuItem)cm.Items[10]).IsEnabled = false;
-                                ((MenuItem)cm.Items[11]).IsEnabled = true;
+                                ((MenuItem)cm.Items[13]).IsEnabled = false;
+                                ((MenuItem)cm.Items[14]).IsEnabled = true;
                             }
                         }
                         else
                         {
                             ((MenuItem)cm.Items[9]).IsEnabled = false;
-                            ((MenuItem)cm.Items[10]).IsEnabled = false;
+                            ((MenuItem)cm.Items[13]).IsEnabled = false;
                         }
 
-
-                        MenuItem itemCm = (MenuItem)cm.Items[13];
+                        // MenuListaObjetos ahora está en índice 16 (antes 15)
+                        MenuItem itemCm = (MenuItem)cm.Items[16];
                         itemCm.Items.Clear();
                         foreach (var itemObjets in Principal.Children)
                         {
-                            //if ((itemObjets as UIElement).Visibility == Visibility.Visible)
-                            //{
                             string nombreControl = (itemObjets as UIElement).GetValue(NameProperty).ToString();
                             if (SeModificaControl(nombreControl))
                             {
@@ -1292,7 +1325,6 @@ namespace Priceio
                                 itemControl.PreviewMouseLeftButtonDown += MenuListaObjetos_PreviewMouseLeftButtonDown;
                                 itemCm.Items.Add(itemControl);
                             }
-                            //}
                         }
                         cm.PlacementTarget = sender as Button;
                         cm.IsOpen = true;
@@ -1303,9 +1335,7 @@ namespace Priceio
                         ContextMenu cm = this.FindResource("cmdContexMenu") as ContextMenu;
                         cm.PlacementTarget = sender as Button;
                         cm.IsOpen = true;
-
                     }
-
                 }
                 catch (Exception) { }
         }
@@ -3006,6 +3036,8 @@ namespace Priceio
                                 case "Button":
                                     Button reloj = (Button)FindName(item.GetValue(NameProperty).ToString());
                                     reloj.MouseDoubleClick += Button_Click;
+                                    reloj.MouseLeave += objetoMedia_MouseLeave;
+                                    reloj.MouseEnter += objetoMedia_MouseEnter;
                                     DispatcherTimer timer = new DispatcherTimer(DispatcherPriority.Background);
                                     timer.Interval = TimeSpan.FromSeconds(1);
                                     timer.IsEnabled = true;
@@ -3207,16 +3239,20 @@ namespace Priceio
                 int tamano;
                 while (animaciones && maximizado && !editar)
                 {
-                    List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag, "");
-                    tamano = LisTablas.Count;
-                    if (x < tamano)
-                        CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
-                    else
+                    try
                     {
-                        x = 0;
-                        CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
+                        List<DataTable> LisTablas = CargarListaTablas(pNombre, pTag, "");
+                        tamano = LisTablas.Count;
+                        if (x < tamano)
+                            CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
+                        else
+                        {
+                            x = 0;
+                            CambiarContenidoTabla(pNombre, pTag, LisTablas, x++);
+                        }
+                        await Task.Delay(int.Parse(datos[3]) * 1000);
                     }
-                    await Task.Delay(int.Parse(datos[3]) * 1000);
+                    catch { }
                 }
 
             }
@@ -3360,82 +3396,82 @@ namespace Priceio
             try
             {
                 Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-
-                DataGrid control = (DataGrid)FindName(pNombre);
-                if (!pLisTablas[x].Rows[0][0].ToString().Equals("Sin datos"))
-                    control.ItemsSource = pLisTablas[x].DefaultView;
-                else
-                    control.ItemsSource = null;
-
-
-                DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
-
-                foreach (var file in info.GetFiles())
                 {
-                    if (@file.Name.Equals(pNombre + ".sql"))
+
+                    DataGrid control = (DataGrid)FindName(pNombre);
+                    if (!pLisTablas[x].Rows[0][0].ToString().Equals("Sin datos"))
+                        control.ItemsSource = pLisTablas[x].DefaultView;
+                    else
+                        control.ItemsSource = null;
+
+
+                    DirectoryInfo info = new DirectoryInfo(@".\data\objetos\consultasSQL");
+
+                    foreach (var file in info.GetFiles())
                     {
-                        StreamReader sR = new StreamReader(@file.FullName);
-                        string lectura = sR.ReadToEnd();
-                        sR.Close();
-                        string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
-                        if (datos.Length > 4)
+                        if (@file.Name.Equals(pNombre + ".sql"))
                         {
-                            Label item = (Label)FindName(datos[4]);
-                            if (item != null)
-                                item.Content = pLisTablas[x].TableName;
-                        }
-
-                        string pNombreImg = "Img_" + pNombre;
-                        var item2 = FindName(pNombreImg) as UIElement;
-
-                        if (item2 != null)
-                        {
-                            try
+                            StreamReader sR = new StreamReader(@file.FullName);
+                            string lectura = sR.ReadToEnd();
+                            sR.Close();
+                            string[] datos = new Seguridad().DecryptString(nombreApp, lectura).Split('|');
+                            if (datos.Length > 4)
                             {
-                                string[] datosTag = pTag.ToString().Split('|');
+                                Label item = (Label)FindName(datos[4]);
+                                if (item != null)
+                                    item.Content = pLisTablas[x].TableName;
+                            }
 
-                                if (datosTag[2].Equals("V"))
+                            string pNombreImg = "Img_" + pNombre;
+                            var item2 = FindName(pNombreImg) as UIElement;
+
+                            if (item2 != null)
+                            {
+                                try
                                 {
-                                    String imagenBuscar = pLisTablas[x].Columns[0].ColumnName;
-                                    BitmapImage bitmapImage = new BitmapImage();
-                                    bitmapImage.BeginInit();
-                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
-                                    bitmapImage.EndInit();
+                                    string[] datosTag = pTag.ToString().Split('|');
 
-                                    ((Image)item2).Source = bitmapImage;
+                                    if (datosTag[2].Equals("V"))
+                                    {
+                                        String imagenBuscar = pLisTablas[x].Columns[0].ColumnName;
+                                        BitmapImage bitmapImage = new BitmapImage();
+                                        bitmapImage.BeginInit();
+                                        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                        bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                        bitmapImage.EndInit();
+
+                                        ((Image)item2).Source = bitmapImage;
+                                    }
+                                    else
+                                    {
+
+                                        String imagenBuscar = pLisTablas[x].Rows[0][datos[2]].ToString();
+                                        BitmapImage bitmapImage = new BitmapImage();
+                                        bitmapImage.BeginInit();
+                                        bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                        bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
+                                        bitmapImage.EndInit();
+
+                                        ((Image)item2).Source = bitmapImage;
+                                    }
                                 }
-                                else
+                                catch
                                 {
-
-                                    String imagenBuscar = pLisTablas[x].Rows[0][datos[2]].ToString();
-                                    BitmapImage bitmapImage = new BitmapImage();
-                                    bitmapImage.BeginInit();
-                                    bitmapImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                    bitmapImage.UriSource = new Uri(@".\Objetos\" + pNombre + "\\" + imagenBuscar + ".png", UriKind.RelativeOrAbsolute);
-                                    bitmapImage.EndInit();
-
-                                    ((Image)item2).Source = bitmapImage;
+                                    ((Image)item2).Source = null;
                                 }
                             }
-                            catch
-                            {
-                                ((Image)item2).Source = null;
-                            }
+
+
+                            break;
                         }
-
-
-                        break;
                     }
-                }
-                foreach (DataGridColumn column in control.Columns)
-                    column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
+                    foreach (DataGridColumn column in control.Columns)
+                        column.Width = new DataGridLength(1.0, DataGridLengthUnitType.SizeToCells);
 
-                ColorFuenteFondoTabla(pNombre, pTag);
-            }));
+                    ColorFuenteFondoTabla(pNombre, pTag);
+                }));
 
             }
             catch { }
@@ -3490,21 +3526,21 @@ namespace Priceio
             try
             {
                 Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-
-                MediaElement control = (MediaElement)FindName(pNombre);
-                MediaElement video = (MediaElement)FindName("FullScreamVideo");
-                if (video != null)
                 {
-                    if (control.Visibility == Visibility.Hidden)
-                        control.Position = video.Position;
 
-                    PantallaCompleta.Children.Remove(video);
-                    NameScope.GetNameScope(this).UnregisterName(video.Name);
-                    PantallaCompleta.Background = null;
-                    SilenciarVideos(false);
-                }
-            }));
+                    MediaElement control = (MediaElement)FindName(pNombre);
+                    MediaElement video = (MediaElement)FindName("FullScreamVideo");
+                    if (video != null)
+                    {
+                        if (control.Visibility == Visibility.Hidden)
+                            control.Position = video.Position;
+
+                        PantallaCompleta.Children.Remove(video);
+                        NameScope.GetNameScope(this).UnregisterName(video.Name);
+                        PantallaCompleta.Background = null;
+                        SilenciarVideos(false);
+                    }
+                }));
 
             }
             catch (Exception) { }
@@ -3515,31 +3551,31 @@ namespace Priceio
             try
             {
                 Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                foreach (var itemObjets in Principal.Children)
                 {
-                    switch (itemObjets.GetType().Name.ToString())
+                    foreach (var itemObjets in Principal.Children)
                     {
-                        case "MediaElement":
-                            if (!pPlay)
-                            {
-                                ((MediaElement)itemObjets).LoadedBehavior = MediaState.Manual;
-                                ((MediaElement)itemObjets).Pause();
-                            }
-                            else
-                            {
-                                if (((MediaElement)itemObjets).Visibility == Visibility.Visible)
+                        switch (itemObjets.GetType().Name.ToString())
+                        {
+                            case "MediaElement":
+                                if (!pPlay)
                                 {
-                                    ((MediaElement)itemObjets).Play();
-                                    ((MediaElement)itemObjets).LoadedBehavior = MediaState.Play;
+                                    ((MediaElement)itemObjets).LoadedBehavior = MediaState.Manual;
+                                    ((MediaElement)itemObjets).Pause();
                                 }
-                            }
-                            break;
-                        default:
-                            break;
+                                else
+                                {
+                                    if (((MediaElement)itemObjets).Visibility == Visibility.Visible)
+                                    {
+                                        ((MediaElement)itemObjets).Play();
+                                        ((MediaElement)itemObjets).LoadedBehavior = MediaState.Play;
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
-            }));
+                }));
             }
             catch { }
         }
@@ -3549,29 +3585,29 @@ namespace Priceio
             try
             {
                 Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                foreach (var itemObjets in Principal.Children)
                 {
-                    switch (itemObjets.GetType().Name.ToString())
+                    foreach (var itemObjets in Principal.Children)
                     {
-                        case "MediaElement":
-                            if (pSilencio)
-                            {
-                                ((MediaElement)itemObjets).Volume = 0;
-                            }
-                            else
-                            {
-                                string[] datos = ((MediaElement)itemObjets).Tag.ToString().Split('|');
-                                if (datos[0].Equals("S"))
-                                    ((MediaElement)itemObjets).Volume = .5;
-                            }
+                        switch (itemObjets.GetType().Name.ToString())
+                        {
+                            case "MediaElement":
+                                if (pSilencio)
+                                {
+                                    ((MediaElement)itemObjets).Volume = 0;
+                                }
+                                else
+                                {
+                                    string[] datos = ((MediaElement)itemObjets).Tag.ToString().Split('|');
+                                    if (datos[0].Equals("S"))
+                                        ((MediaElement)itemObjets).Volume = .5;
+                                }
 
-                            break;
-                        default:
-                            break;
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
-            }));
+                }));
 
             }
             catch { }
@@ -3910,38 +3946,42 @@ namespace Priceio
             bool baja = true;
             while (!cancellationToken.IsCancellationRequested)
             {
-                Application.Current.Dispatcher.Invoke(new Action(() =>
+                try
                 {
-                    var item = FindName(NombreControl) as UIElement;
-                    if (velocidad > 0)
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
                     {
-                        double disminucion = .001;
-                        if (item.Opacity > -.01 && baja)
+                        var item = FindName(NombreControl) as UIElement;
+                        if (velocidad > 0)
                         {
-                            item.Opacity -= disminucion;
-                        }
-                        else if (item.Opacity < opacidadOriginal && !baja && reversa)
-                        {
-                            item.Opacity += disminucion;
-                        }
-                        else if (item.Opacity < opacidadOriginal && !baja && !reversa)
-                        {
-                            item.Opacity = opacidadOriginal;
-                        }
-                        else
-                        {
-                            if (baja)
-                                baja = false;
+                            double disminucion = .001;
+                            if (item.Opacity > -.01 && baja)
+                            {
+                                item.Opacity -= disminucion;
+                            }
+                            else if (item.Opacity < opacidadOriginal && !baja && reversa)
+                            {
+                                item.Opacity += disminucion;
+                            }
+                            else if (item.Opacity < opacidadOriginal && !baja && !reversa)
+                            {
+                                item.Opacity = opacidadOriginal;
+                            }
                             else
-                                baja = true;
+                            {
+                                if (baja)
+                                    baja = false;
+                                else
+                                    baja = true;
+                            }
                         }
-                    }
 
-                }));
-                if (reversa && velocidad > 1)
-                    await Task.Delay(velocidad / 2, cancellationToken);
-                else
-                    await Task.Delay(velocidad, cancellationToken);
+                    }));
+                    if (reversa && velocidad > 1)
+                        await Task.Delay(velocidad / 2, cancellationToken);
+                    else
+                        await Task.Delay(velocidad, cancellationToken);
+                }
+                catch { }
             }
         }
 
@@ -4070,24 +4110,24 @@ namespace Priceio
             }
             else
             {
-                    Label obj = new Label();
-                    obj.Name = "EstadoCajero";
-                    obj.ToolTip = "EstadoCajero";
+                Label obj = new Label();
+                obj.Name = "EstadoCajero";
+                obj.ToolTip = "EstadoCajero";
 
 
-                    obj.Content = "Estado del cajero";
-                    obj.HorizontalAlignment = HorizontalAlignment.Center;
-                    obj.VerticalAlignment = VerticalAlignment.Center;
-                    obj.HorizontalContentAlignment = HorizontalAlignment.Center;
-                    obj.VerticalContentAlignment = VerticalAlignment.Center;
-                    obj.FontSize = 24;
-                    obj.FontFamily = new FontFamily("Arial");
-                    obj.MouseLeave += objeto_MouseLeave;
-                    obj.MouseEnter += objeto_MouseEnter;
-                    NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
-                    Principal.Children.Add(obj);
+                obj.Content = "Estado del cajero";
+                obj.HorizontalAlignment = HorizontalAlignment.Center;
+                obj.VerticalAlignment = VerticalAlignment.Center;
+                obj.HorizontalContentAlignment = HorizontalAlignment.Center;
+                obj.VerticalContentAlignment = VerticalAlignment.Center;
+                obj.FontSize = 24;
+                obj.FontFamily = new FontFamily("Arial");
+                obj.MouseLeave += objeto_MouseLeave;
+                obj.MouseEnter += objeto_MouseEnter;
+                NameScope.GetNameScope(this).RegisterName(obj.Name, obj);
+                Principal.Children.Add(obj);
 
-                    itemCm.Header = "Eliminar estado cajero";
+                itemCm.Header = "Eliminar estado cajero";
             }
         }
 
@@ -4095,20 +4135,24 @@ namespace Priceio
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                Application.Current.Dispatcher.Invoke(new Action(() =>
+                try
                 {
-                    Label control = (Label)FindName("EstadoCajero");
-                    if (control != null)
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
                     {
-                        if (smartPayout.ConfigCargada && smartPayout.RunningPayout && smartHopper.ConfigCargada && smartHopper.RunningHopper)
-                            control.Content = "Servicios corriendo";
-                        else
-                            control.Content = "Servicios detenidos";
-                    }
-                }));
-                await Task.Delay(250, cancellationToken);
+                        Label control = (Label)FindName("EstadoCajero");
+                        if (control != null)
+                        {
+                            if (smartPayout.ConfigCargada && smartPayout.RunningPayout && smartHopper.ConfigCargada && smartHopper.RunningHopper)
+                                control.Content = "Servicios corriendo";
+                            else
+                                control.Content = "Servicios detenidos";
+                        }
+                    }));
+                    await Task.Delay(250, cancellationToken);
+                }
+                catch { }
             }
-         
+
         }
 
         private void ConfiguracionGeneral_Click(object sender, RoutedEventArgs e)
@@ -4124,6 +4168,124 @@ namespace Priceio
             dialog.Left = centerParent.X - hCenterChild;
             dialog.Top = centerParent.Y - vCenterChild;
             dialog.ShowDialog();
+
         }
+
+        private void AbrirVentanaCajas_Click(object sender, RoutedEventArgs e)
+        {
+            // Si ya hay una ventana de cajas abierta, solo la traemos al frente
+            foreach (Window w in Application.Current.Windows)
+            {
+                if (w is VentanaCajas vcAbierta)
+                {
+                    vcAbierta.Activate();
+                    return;
+                }
+            }
+
+            var ventanaCajas = new VentanaCajas();
+            ventanaCajas.CajaPresionada += (numero) =>
+            {
+                // TODO: define aquí qué hacer cuando se presiona una caja
+                // Ej: MessageBox.Show($"Presionaste la caja {numero}");
+            };
+            ventanaCajas.Show();
+        }
+
+        private void AbrirVentanaTurnos_Click(object sender, RoutedEventArgs e)
+        {
+            var cfg = ConfiguracionRed.Cargar();
+
+            // ── Primera vez: IP nunca configurada ────────────────────
+            if (cfg.Ip == "192.168.1.64" || string.IsNullOrWhiteSpace(cfg.Ip))
+            {
+                // Pedir IP/Puerto
+                var ventanaConfig = new VentanaConfigRed { Owner = this };
+                if (ventanaConfig.ShowDialog() != true)
+                    return;
+
+                if (_servidorTurnos.Corriendo)
+                    _servidorTurnos.Detener();
+                _servidorTurnos.Iniciar(ventanaConfig.PuertoResultante);
+
+                // Crear VentanaTurnos oculta
+                VentanaTurnos ventana = new VentanaTurnos(ventanaConfig.IpResultante, ventanaConfig.PuertoResultante);
+                ventana.Opacity = 0;
+                ventana.IsHitTestVisible = false;
+                ventana.Show();
+
+                // Abrir config de diseño
+                var configDiseño = new VentanaConfigRed(ventana) { Owner = this };
+                configDiseño.Closed += (s, args) =>
+                {
+                    ventana.Opacity = 1;
+                    ventana.IsHitTestVisible = true;
+                    ventana.Activate();
+                };
+                configDiseño.ShowDialog();
+            }
+            else
+            {
+                // ── Usos siguientes: abrir directo sin preguntar ──────
+                if (_servidorTurnos.Corriendo)
+                    _servidorTurnos.Detener();
+                _servidorTurnos.Iniciar(cfg.Puerto);
+
+                VentanaTurnos ventana = new VentanaTurnos(cfg.Ip, cfg.Puerto);
+                ventana.Show();
+            }
+        }
+
+        private void ConfigurarRed_Click(object sender, RoutedEventArgs e)
+        {
+            // Buscar si ya hay VentanaTurnos abierta
+            VentanaTurnos? vtAbierta = null;
+            foreach (Window w in Application.Current.Windows)
+                if (w is VentanaTurnos vt) { vtAbierta = vt; break; }
+
+            // Si hay ventana abierta, ocultarla mientras se configura
+            if (vtAbierta != null)
+            {
+                vtAbierta.Opacity = 0;
+                vtAbierta.IsHitTestVisible = false;
+            }
+
+            // Pedir IP/Puerto
+            var ventanaIP = new VentanaConfigRed { Owner = this };
+            if (ventanaIP.ShowDialog() != true)
+            {
+                // Canceló — restaurar ventana si estaba abierta
+                if (vtAbierta != null)
+                {
+                    vtAbierta.Opacity = 1;
+                    vtAbierta.IsHitTestVisible = true;
+                }
+                return;
+            }
+
+            if (_servidorTurnos.Corriendo)
+                _servidorTurnos.Detener();
+            _servidorTurnos.Iniciar(ventanaIP.PuertoResultante);
+
+            // Si no había VentanaTurnos, crear una nueva
+            if (vtAbierta == null)
+                vtAbierta = new VentanaTurnos(ventanaIP.IpResultante, ventanaIP.PuertoResultante);
+
+            vtAbierta.Opacity = 0;
+            vtAbierta.IsHitTestVisible = false;
+            if (!vtAbierta.IsVisible)
+                vtAbierta.Show();
+
+            // Abrir config de diseño con referencia
+            var configDiseño = new VentanaConfigRed(vtAbierta) { Owner = this };
+            configDiseño.Closed += (s, args) =>
+            {
+                vtAbierta.Opacity = 1;
+                vtAbierta.IsHitTestVisible = true;
+                vtAbierta.Activate();
+            };
+            configDiseño.ShowDialog();
+        }
+
     }
 }

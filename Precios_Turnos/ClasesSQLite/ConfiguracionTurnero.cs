@@ -1,4 +1,5 @@
-﻿
+﻿using Microsoft.Data.Sqlite;
+
 namespace Priceio.ClasesSQLite
 {
     internal class ConfiguracionTurnero
@@ -28,5 +29,7 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
+
+        public int UltimoTurnoKiosko { get; set; } = 0;
     }
 }

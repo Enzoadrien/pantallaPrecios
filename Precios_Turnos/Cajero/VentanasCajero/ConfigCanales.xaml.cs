@@ -8,6 +8,7 @@ using Priceio.Cajero.VentanasCajero;
 using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
 using Priceio.SQLite;
+using Priceio.Turnero;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -734,10 +735,26 @@ namespace Priceio
                             pago.BilletesCambio = cantidad;
                             smartPayout.ActualizaPago(ref pago);
                             smartPayout.BoolCalculatePayout = true;
+
+                            pago.TipoPago = Pago.Tipo.RETIRO;
+                            pago.EstadoPago = Pago.Estado.OK;
+                            pago.Pagado = true;
+                            pago.CantidadTotal = cantidad;
+                            pago.Fecha = DateOnly.FromDateTime(DateTime.Now);
+                            pago.Hora = TimeOnly.FromDateTime(DateTime.Now);
+                            if (!new SQLiteClassManager().SetPago(pago))
+                            {
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                                dialog.lblNombre.Content = "¡Error!";
+                                dialog.lblTexto.Text = "Ocurrio un error al guardar la información del pago, consulte al administrador";
+                                dialog.btnCancelar.Visibility = Visibility.Visible;
+                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                dialog.ShowDialog();
+                            }
                             ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
                             if (configuracionLector != null)
                             {
-                                string cadenaImpresion = configuracionLector.FormatoImpresora.Replace("<FOLIO>", pago.NumPago.ToString()).Replace("<EQUIPO>", pago.Equipo).Replace("<FECHA>", DateTime.Now.ToString("dd/MM/yyyy")).Replace("<HORA>", DateTime.Now.ToString("HH:mm:ss tt")).Replace("<TOTAL>", string.Format("{0:#.00}", pago.CantidadTotal)).Replace("<PAGO>", string.Format("{0:#.00}", pago.CantidadIngresada)).Replace("<CAMBIO>", string.Format("{0:#.00}", pago.Cambio));
+                                string cadenaImpresion = configuracionLector.FormatoImpresora.Replace("<FOLIO>", pago.NumPago.ToString()).Replace("<EQUIPO>", pago.Equipo).Replace("<FECHA>", pago.Fecha.ToString("dd/MM/yyyy")).Replace("<HORA>", pago.Hora.ToString("HH:mm:ss tt")).Replace("<TOTAL>", string.Format("{0:#.00}", pago.CantidadTotal)).Replace("<PAGO>", string.Format("{0:#.00}", pago.CantidadIngresada)).Replace("<CAMBIO>", string.Format("{0:#.00}", pago.Cambio));
                                 Pago pagoImp = new Pago();
                                 pagoImp.TipoPago = Pago.Tipo.IMPRESION;
                                 pagoImp.Impresion = cadenaImpresion;
@@ -759,6 +776,21 @@ namespace Priceio
                             pago.MonedasCambio = cantidad;
                             smartHopper.ActualizaPago(ref pago);
                             smartHopper.BoolCalculatePayoutHopper = true;
+                            pago.TipoPago = Pago.Tipo.RETIRO;
+                            pago.EstadoPago = Pago.Estado.OK;
+                            pago.Pagado = true;
+                            pago.CantidadTotal = cantidad;
+                            pago.Fecha = DateOnly.FromDateTime(DateTime.Now);
+                            pago.Hora = TimeOnly.FromDateTime(DateTime.Now);
+                            if (!new SQLiteClassManager().SetPago(pago))
+                            {
+                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                                dialog.lblNombre.Content = "¡Error!";
+                                dialog.lblTexto.Text = "Ocurrio un error al guardar la información del pago, consulte al administrador";
+                                dialog.btnCancelar.Visibility = Visibility.Visible;
+                                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                                dialog.ShowDialog();
+                            }
                             ConfiguracionLector? configuracionLector = new SQLiteClassManager().GetConfiguracionLector();
                             if (configuracionLector != null)
                             {
@@ -982,6 +1014,7 @@ namespace Priceio
                     dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
                     dialog.btnCancelar.Visibility = Visibility.Visible;
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
                     return false;
                 }
                 return true;
@@ -1023,6 +1056,7 @@ namespace Priceio
                     dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
                     dialog.btnCancelar.Visibility = Visibility.Visible;
                     dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
                     return false;
                 }
                 return true;

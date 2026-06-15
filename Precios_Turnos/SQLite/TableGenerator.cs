@@ -107,8 +107,8 @@ namespace Priceio.SQLite
                 dataMapper.Add(typeof(decimal), "REAL");
                 dataMapper.Add(typeof(double), "REAL");
                 dataMapper.Add(typeof(Guid), "UNIQUEIDENTIFIER");
-                dataMapper.Add(typeof(Pago.Tipo), "INTEGER");
-                dataMapper.Add(typeof(Pago.Estado), "INTEGER");
+                dataMapper.Add(typeof(Pago.Tipo), "TEXT");
+                dataMapper.Add(typeof(Pago.Estado), "TEXT");
                 return dataMapper;
             }
         }

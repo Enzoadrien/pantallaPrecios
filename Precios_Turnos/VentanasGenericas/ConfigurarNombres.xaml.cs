@@ -85,6 +85,7 @@ namespace Priceio
                 dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
                 dialog.btnCancelar.Visibility = Visibility.Visible;
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowDialog();    
             }
         }
         private void CargarInfo()

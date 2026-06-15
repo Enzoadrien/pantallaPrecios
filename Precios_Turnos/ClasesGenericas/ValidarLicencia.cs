@@ -98,7 +98,7 @@ namespace Priceio.ClasesGenericas
             }
         }
 
-        internal string recuperaLicenciaApp(string Correo, string Codigo)
+        internal string? recuperaLicenciaApp(string Correo, string Codigo)
         {
             MySqlConnection connection = new ServerConfig().connection();
             try
@@ -135,7 +135,7 @@ namespace Priceio.ClasesGenericas
                 dialogError.lblNombre.Content = "¡Error!";
                 dialogError.lblTexto.Text = "No se puede conectar con el servidor, consulte al administrador.";
                 dialogError.ShowDialog();
-                return string.Empty;
+                return null;
             }
         }
 

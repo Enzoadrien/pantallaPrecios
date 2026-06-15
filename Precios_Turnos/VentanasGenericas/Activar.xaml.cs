@@ -53,7 +53,7 @@ namespace Priceio
                 ValidarLicencia validarLicencia = new ValidarLicencia();
                 string key = validarLicencia.cargarLicenciaApp(Correo.Text, Codigo.Text);
                 Llave.Text = key;
-                if(key.Length > 0)
+                if (key.Length > 0)
                     if (GuardarInfo())
                         Close();
             }
@@ -98,46 +98,32 @@ namespace Priceio
                     {
                         try
                         {
-                            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
-                            string LlaveReg = key.GetValue("Key").ToString();
-                            Licencia licencia2 = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
-
-                            if (licencia.Correo.Equals(licencia2.Correo) || licencia.Codigo.Equals(licencia2.Codigo)
-                                || licencia.Llave.Equals(licencia2.Llave) || licencia.Key.Equals(licencia2.Key))
+                            if (!subs[1].Equals("0"))
                             {
-                                if (!subs[1].Equals("0"))
-                                {
-                                    if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
-                                    {
-                                        Correo.IsReadOnly = true;
-                                        Llave.IsReadOnly = true;
-                                        btnGenerar.IsEnabled = false;
-                                        lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                                        lblFecha.Content = "Licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
-
-                                    }
-                                    else
-                                    {
-                                        Llave.Text = "";
-                                        lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                        lblFecha.Content = "Licencia caducada: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
-                                    }
-
-                                }
-                                else
+                                if (vSeguridad.GetNetworkTime().Date <= Convert.ToDateTime(subs[6]).Date)
                                 {
                                     Correo.IsReadOnly = true;
                                     Llave.IsReadOnly = true;
                                     btnGenerar.IsEnabled = false;
                                     lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
-                                    lblFecha.Content = "Licencia: Permanente";
+                                    lblFecha.Content = "Licencia: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+
                                 }
+                                else
+                                {
+                                    Llave.Text = "";
+                                    lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
+                                    lblFecha.Content = "Licencia caducada: " + Convert.ToDateTime(subs[6]).Date.ToShortDateString();
+                                }
+
                             }
                             else
                             {
-                                Llave.Text = "";
-                                lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFC42B1C"));
-                                lblFecha.Content = "Licencia no válida";
+                                Correo.IsReadOnly = true;
+                                Llave.IsReadOnly = true;
+                                btnGenerar.IsEnabled = false;
+                                lblFecha.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF1E6D0E"));
+                                lblFecha.Content = "Licencia: Permanente";
                             }
                         }
                         catch
@@ -165,40 +151,17 @@ namespace Priceio
                     {
                         if (vSeguridad.GetNetworkTime().Date != new DateTime(1900, 1, 1))
                         {
-                            Licencia licencia = new Licencia();
-                            try
-                            {
-                                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Lista de precios 3K", true);
-                                string LlaveReg = key.GetValue("Key").ToString();
-                                licencia = JsonSerializer.Deserialize<Licencia>(LlaveReg)!;
-                            }
-                            catch { }
 
-                            if (Correo.Text.Equals(vSeguridad.DecryptString(Codigo.Text, licencia.Correo)) && Codigo.Text.Equals(licencia.Codigo) && Llave.Text.Equals(licencia.Llave))
-                            {
+                            GuardarLicencia(strKey);
+                            mainWindow.ActivarControlesMenu();
+                            mainWindow.CargarControles();
+                            mainWindow.CargarArchivoLicencia();
 
-                                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA);
-                                dialog.lblNombre.Content = "¡Advertencia!";
-                                dialog.lblTexto.Text = "Su licencia ya se encuentra activa. Si adquirió una nueva licencia y no la puede activar, por favor póngase en contacto con su proveedor.";
-                                dialog.ShowDialog();
-                                return true;
-                            }
-                            else
-                            {
-                                    GuardarLicencia(strKey);
-                                    mainWindow.Conexion.IsEnabled = true;
-                                    mainWindow.EditarDiseno.IsEnabled = true;
-                                    mainWindow.ImportarDiseno.IsEnabled = true;
-                                    mainWindow.ExportarDiseno.IsEnabled = true;
-                                    mainWindow.ResizeMode = ResizeMode.CanResize;
-                                    mainWindow.CargarControles();
-
-                                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
-                                    dialog.lblNombre.Content = "¡Listo!";
-                                    dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
-                                    dialog.ShowDialog();
-                                    return true;
-                            }
+                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
+                            dialog.lblNombre.Content = "¡Listo!";
+                            dialog.lblTexto.Text = "Su producto se activo correctamente. \n Fecha: " + DateTime.Now.Date.AddDays(double.Parse(subs[1]));
+                            dialog.ShowDialog();
+                            return true;
                         }
                         else
                         {
@@ -210,20 +173,16 @@ namespace Priceio
                     }
                     else
                     {
-                            GuardarLicencia(strKey);
-                            mainWindow.Conexion.IsEnabled = true;
-                            mainWindow.EditarDiseno.IsEnabled = true;
-                            mainWindow.ImportarDiseno.IsEnabled = true;
-                            mainWindow.ExportarDiseno.IsEnabled = true;
+                        GuardarLicencia(strKey);
+                        mainWindow.ActivarControlesMenu();
+                        mainWindow.CargarControles();
+                        mainWindow.CargarArchivoLicencia();
 
-                            mainWindow.ResizeMode = ResizeMode.CanResize;
-                            mainWindow.CargarControles();
-
-                            Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
-                            dialog.lblNombre.Content = "¡Listo!";
-                            dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
-                            dialog.ShowDialog();
-                            return true;
+                        Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ACEPTAR);
+                        dialog.lblNombre.Content = "¡Listo!";
+                        dialog.lblTexto.Text = "Su producto se activo correctamente de forma permante.";
+                        dialog.ShowDialog();
+                        return true;
                     }
                 }
             }
@@ -245,9 +204,6 @@ namespace Priceio
             };
 
             string jsonString = JsonSerializer.Serialize(Licencia);
-
-            RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Lista de precios 3K", true);
-            key.SetValue("Key", jsonString);
 
             using (Stream stream = new FileStream(@".\Llave.key", FileMode.Create))
             {

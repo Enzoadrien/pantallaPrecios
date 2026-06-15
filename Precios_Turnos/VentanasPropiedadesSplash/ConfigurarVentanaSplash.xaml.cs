@@ -1,25 +1,26 @@
-﻿using System;
+﻿using Priceio.Cajero.Hopper;
+using Priceio.Cajero.Payout;
+using Priceio.Cajero.VentanasCajero;
+using Priceio.ClasesGenericas;
+using Priceio.ClasesSQLite;
+using Priceio.SQLite;
+using Priceio.Turnero;
+using Priceio.Turnero.Kretz;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Speech.Synthesis;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Priceio.Cajero.Hopper;
-using Priceio.Cajero.Payout;
-using Priceio.ClasesGenericas;
-using Priceio.Turnero;
-using Priceio.Turnero.Kretz;
-using Priceio.ClasesSQLite;
-using Priceio.SQLite;
-using System.Linq;
 using static Priceio.Cajero.ChannelData;
-using System.Net;
-using Priceio.Cajero.VentanasCajero;
+using static Priceio.PropiedadesImpresora;
 
 namespace Priceio
 {
@@ -182,6 +183,7 @@ namespace Priceio
                 dialog.lblTexto.Text = "Ocurrio un error al guardar la información, consulte al administrador";
                 dialog.btnCancelar.Visibility = Visibility.Visible;
                 dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowDialog();
             }
         }
 
@@ -508,7 +510,7 @@ namespace Priceio
         private void btnImpresora_Click(object sender, RoutedEventArgs e)
         {
             GuardarDatos();
-            PropiedadesImpresora dialog = new PropiedadesImpresora();
+            PropiedadesImpresora dialog = new PropiedadesImpresora(TipoImpresion.Cajero);
             dialog.WindowStartupLocation = WindowStartupLocation.Manual;
 
             var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
@@ -633,6 +635,18 @@ namespace Priceio
             dialog.Left = centerParent.X - hCenterChild;
             dialog.Top = centerParent.Y - vCenterChild;
 
+            dialog.ShowDialog();
+        }
+
+        private void btnImpresoraTurnero_Click(object sender, RoutedEventArgs e)
+        {
+            GuardarDatos();
+            PropiedadesImpresora dialog = new PropiedadesImpresora(TipoImpresion.Turnero); 
+            dialog.WindowStartupLocation = WindowStartupLocation.Manual;
+            var relativeCenterParent = new Point(ActualWidth / 2, ActualHeight / 2);
+            var centerParent = this.PointToScreen(relativeCenterParent);
+            dialog.Left = centerParent.X - dialog.Width / 2;
+            dialog.Top = centerParent.Y - dialog.Height / 2;
             dialog.ShowDialog();
         }
     }

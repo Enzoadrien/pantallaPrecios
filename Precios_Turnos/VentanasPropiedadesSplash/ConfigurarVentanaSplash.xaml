@@ -132,20 +132,26 @@ FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
                         <RowDefinition Height="30*"/>
                         <RowDefinition Height="30*"/>
                         <RowDefinition Height="30*"/>
+                        <RowDefinition Height="30*"/>
+                        <!-- ← FILA NUEVA para impresora -->
                     </Grid.RowDefinitions>
+
                     <Label x:Name="lblTipo" Content="Tipo:" FontFamily="Arial Rounded MT" FontSize="14"/>
                     <ComboBox x:Name="cbxTipo" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.ColumnSpan="2" SelectedValuePath="Tag" Margin="0,0,5,0" SelectionChanged="cbxTipo_SelectionChanged" SelectedIndex="0">
                         <ComboBoxItem Content="Servidor" Tag="S"/>
                         <ComboBoxItem Content="Cliente" Tag="C"/>
                     </ComboBox>
+
                     <Label x:Name="lblProtocolo" Content="Protocolo:" Grid.Row="1" FontFamily="Arial Rounded MT" FontSize="14"/>
-                    <ComboBox x:Name="cbxProtocolo" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2"  SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
+                    <ComboBox x:Name="cbxProtocolo" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
                         <ComboBoxItem Content="Teclado PC" Tag="T"/>
                         <ComboBoxItem Content="API" Tag="A"/>
                         <ComboBoxItem Content="Kretz" Tag="K"/>
                     </ComboBox>
+
                     <Label x:Name="lblPuerto" Content="Puerto TCP:" Grid.Row="2" FontFamily="Arial Rounded MT" FontSize="14"/>
-                    <TextBox x:Name="Puerto" Grid.Row="2" Grid.ColumnSpan="2" Text="9101" Grid.Column="1"  VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+                    <TextBox x:Name="Puerto" Grid.Row="2" Grid.ColumnSpan="2" Text="9101" Grid.Column="1" VerticalContentAlignment="Center" FontFamily="Arial Rounded MT Bold" FontSize="14" Margin="0,0,5,0" PreviewTextInput="ResponseTextBox_PreviewTextInput" DataObject.Pasting="PastingHandler" PreviewKeyDown="ResponseTextBox_PreviewKeyDown"/>
+
                     <Label x:Name="lblTurnosAnt" Content="Turnos anteriores:" Grid.Row="3" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
                     <ComboBox x:Name="cbxTurnosAnt" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="3" SelectedValuePath="Tag" Margin="0,0,5,0" SelectedIndex="0">
                         <ComboBoxItem Content="1" Tag="1"/>
@@ -159,21 +165,12 @@ FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
                         <ComboBoxItem Content="9" Tag="9"/>
                         <ComboBoxItem Content="10" Tag="10"/>
                     </ComboBox>
+
                     <Label x:Name="lblIP" Content="IP base:" Grid.Row="4" FontFamily="Arial Rounded MT" FontSize="14"/>
                     <ComboBox x:Name="cbxIP" FontFamily="Arial Rounded MT" FontSize="14" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4" SelectedValuePath="Tag" Margin="0,0,5,0"/>
-                    <StackPanel Grid.Row="5"
-        HorizontalAlignment="Left"
-        Orientation="Horizontal"
-        Margin="5,5,0,5" Grid.ColumnSpan="2" >
-                        <Button x:Name="btnBuscar"
-      Content="Buscar turneros"
-      IsDefault="True"
-      Width="120"
-      Height="20"
-      Margin="0,0,0,0"
-      TabIndex="0"
-      FontFamily="Arial Rounded MT" 
-      FontSize="14" Click="btnBuscar_Click">
+
+                    <StackPanel Grid.Row="5" HorizontalAlignment="Left" Orientation="Horizontal" Margin="5,5,0,5" Grid.ColumnSpan="2">
+                        <Button x:Name="btnBuscar" Content="Buscar turneros" IsDefault="True" Width="120" Height="20" Margin="0,0,0,0" TabIndex="0" FontFamily="Arial Rounded MT" FontSize="14" Click="btnBuscar_Click">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background" Value="#FF989090"/>
@@ -196,19 +193,9 @@ FontSize="14" Click="btnVoz_Click" Visibility="Hidden">
                             </Button.Style>
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="5"
-  HorizontalAlignment="Center"
-  Orientation="Horizontal"
-  Margin="5,5,0,5" Grid.Column="1" >
-                        <Button x:Name="btnDetener"
-Content="Detener"
-IsDefault="True"
-Width="70"
-Height="20"
-Margin="0,0,0,0"
-TabIndex="0"
-FontFamily="Arial Rounded MT" 
-FontSize="14" Click="btnDetener_Click" Visibility="Hidden" >
+
+                    <StackPanel Grid.Row="5" HorizontalAlignment="Center" Orientation="Horizontal" Margin="5,5,0,5" Grid.Column="1">
+                        <Button x:Name="btnDetener" Content="Detener" IsDefault="True" Width="70" Height="20" Margin="0,0,0,0" TabIndex="0" FontFamily="Arial Rounded MT" FontSize="14" Click="btnDetener_Click" Visibility="Hidden">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background" Value="#FF989090"/>
@@ -231,26 +218,20 @@ FontSize="14" Click="btnDetener_Click" Visibility="Hidden" >
                             </Button.Style>
                         </Button>
                     </StackPanel>
-                    <ComboBox x:Name="cbxTurneros" Grid.Column="2"  Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,5,0"/>
-                    <Grid x:Name="gridBar" Grid.ColumnSpan="3" Grid.Row="6" Margin="5,5,5,5" >
-                        <ProgressBar x:Name="BarraP" Maximum="255" />
+
+                    <ComboBox x:Name="cbxTurneros" Grid.Column="2" Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,5,0"/>
+
+                    <Grid x:Name="gridBar" Grid.ColumnSpan="3" Grid.Row="6" Margin="5,5,5,5">
+                        <ProgressBar x:Name="BarraP" Maximum="255"/>
                         <TextBlock x:Name="Progress" HorizontalAlignment="Center" VerticalAlignment="Center">0/255</TextBlock>
                     </Grid>
+
                     <Label x:Name="lblEncontrados" Content="Encontrados: 0" Grid.Row="7" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14"/>
                     <Label x:Name="lblIPS" Content="" Grid.Row="7" Grid.Column="2" FontFamily="Arial Rounded MT" FontSize="12"/>
-                    <StackPanel Grid.Row="8"
-        HorizontalAlignment="Left"
-        Orientation="Horizontal"
-        Margin="5,5,0,5" Grid.ColumnSpan="2" >
-                        <Button x:Name="btnNombresEquipos"
-      Content="Nombrar equipos"
-      IsDefault="True"
-      Width="120"
-      Height="20"
-      Margin="0,0,0,0"
-      TabIndex="0"
-      FontFamily="Arial Rounded MT" 
-      FontSize="14" Click="btnNombresEquipos_Click">
+
+                    <!-- Fila 8: Nombrar equipos y Mostrar nombres (sin cambios) -->
+                    <StackPanel Grid.Row="8" HorizontalAlignment="Left" Orientation="Horizontal" Margin="5,5,0,5" Grid.ColumnSpan="2">
+                        <Button x:Name="btnNombresEquipos" Content="Nombrar equipos" IsDefault="True" Width="120" Height="20" Margin="0,0,0,0" TabIndex="0" FontFamily="Arial Rounded MT" FontSize="14" Click="btnNombresEquipos_Click">
                             <Button.Style>
                                 <Style TargetType="{x:Type Button}">
                                     <Setter Property="Background" Value="#FF989090"/>
@@ -274,6 +255,34 @@ FontSize="14" Click="btnDetener_Click" Visibility="Hidden" >
                         </Button>
                     </StackPanel>
                     <CheckBox x:Name="chkMostrarNombres" Content="Mostrar nombres" Grid.Column="1" Grid.Row="8" Grid.ColumnSpan="2" FontFamily="Arial Rounded MT" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,5,0"/>
+
+                    <!-- ── FILA 9 NUEVA: Botón Impresora ────────────────── -->
+                    <StackPanel Grid.Row="9" HorizontalAlignment="Left" Orientation="Horizontal" Margin="5,5,0,5" Grid.ColumnSpan="2">
+                        <Button x:Name="btnImpresoraTurnero" Content="Impresora" Width="120" Height="20" Margin="0,0,0,0" FontFamily="Arial Rounded MT" FontSize="14" Click="btnImpresoraTurnero_Click" VerticalAlignment="Center">
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="Background" Value="#FF989090"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border Background="{TemplateBinding Background}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FF0E596D"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                    <!-- ─────────────────────────────────────────────────── -->
+
                 </Grid>
             </TabItem>
             <TabItem x:Name="Verificador" Header="Verificador" FontFamily="Arial Rounded MT" FontSize="14">

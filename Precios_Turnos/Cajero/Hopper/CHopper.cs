@@ -35,6 +35,7 @@ namespace Priceio.Cajero.Hopper
         // A variable to hold the type of the unit, obtained in setup request
         char m_UnitType;
 
+
         // A list of dataset data, sorted by value. Holds the info on channel number, value, currency,
         // level and whether it is being recycled.
         List<ChannelData> m_UnitDataList;
@@ -1223,14 +1224,19 @@ namespace Priceio.Cajero.Hopper
         // This is used to send a command via SSP to the hopper
         public bool SendCommand(ref string log)
         {
-            // attempt to send the command
-            if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
+            try
             {
-                m_eSSP.CloseComPort();
-                if (log != null) log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
-                return false;
+                // attempt to send the command
+                if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
+                {
+                    m_eSSP.CloseComPort();
+                    if (log != null) log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
+                    return false;
+                }
+                return true;
             }
-            return true;
+            catch {  return false; }
+            
         }
 
         // This returns the currency of a specified channel.

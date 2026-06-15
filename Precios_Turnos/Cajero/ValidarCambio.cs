@@ -16,12 +16,20 @@ namespace Priceio.Cajero
 {
     internal class CambioSeparado
     {
-        internal int monedas;
-        internal int billetes;
+        internal int monedas;          // Valor total en monedas
+        internal int billetes;         // Valor total en billetes (lo que payout necesita)
+        internal int cantidadBilletes; // Cantidad total de billetes usados
+
+        internal Dictionary<int, int> detalleMonedas;   // detalle: 10,5,2,1
+        internal Dictionary<int, int> detalleBilletes;  // detalle: 200,100,50,20
+
         internal CambioSeparado()
         {
             monedas = 0;
             billetes = 0;
+            cantidadBilletes = 0;
+            detalleMonedas = new Dictionary<int, int>();
+            detalleBilletes = new Dictionary<int, int>();
         }
     }
 
@@ -40,29 +48,40 @@ namespace Priceio.Cajero
                 cambioMaximoMonedas = SQLiteClass.PagoMax;
             }
             ConfiguracionCanalesPayout SQLiteClass2 = new SQLiteClassManager().GetConfiguracionCanalesPayout();
-            if(SQLiteClass2 != null)
+            if (SQLiteClass2 != null)
             {
-                cambioMaximoBilletes = SQLiteClass2.PagoMax;
+                cambioMaximoBilletes = SQLiteClass2.PagoMax;  // máximo de BILLETES que puedo pagar
             }
         }
 
         internal bool calculaCambio(int cambio, List<ChannelData>? chanelsDataHopper, List<ChannelData>? chanelsDataPayout)
         {
-            List<ChannelData> chanelsData = chanelsDataPayout.ConvertAll(x => new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
+            List<ChannelData> chanelsData = chanelsDataPayout.ConvertAll(x =>
+                new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
+
             CambioSeparado cambioSeparado = SepararCambio(cambio);
 
-            if(cambioSeparado.billetes <= cambioMaximoBilletes || cambioMaximoBilletes == 0)
+            // VALIDACIÓN CORRECTA: evaluar CANTIDAD DE BILLETES, no el valor total
+            if (cambioSeparado.cantidadBilletes <= cambioMaximoBilletes || cambioMaximoBilletes == 0)
             {
                 int totalCambioFaltante = 0;
+
+                // Pago total de billetes (VALOR TOTAL)
                 if (cambioSeparado.billetes > 0)
                     totalCambioFaltante = cambioPayout(cambioSeparado.billetes, chanelsData);
 
                 bool cambioMonedas = true;
+
+                // Si no hay faltante y no se deben monedas → todo OK
                 if (totalCambioFaltante == 0 && cambioSeparado.monedas == 0)
                     return true;
+
+                // Validación de monedas (total de monedas = monedas + faltante de billetes)
                 if (cambioSeparado.monedas + totalCambioFaltante <= cambioMaximoMonedas || cambioMaximoMonedas == 0)
                 {
-                    chanelsData = chanelsDataHopper.ConvertAll(x => new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
+                    chanelsData = chanelsDataHopper.ConvertAll(x =>
+                        new ChannelData { Channel = x.Channel, Currency = x.Currency, Level = x.Level, Recycling = x.Recycling, Value = x.Value }).ToList();
+
                     if (totalCambioFaltante + cambioSeparado.monedas > 0)
                         cambioMonedas = cambioHopper(totalCambioFaltante + cambioSeparado.monedas, chanelsData);
                     else
@@ -76,96 +95,77 @@ namespace Priceio.Cajero
             return false;
         }
 
-        internal CambioSeparado SepararCambio(int pvTotalSeparar)
+        private CambioSeparado SepararCambio(int cambio)
         {
-            CambioSeparado cambioSeparado = new CambioSeparado();
-            if (pvTotalSeparar < 20 && pvTotalSeparar >= 10)
-                cambioSeparado.monedas = pvTotalSeparar;
-            else if (pvTotalSeparar % 10 >= 1 || pvTotalSeparar == 10)
-                cambioSeparado.monedas = pvTotalSeparar % 10;
-            cambioSeparado.billetes = pvTotalSeparar - cambioSeparado.monedas;
+            CambioSeparado sepa = new CambioSeparado();
+            int restante = cambio;
 
-            return cambioSeparado;
+            // BILLETES
+            int[] billetes = new int[] { 200, 100, 50, 20 };
+            foreach (int b in billetes)
+            {
+                int cantidad = restante / b;
+                if (cantidad > 0)
+                {
+                    sepa.detalleBilletes[b] = cantidad;
+                    sepa.billetes += cantidad * b;     // VALOR TOTAL
+                    sepa.cantidadBilletes += cantidad; // CANTIDAD TOTAL
+                    restante -= cantidad * b;
+                }
+            }
+
+            // MONEDAS
+            int[] monedas = new int[] { 10, 5, 2, 1 };
+            foreach (int m in monedas)
+            {
+                int cantidad = restante / m;
+                if (cantidad > 0)
+                {
+                    sepa.detalleMonedas[m] = cantidad;
+                    sepa.monedas += cantidad * m;      // valor total
+                    restante -= cantidad * m;
+                }
+            }
+
+            return sepa;
         }
 
         internal bool cambioHopper(int total, List<ChannelData> chanelsDataHopper)
         {
             int totalMonedas = 0;
+
             foreach (ChannelData chanelData in chanelsDataHopper.OrderByDescending(x => x.Channel))
             {
                 if (totalMonedas < total)
                 {
                     switch (chanelData.Channel)
                     {
-                        case 1:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalMonedas + 1 <= total)
-                                    {
-                                        totalMonedas += 1;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                    if (totalMonedas == total)
-                                        break;
-                                }
-                            }
-                            break;
-                        case 2:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalMonedas + 2 <= total)
-                                    {
-                                        totalMonedas += 2;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 3:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalMonedas + 5 <= total)
-                                    {
-                                        totalMonedas += 5;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 4:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalMonedas + 10 <= total)
-                                    {
-                                        totalMonedas += 10;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
+                        case 1: // $1
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalMonedas + 1 <= total)
+                                { totalMonedas += 1; chanelData.Level--; }
                             break;
 
+                        case 2: // $2
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalMonedas + 2 <= total)
+                                { totalMonedas += 2; chanelData.Level--; }
+                            break;
+
+                        case 3: // $5
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalMonedas + 5 <= total)
+                                { totalMonedas += 5; chanelData.Level--; }
+                            break;
+
+                        case 4: // $10
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalMonedas + 10 <= total)
+                                { totalMonedas += 10; chanelData.Level--; }
+                            break;
                     }
                 }
-                else
-                    break;
-
-
+                else break;
             }
 
             monedasCambio = totalMonedas;
@@ -176,6 +176,7 @@ namespace Priceio.Cajero
         internal int cambioPayout(int total, List<ChannelData> chanelsDataPayout)
         {
             int totalBilletes = 0;
+
             foreach (ChannelData chanelData in chanelsDataPayout.OrderByDescending(x => x.Channel))
             {
                 if (totalBilletes < total)
@@ -183,115 +184,57 @@ namespace Priceio.Cajero
                     switch (chanelData.Channel)
                     {
                         case 1:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 20 <= total)
-                                    {
-                                        totalBilletes += 20;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                    if (totalBilletes == total)
-                                        break;
-                                }
-                            }
-                            break;
-                        case 2:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 50 <= total)
-                                    {
-                                        totalBilletes += 50;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 3:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 100 <= total)
-                                    {
-                                        totalBilletes += 100;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 4:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 200 <= total)
-                                    {
-                                        totalBilletes += 200;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 5:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 500 <= total)
-                                    {
-                                        totalBilletes += 500;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                            break;
-                        case 6:
-                            if (chanelData.Recycling == true)
-                            {
-                                while (chanelData.Level != 0)
-                                {
-                                    if (totalBilletes + 1000 <= total)
-                                    {
-                                        totalBilletes += 1000;
-                                        chanelData.Level--;
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 20 <= total)
+                                { totalBilletes += 20; chanelData.Level--; }
                             break;
 
+                        case 2:
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 50 <= total)
+                                { totalBilletes += 50; chanelData.Level--; }
+                            break;
+
+                        case 3:
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 100 <= total)
+                                { totalBilletes += 100; chanelData.Level--; }
+                            break;
+
+                        case 4:
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 200 <= total)
+                                { totalBilletes += 200; chanelData.Level--; }
+                            break;
+
+                        case 5:
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 500 <= total)
+                                { totalBilletes += 500; chanelData.Level--; }
+                            break;
+
+                        case 6:
+                            if (chanelData.Recycling)
+                                while (chanelData.Level > 0 && totalBilletes + 1000 <= total)
+                                { totalBilletes += 1000; chanelData.Level--; }
+                            break;
                     }
                 }
-                else
-                    break;
-
-
+                else break;
             }
+
             billetesCambio = totalBilletes;
-            return total - totalBilletes;
+
+            return total - totalBilletes; // regreso cuánto falta pagar en monedas
         }
 
-        internal bool cambioPayoutByChanel(int total, int chanel,List<ChannelData> chanelsData)
+        internal bool cambioPayoutByChanel(int total, int chanel, List<ChannelData> chanelsData)
         {
             foreach (ChannelData chanelData in chanelsData)
-                if(chanelData.Channel== chanel && chanelData.Level>= total)
+                if (chanelData.Channel == chanel && chanelData.Level >= total)
                     return true;
-           return false;
+
+            return false;
         }
     }
 }

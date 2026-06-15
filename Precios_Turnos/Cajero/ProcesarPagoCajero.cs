@@ -1,5 +1,6 @@
 ﻿using Priceio.Cajero.Hopper;
 using Priceio.Cajero.Payout;
+using Priceio.ClasesGenericas;
 using Priceio.ClasesSQLite;
 using Priceio.SQLite;
 using System;
@@ -171,7 +172,8 @@ namespace Priceio.Cajero
         {
             // Arma respuesta determinado el estado actual.
             string respuesta = string.Empty;
-
+            pvStateObject.GetPago().Fecha = DateOnly.FromDateTime(DateTime.Now);
+            pvStateObject.GetPago().Hora = TimeOnly.FromDateTime(DateTime.Now);
             switch (pvStateObject.GetEstadoActual())
             {
                 case EstadoCajero.ERROR:
@@ -190,6 +192,16 @@ namespace Priceio.Cajero
                     respuesta = "ERROR|0|0|NO SE COMPRETO EL PAGO|";
                     break;
             }
+            if(pvStateObject.GetPago().TipoPago == Pago.Tipo.PAGO || pvStateObject.GetPago().TipoPago == Pago.Tipo.RETIRO)
+                if (!new SQLiteClassManager().SetPago(pvStateObject.GetPago()))
+                {
+                    Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ERROR, false);
+                    dialog.lblNombre.Content = "¡Error!";
+                    dialog.lblTexto.Text = "Ocurrio un error al guardar la información del pago, consulte al administrador";
+                    dialog.btnCancelar.Visibility = Visibility.Visible;
+                    dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    dialog.ShowDialog();
+                }
             return respuesta;
         }
     }

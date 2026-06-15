@@ -23,5 +23,22 @@ namespace Priceio.ClasesSQLite
             get;
             set;
         }
+
+        public bool? ForzarResolucion
+        {
+            get;
+            set;
+        }
+
+        public int AnchoResolucion
+        {
+            get;
+            set;
+        }
+        public int AltoResolucion
+        {
+            get;
+            set;
+        }
     }
 }

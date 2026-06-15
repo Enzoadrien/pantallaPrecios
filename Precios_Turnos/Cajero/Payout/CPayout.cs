@@ -1221,32 +1221,36 @@ namespace Priceio.Cajero.Payout
 
         public bool SendCommand(ref string log)
         {
-            // Backup data and length in case we need to retry
-            byte[] backup = new byte[255];
-            m_cmd.CommandData.CopyTo(backup, 0);
-            byte length = m_cmd.CommandDataLength;
-            if(length != 0)
+            try
             {
-                // attempt to send the command
-                if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
+                // Backup data and length in case we need to retry
+                byte[] backup = new byte[255];
+                m_cmd.CommandData.CopyTo(backup, 0);
+                byte length = m_cmd.CommandDataLength;
+                if (length != 0)
                 {
-                    m_eSSP.CloseComPort();
-                    if (log != null)
+                    // attempt to send the command
+                    if (m_eSSP.SSPSendCommand(m_cmd, info) == false)
                     {
-                        log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + "\r\n";
-                        log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
-                    }
+                        m_eSSP.CloseComPort();
+                        if (log != null)
+                        {
+                            log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + "\r\n";
+                            log += "Sending command failed\r\nPort status: " + m_cmd.ResponseStatus.ToString() + "\r\n";
+                        }
 
+                        return false;
+                    }
+                }
+                else
+                {
+                    log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + " not send \r\n";
                     return false;
                 }
-            }
-           else
-                {
-                log += "Command: " + CHelpers.ConvertByteToName(m_cmd.CommandData[0]) + " not send \r\n";
-                return false;
-            }
 
-            return true;
+                return true;
+            }
+            catch { return false; }
         }
 
         private void actualizaPago(int ingresado, ref Pago pago)

@@ -18,14 +18,17 @@
             <Separator/>
             <MenuItem x:Name="VentanaSplash" Header="Configurar ventana splash" Click="VentanaSplash_Click"/>
             <MenuItem x:Name="MenuVentanaSplash" Header="Editar ventana splash" PreviewMouseLeftButtonDown="MenuVentanaSplash_PreviewMouseLeftButtonDown"/>
+            <MenuItem x:Name="AbrirVentanaTurnos" Header="Abrir ventana de turnos" Click="AbrirVentanaTurnos_Click"/>
+            <MenuItem x:Name="AbrirVentanaCajas" Header="Abrir ventana de cajas" Click="AbrirVentanaCajas_Click"/>
+            <MenuItem x:Name="ConfigurarRedCtx" Header="Configurar red / IP" FontFamily="Arial Rounded MT" Click="ConfigurarRed_Click"/>
             <MenuItem x:Name="MenuTurnos" Header="Agregar objetos turnero">
-                    <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
-                    <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar números equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
-                    <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Agregar nombres equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarTurnoAnt" Header="Agregar turnos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarTurnoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarEquipoAnt" Header="Agregar números equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarEquipoAnt_PreviewMouseLeftButtonDown" />
+                <MenuItem x:Name="MenuMostrarOcultarNombreEquipoAnt" Header="Agregar nombres equipos anteriores" PreviewMouseLeftButtonDown="MenuMostrarOcultarNombreEquipoAnt_PreviewMouseLeftButtonDown" />
             </MenuItem>
             <MenuItem x:Name="MenuCajero" Header="Agregar objetos cajero">
                 <MenuItem x:Name="MenuMostrarOcultarEstado" Header="Agregar estado cajero" PreviewMouseLeftButtonDown="MenuMostrarOcultarEstado_PreviewMouseLeftButtonDown" />
-               </MenuItem>
+            </MenuItem>
             <Separator />
             <MenuItem x:Name="MenuListaObjetos" Header="Lista de objetos"/>
             <MenuItem x:Name="Propiedades" Header="Propiedades" PreviewMouseLeftButtonDown="Propiedades_PreviewMouseLeftButtonDown"/>
@@ -65,10 +68,13 @@
             <MenuItem x:Name="Archivo" Header="Archivo" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                 <MenuItem x:Name="Activar" Header="Activar" FontFamily="Arial Rounded MT" Click="Activar_Click"/>
                 <Separator />
+                <MenuItem x:Name="MenuAbrirVentanaCajas" Header="Abrir ventana de cajas" FontFamily="Arial Rounded MT" Click="AbrirVentanaCajas_Click"/>
+                <Separator />
                 <MenuItem x:Name="Configuracion" Header="Configuración" Background="#FFEAE8E8" FontFamily="Arial Rounded MT" Height="25">
                     <MenuItem x:Name="ConfiguracionGeneral" Header="Configuración general" FontFamily="Arial Rounded MT" Click="ConfiguracionGeneral_Click"/>
                     <MenuItem x:Name="Conexion" Header="Configurar conexión ODBC" FontFamily="Arial Rounded MT" Click="ConfigurarConexion_Click"/>
                     <MenuItem x:Name="ConfigurarSplash" Header="Configurar ventana splash" Click="ConfigurarSplash_Click" FontFamily="Arial Rounded MT"/>
+                    <MenuItem x:Name="ConfigurarRed" Header="Configurar red / IP" FontFamily="Arial Rounded MT" Click="ConfigurarRed_Click"/>
                 </MenuItem>
                 <Separator />
                 <MenuItem x:Name="Salir" Header="Salir" Click="Salir_Click" FontFamily="Arial Rounded MT"/>
