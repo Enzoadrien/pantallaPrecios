@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Priceio.ClasesGenericas;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Priceio
 {
@@ -19,6 +22,19 @@ namespace Priceio
         private const double MargenBoton = 8;
 
         private int _ultimaCantidad = -1;
+
+        // Controla si ya hay una ventana AtencionBasculas abierta,
+        // para permitir solo una a la vez.
+        private AtencionBasculas? _ventanaBasculaAbierta = null;
+
+        // Registro de qué turno está asignado a qué caja, para evitar que
+        // el mismo turno se asigne a dos cajas distintas.
+        // Clave: número de turno, Valor: número de caja que lo tiene asignado.
+        private readonly Dictionary<int, int> _turnosAsignados = new Dictionary<int, int>();
+
+        // Registro del turno actualmente asignado a cada caja (0 = ninguno),
+        // para poder liberar el turno anterior si la caja se reasigna.
+        private readonly Dictionary<int, int> _cajaTurnoActual = new Dictionary<int, int>();
 
         public VentanaCajas()
         {
@@ -63,8 +79,8 @@ namespace Priceio
         // recalculamos el tamaño/distribución de las cajas ya generadas.
         private void VentanaCajasWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (_ultimaCantidad >= 0)
-                AcomodarCajas(_ultimaCantidad);
+            if (_ultimaCantidad > 0)
+                ReajustarTamanoCajas(_ultimaCantidad);
         }
 
         // ---------------------------------------------------------------
@@ -92,6 +108,8 @@ namespace Priceio
             _ultimaCantidad = cantidad;
 
             PanelCajas.Children.Clear();
+            _turnosAsignados.Clear();
+            _cajaTurnoActual.Clear();
 
             if (cantidad == 0)
             {
@@ -119,6 +137,32 @@ namespace Priceio
                 };
                 btnCaja.Click += CajaButton_Click;
                 PanelCajas.Children.Add(btnCaja);
+            }
+
+            TxtInfo.Text = $"{cantidad} caja(s) generada(s) — tamaño de botón: {tamanoFinal:0} px.";
+        }
+
+        // Recalcula y aplica el tamaño óptimo a las cajas YA EXISTENTES,
+        // sin recrearlas: conserva el contenido (texto/colores) de cada
+        // caja, incluyendo las que ya están marcadas como "atendidas".
+        private void ReajustarTamanoCajas(int cantidad)
+        {
+            if (cantidad <= 0 || PanelCajas.Children.Count == 0)
+                return;
+
+            double anchoDisponible = Math.Max(this.ActualWidth - 60, 300);
+            double altoDisponible = Math.Max(this.ActualHeight - 160, 200);
+
+            double tamanoFinal = CalcularTamanoOptimo(cantidad, anchoDisponible, altoDisponible);
+
+            foreach (var child in PanelCajas.Children)
+            {
+                if (child is Button btnCaja)
+                {
+                    btnCaja.Width = tamanoFinal;
+                    btnCaja.Height = tamanoFinal;
+                    btnCaja.FontSize = Math.Max(14, tamanoFinal * 0.16);
+                }
             }
 
             TxtInfo.Text = $"{cantidad} caja(s) generada(s) — tamaño de botón: {tamanoFinal:0} px.";
@@ -167,10 +211,61 @@ namespace Priceio
                 // Notifica a quien esté escuchando (por ejemplo MainWindow)
                 CajaPresionada?.Invoke(numero);
 
-                // Feedback visual simple por defecto; puedes quitarlo si
-                // quieres manejar la acción solo desde el evento CajaPresionada.
-                // MessageBox.Show($"Presionaste la caja {numero}");
+                // Si ya hay una ventana de atención abierta, no permitimos otra.
+                if (_ventanaBasculaAbierta != null)
+                    return;
+
+                _ventanaBasculaAbierta = new AtencionBasculas();
+
+                // Cuando se selecciona una báscula, pintamos esta caja de
+                // verde con los datos de báscula y turno que la atendieron.
+                _ventanaBasculaAbierta.BasculaSeleccionada += (numeroBascula, numeroTurno) =>
+                {
+                    Dispatcher.Invoke(() => MarcarCajaAtendida(btn, numero, numeroBascula, numeroTurno));
+                };
+
+                _ventanaBasculaAbierta.VentanaCerrada += () =>
+                {
+                    _ventanaBasculaAbierta = null;
+                };
+                _ventanaBasculaAbierta.Owner = this;
+                _ventanaBasculaAbierta.Show();
             }
+        }
+
+        // Marca una caja como "atendida": la pinta de verde y muestra
+        // el número de caja, la báscula y el turno que la atendieron.
+        // Si el turno seleccionado ya está asignado a otra caja, se
+        // muestra un aviso y no se realiza la asignación.
+        private void MarcarCajaAtendida(Button btnCaja, int numeroCaja, int numeroBascula, int numeroTurno)
+        {
+            // Si la báscula no tiene turno asignado (0), no validamos duplicados,
+            // solo mostramos la información de la báscula.
+            if (numeroTurno > 0 && _turnosAsignados.TryGetValue(numeroTurno, out int cajaConEseTurno)
+                && cajaConEseTurno != numeroCaja)
+            {
+                Mensajes dialog = new Mensajes(Recursos.TipoMensaje.ADVERTENCIA);
+                dialog.lblNombre.Content = "¡Advertencia!";
+                dialog.lblTexto.Text = $"El turno {numeroTurno} ya está asignado a la Caja {cajaConEseTurno}.\n" +
+                                        "Un mismo turno no puede asignarse a más de una caja.";
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                dialog.ShowDialog();
+                return;
+            }
+
+            // Liberamos el turno anterior de esta caja (si tenía uno distinto).
+            if (_cajaTurnoActual.TryGetValue(numeroCaja, out int turnoAnterior) && turnoAnterior > 0)
+                _turnosAsignados.Remove(turnoAnterior);
+
+            // Registramos el nuevo turno (si aplica).
+            if (numeroTurno > 0)
+                _turnosAsignados[numeroTurno] = numeroCaja;
+
+            _cajaTurnoActual[numeroCaja] = numeroTurno;
+
+            btnCaja.Content = $"Caja {numeroCaja}\nBáscula {numeroBascula}\nTurno {numeroTurno}";
+            btnCaja.Background = new SolidColorBrush(Color.FromRgb(0x27, 0xAE, 0x60)); // verde
+            btnCaja.BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x87, 0x49)); // verde oscuro
         }
     }
 }
